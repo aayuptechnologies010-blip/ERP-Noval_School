@@ -14,10 +14,9 @@ function Dashboard() {
 
   return (
     <div 
-      className="flex h-screen w-full overflow-hidden font-sans transition-colors duration-300"
-      style={{ backgroundColor: theme }}
+      className="flex h-screen w-full overflow-hidden font-sans bg-[#f8f9fc]"
     >
-      <Sidebar />
+      <Sidebar currentTheme={theme} />
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         <Header 
           currentTheme={theme} 
@@ -38,7 +37,9 @@ function Dashboard() {
             setIsSettingsOpen(false);
           }}
         />
-        <Outlet />
+        <div className="flex-1 overflow-y-auto bg-[#f8f9fc]">
+          <Outlet />
+        </div>
         {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
         {isProfileOpen && <MyProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />}
         {isCredentialsOpen && <ChangeCredentialsModal isOpen={isCredentialsOpen} onClose={() => setIsCredentialsOpen(false)} />}

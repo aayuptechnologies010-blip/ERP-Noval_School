@@ -26,34 +26,35 @@ function StaffLeave() {
   const filteredRequests = requests.filter(req => req.status === activeTab);
 
   return (
-    <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 70px)', boxSizing: 'border-box' }}>
       
       {/* Header Bar */}
-      <div style={{ padding: '24px 32px 16px 32px' }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#2b3674', margin: 0 }}>Staff Leave</h1>
+      <div style={{ padding: '32px 32px 16px 32px' }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#2b3674', margin: 0, fontFamily: 'Poppins, sans-serif' }}>Staff Leave</h1>
       </div>
 
       {/* Main Content Card */}
-      <div style={{ padding: '0 32px 32px 32px', flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ background: '#fff', borderRadius: 12, height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '24px' }}>
+      <div style={{ padding: '0 32px 32px 32px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ background: '#fff', borderRadius: 16, display: 'flex', flexDirection: 'column', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', padding: '28px', border: '1px solid #f1f5f9' }}>
           
           {/* Top Controls: Tabs & Print Button */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               {tabs.map((tab) => (
                 <div key={tab} style={{ position: 'relative' }}>
                   <button
                     onClick={() => setActiveTab(tab)}
                     style={{
-                      background: activeTab === tab ? '#34a853' : '#f1f3f4',
-                      color: activeTab === tab ? '#fff' : '#5f6368',
+                      background: activeTab === tab ? '#28a745' : '#e9ecef',
+                      color: activeTab === tab ? '#fff' : '#495057',
                       border: 'none',
-                      borderRadius: '4px',
-                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      padding: '10px 20px',
                       fontSize: '14px',
                       fontWeight: 600,
                       cursor: 'pointer',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s',
+                      fontFamily: 'Inter, sans-serif'
                     }}
                   >
                     {tab}
@@ -64,16 +65,17 @@ function StaffLeave() {
                       position: 'absolute',
                       top: '-6px',
                       right: '-6px',
-                      background: '#ea4335',
+                      background: '#dc3545',
                       color: '#fff',
-                      fontSize: '10px',
+                      fontSize: '11px',
                       fontWeight: 700,
-                      width: '16px',
-                      height: '16px',
+                      width: '18px',
+                      height: '18px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      borderRadius: '50%'
+                      borderRadius: '50%',
+                      border: '2px solid #fff'
                     }}>
                       {pendingCount}
                     </span>
@@ -85,23 +87,24 @@ function StaffLeave() {
             <button style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '8px',
               background: '#fff',
-              color: '#3b82f6',
-              border: '1px solid #3b82f6',
-              borderRadius: '4px',
-              padding: '8px 16px',
+              color: '#007bff',
+              border: '1px solid #007bff',
+              borderRadius: '6px',
+              padding: '10px 20px',
               fontSize: '14px',
               fontWeight: 600,
               cursor: 'pointer',
-              transition: 'background 0.2s'
+              transition: 'all 0.2s',
+              fontFamily: 'Inter, sans-serif'
             }}>
               <FaPrint /> Print PDF
             </button>
           </div>
 
           {/* Content Area */}
-          <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ overflowX: 'auto' }}>
             {filteredRequests.length > 0 ? (
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
@@ -116,36 +119,44 @@ function StaffLeave() {
                 <tbody>
                   {filteredRequests.map((req) => (
                     <tr key={req.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ ...tdStyle, color: '#334155' }}>
-                        <div style={{ fontWeight: 700, color: '#0f172a' }}>{req.staffName}</div>
-                        <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{req.department}</div>
+                      <td style={tdStyle}>
+                        <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '14px' }}>{req.staffName}</div>
+                        <div style={{ fontSize: '12px', color: '#64748b', marginTop: 4 }}>{req.department}</div>
                       </td>
                       <td style={tdStyle}>{req.appliedOn}</td>
                       <td style={tdStyle}>
-                        <div style={{ fontWeight: 600, color: '#334155' }}>{req.fromDate} to {req.toDate}</div>
-                        <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{req.days} Day(s)</div>
+                        <div style={{ fontWeight: 600, color: '#334155' }}>
+                          <span style={{ color: '#ef4444' }}>{req.fromDate.split('-')[0]}</span>
+                          {req.fromDate.substring(req.fromDate.indexOf('-'))} to <span style={{ color: '#ef4444' }}>{req.toDate.split('-')[0]}</span>
+                          {req.toDate.substring(req.toDate.indexOf('-'))}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#64748b', marginTop: 4 }}>{req.days} Day(s)</div>
                       </td>
                       <td style={{ ...tdStyle, whiteSpace: 'normal', minWidth: 150 }}>{req.reason}</td>
-                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                      <td style={{ padding: '16px 20px', textAlign: 'center' }}>
                         {req.status === 'Pending' ? (
-                          <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                          <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
                             <button 
                               onClick={() => handleUpdateStatus(req.id, 'Approved')}
                               title="Approve"
-                              style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 4, width: 28, height: 28, display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}
+                              style={{ background: '#28a745', color: '#fff', border: 'none', borderRadius: 6, width: 32, height: 32, display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
+                              onMouseOver={e => e.currentTarget.style.background = '#218838'}
+                              onMouseOut={e => e.currentTarget.style.background = '#28a745'}
                             >
-                              <FaCheck size={12} />
+                              <FaCheck size={14} />
                             </button>
                             <button 
                               onClick={() => handleUpdateStatus(req.id, 'Rejected')}
                               title="Reject"
-                              style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 4, width: 28, height: 28, display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}
+                              style={{ background: '#dc3545', color: '#fff', border: 'none', borderRadius: 6, width: 32, height: 32, display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
+                              onMouseOver={e => e.currentTarget.style.background = '#c82333'}
+                              onMouseOut={e => e.currentTarget.style.background = '#dc3545'}
                             >
-                              <FaTimes size={12} />
+                              <FaTimes size={14} />
                             </button>
                           </div>
                         ) : (
-                          <span style={{ fontSize: 13, fontWeight: 600, color: '#64748b' }}>Processed</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: req.status === 'Approved' ? '#28a745' : req.status === 'Rejected' ? '#dc3545' : '#6c757d' }}>{req.status}</span>
                         )}
                       </td>
                     </tr>
@@ -153,8 +164,7 @@ function StaffLeave() {
                 </tbody>
               </table>
             ) : (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
-                {/* No Record Found Illustration */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', padding: '40px 0' }}>
                 <div style={{ 
                   width: 250, 
                   height: 180, 
@@ -190,9 +200,9 @@ function StaffLeave() {
 const thStyle = {
   padding: '16px 20px',
   textAlign: 'left',
-  fontSize: 13,
+  fontSize: 14,
   fontWeight: 700,
-  color: '#0f172a',
+  color: '#1e293b',
   whiteSpace: 'nowrap',
   borderBottom: '1px solid #e2e8f0',
 };

@@ -13,7 +13,7 @@ function Header({ currentTheme, setTheme, onSettingsClick, onProfileClick, onCre
   const themes = ['#2d2d2d', '#9f3453', '#2c3983', '#4f3b7b', '#13838e', '#a68c2d', '#48714b'];
 
   return (
-    <div className="h-16 flex items-center justify-between px-6 text-white flex-shrink-0 relative z-50">
+    <div className="h-16 flex items-center justify-between px-6 text-white flex-shrink-0 relative z-50" style={{ backgroundColor: currentTheme }}>
       <div className="text-sm">
         Welcome Mr. <span className="font-bold">ANKIT KUMAR</span>
       </div>

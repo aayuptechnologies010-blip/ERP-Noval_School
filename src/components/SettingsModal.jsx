@@ -28,7 +28,7 @@ function SettingsModal({ isOpen, onClose }) {
   ];
 
   return (
-    <div className="flex-1 bg-[#f1f5f9] rounded-tl-[2rem] overflow-hidden relative flex">
+    <div className="absolute inset-0 bg-[#f1f5f9] rounded-tl-[2rem] overflow-hidden flex z-[60]">
       
       {/* Scrollable Content Container */}
       <div className="flex-1 w-full h-full overflow-y-auto pb-12 relative px-4 sm:px-10 lg:px-20 pt-8">

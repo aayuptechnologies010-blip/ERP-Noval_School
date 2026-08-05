@@ -11,7 +11,7 @@ import {
 } from 'react-icons/fa';
 import logo from '../assets/logo.png';
 
-function Sidebar() {
+function Sidebar({ currentTheme }) {
   const [expandedMenus, setExpandedMenus] = useState({});
 
   const toggleMenu = (name, depth) => {
@@ -191,6 +191,7 @@ function Sidebar() {
         { name: 'My Attendance', path: '/dashboard/myinfo/attendance' },
         { name: 'My Leave', path: '/dashboard/myinfo/leave' },
         { name: 'Pending Leaves', path: '/dashboard/myinfo/pending' },
+        { name: 'Payslip', path: '/dashboard/myinfo/payslip' },
       ]
     },
     { name: 'Library', icon: FaBookReader, path: '/dashboard/library' },
@@ -273,7 +274,7 @@ function Sidebar() {
   ];
 
   return (
-    <div className="w-64 h-full flex flex-col text-white flex-shrink-0">
+    <div className="w-64 h-full flex flex-col text-white flex-shrink-0" style={{ backgroundColor: currentTheme }}>
       
       {/* Logo Area */}
       <div className="h-20 flex items-center px-4 gap-2 border-b border-teal-600/30">
