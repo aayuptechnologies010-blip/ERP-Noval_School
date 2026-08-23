@@ -11,24 +11,57 @@ function MyLeave() {
     { id: 2, type: 'Casual Leave', from: '2023-09-15', to: '2023-09-15', status: 'Rejected', appliedOn: '2023-09-10' },
   ]);
 
-  const handleApply = () => {
+  const handleApply = async () => {
     if (!fromDate || !toDate || !reason) {
       alert('Please fill all fields');
       return;
     }
-    const newLeave = {
-      id: Date.now(),
-      type: leaveType,
-      from: fromDate,
-      to: toDate,
-      status: 'Pending',
-      appliedOn: new Date().toISOString().split('T')[0]
-    };
-    setLeaves([newLeave, ...leaves]);
-    alert('Leave applied successfully!');
-    setFromDate('');
-    setToDate('');
-    setReason('');
+
+    try {
+      // NOTE: Replace this static staffId with the dynamic ID from auth/user state
+      const staffId = "6a70ca17725fe0a34ed8e89e"; 
+
+      const payload = {
+        staffId,
+        leaveType,
+        fromDate,
+        toDate,
+        reason
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff-leaves`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.leaveRequest) {
+        alert(data.message || 'Leave applied successfully!');
+        
+        const newLeave = {
+          id: data.leaveRequest._id,
+          type: data.leaveRequest.leaveType,
+          from: data.leaveRequest.fromDate.split('T')[0],
+          to: data.leaveRequest.toDate.split('T')[0],
+          status: data.leaveRequest.status,
+          appliedOn: data.leaveRequest.createdAt.split('T')[0]
+        };
+        
+        setLeaves([newLeave, ...leaves]);
+        setFromDate('');
+        setToDate('');
+        setReason('');
+      } else {
+        alert(data.message || 'Failed to apply leave');
+      }
+    } catch (error) {
+      console.error("Error creating leave:", error);
+      alert('An error occurred while applying for leave.');
+    }
   };
 
   return (

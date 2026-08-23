@@ -109,7 +109,7 @@ function Sidebar({ currentTheme }) {
       name: 'Students', 
       icon: FaGraduationCap, 
       subItems: [
-        { name: 'Students Profile', path: '/dashboard/students/profile' },
+        { name: 'All Students', path: '/dashboard/students' },
         { 
           name: 'Attendance', 
           subItems: [
@@ -265,7 +265,7 @@ function Sidebar({ currentTheme }) {
       name: 'Gallery', 
       icon: FaImages, 
       subItems: [
-        { name: 'Photo Albums', path: '/dashboard/gallery/photos' },
+        { name: 'Photo Albums', path: '/dashboard/photos' },
         { name: 'Video Albums', path: '/dashboard/gallery/videos' },
         { name: 'Favorites', path: '/dashboard/gallery/favorites' },
         { name: 'Media Gallery', path: '/dashboard/gallery/media' },

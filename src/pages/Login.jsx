@@ -6,28 +6,55 @@ import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState('');
+  const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (!username || !password) {
-      toast.error('Please enter both username and password!');
+    if (!userId || !password) {
+      toast.error('Please enter User ID and password!');
       return;
     }
     
-    if (username === 'sf032' && password === '78667') {
-      Swal.fire({
-        title: 'Success!',
-        text: 'Login successful',
-        icon: 'success',
-        confirmButtonColor: '#4CAF50',
-      }).then(() => {
-        navigate('/dashboard');
+    setLoading(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, password }),
       });
-    } else {
-      toast.error('Invalid Username or Password!');
+
+      const data = await response.json();
+      console.log('Login Response:', response);
+      console.log('Login Data:', data);
+
+      if (response.ok) {
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data));
+          Swal.fire({
+            title: 'Success!',
+            text: 'Login successful',
+            icon: 'success',
+            confirmButtonColor: '#4CAF50',
+          }).then(() => {
+            navigate('/dashboard');
+          });
+        } else {
+          toast.error('Token not received from server!');
+        }
+      } else {
+        toast.error(data.message || 'Invalid Credentials!');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Network Error or API failed! Check console.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -124,14 +151,14 @@ function Login() {
             <div className="flex flex-col">
               <label className="flex items-center gap-2 text-gray-600 font-medium mb-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                Username <span className="text-red-500">*</span>
+                User ID <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                placeholder="Enter the Username"
+                placeholder="Enter the User ID"
                 className="border border-gray-300 rounded-md p-3 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
               />
             </div>
 
@@ -160,9 +187,10 @@ function Login() {
 
             <button
               type="submit"
-              className="w-full bg-[#5cb85c] hover:bg-[#4cae4c] text-white font-bold py-3 rounded-md mt-2 transition"
+              disabled={loading}
+              className={`w-full bg-[#5cb85c] hover:bg-[#4cae4c] text-white font-bold py-3 rounded-md mt-2 transition ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              Login
+              {loading ? 'Logging in...' : 'Login'}
             </button>
 
             <div className="flex justify-end">

@@ -1,19 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FaTimes, FaUserCheck, FaEnvelope, FaUserClock, FaWallet, FaMoneyBillWave, FaBriefcase, FaSuitcaseRolling } from 'react-icons/fa';
 
-function MyProfileModal({ isOpen, onClose }) {
+function Profile() {
   const [activeTab, setActiveTab] = useState('Personal details');
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({});
   const [saving, setSaving] = useState(false);
-
-  // Change Password state
-  const [oldPassword, setOldPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [changingPassword, setChangingPassword] = useState(false);
 
   const handleEditClick = () => {
     if (!isEditing) {
@@ -88,53 +82,8 @@ function MyProfileModal({ isOpen, onClose }) {
     }
   };
 
-  const handleChangePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      alert("New Password and Confirm Password do not match.");
-      return;
-    }
-    
-    if (newPassword.length < 5 || newPassword.length > 12) {
-      alert("Password must be between 5 to 12 characters.");
-      return;
-    }
-
-    setChangingPassword(true);
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/change-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          oldPassword,
-          newPassword
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        alert("Password successfully changed! Please login again.");
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/'; 
-      } else {
-        alert(data.message || "Failed to change password.");
-      }
-    } catch (error) {
-      console.error("Error changing password:", error);
-      alert("An error occurred. Please try again.");
-    } finally {
-      setChangingPassword(false);
-    }
-  };
-
   useEffect(() => {
-    if (isOpen) {
-      const fetchProfile = async () => {
+    const fetchProfile = async () => {
         setLoading(true);
         try {
           const token = localStorage.getItem('token');
@@ -154,29 +103,25 @@ function MyProfileModal({ isOpen, onClose }) {
         } finally {
           setLoading(false);
         }
-      };
-      fetchProfile();
-    }
-  }, [isOpen]);
+    };
+    fetchProfile();
+  }, []);
 
   const getInitials = () => {
     if (!profileData) return 'A';
     return `${(profileData.firstName || 'A')[0]}${(profileData.lastName || '')[0] || ''}`.toUpperCase();
   };
 
-  if (!isOpen) return null;
-
   const tabs = [
     'Personal details',
     'Attendance',
     'Salary',
     'Timetable',
-    'Session Log',
-    'Change Password'
+    'Session Log'
   ];
 
   return (
-    <div className="flex-1 bg-[#f9fafb] rounded-tl-[2rem] p-6 overflow-y-auto no-scrollbar relative">
+    <div className="flex-1 bg-[#f9fafb] p-6 overflow-y-auto no-scrollbar relative h-full">
         
         {/* Header / Close - Optional if you want them to go back, but screenshot shows it without. */}
         {/* <div className="absolute top-4 right-4 z-10">
@@ -719,60 +664,6 @@ function MyProfileModal({ isOpen, onClose }) {
                   </div>
                 </div>
               )}
-
-              {/* Change Password Tab Content */}
-              {activeTab === 'Change Password' && (
-                <div className="flex flex-col flex-1 bg-white p-6 rounded-xl shadow-sm relative">
-                  <div>
-                    <div className="bg-gray-200 px-4 py-2 rounded-t-md border-b-2 border-[#81c784] mb-6">
-                      <h4 className="font-bold text-gray-800 text-sm">Change Password</h4>
-                    </div>
-                    
-                    <div className="max-w-md mx-auto flex flex-col gap-4">
-                      <div>
-                        <label className="block text-gray-700 text-sm font-bold mb-2">Old Password</label>
-                        <input 
-                          type="password" 
-                          value={oldPassword}
-                          onChange={(e) => setOldPassword(e.target.value)}
-                          className="w-full border border-gray-300 rounded px-3 py-2 outline-none focus:border-green-500"
-                          placeholder="Enter old password"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-gray-700 text-sm font-bold mb-2">New Password</label>
-                        <input 
-                          type="password" 
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          className="w-full border border-gray-300 rounded px-3 py-2 outline-none focus:border-green-500"
-                          placeholder="Enter new password"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-gray-700 text-sm font-bold mb-2">Confirm New Password</label>
-                        <input 
-                          type="password" 
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          className="w-full border border-gray-300 rounded px-3 py-2 outline-none focus:border-green-500"
-                          placeholder="Confirm new password"
-                        />
-                      </div>
-                      <div className="mt-4 flex justify-end">
-                        <button 
-                          onClick={handleChangePassword}
-                          disabled={changingPassword}
-                          className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition font-bold disabled:opacity-50"
-                        >
-                          {changingPassword ? 'Changing...' : 'Change Password'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
             </div>
             
           </div>
@@ -787,4 +678,4 @@ function MyProfileModal({ isOpen, onClose }) {
   );
 }
 
-export default MyProfileModal;
+export default Profile;

@@ -1,28 +1,101 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaEye, FaListUl, FaThLarge } from 'react-icons/fa';
+import { FaEye, FaListUl, FaThLarge, FaPlus, FaStar, FaRegStar, FaEdit, FaTrash } from 'react-icons/fa';
 
-const dummyData = [
-  { id: 1, admissionNo: '1770', name: 'ARNAV GUPTA', class: 'NUR-A', dob: '15-Mar-2023', fatherName: 'Mr. HANUMAN GUPTA', motherName: 'Mrs. GAURI GUPTA', contact: '8957244533' },
-  { id: 2, admissionNo: '2203', name: 'ANVI MAURYA', class: 'NUR-A', dob: '21-Jul-2022', fatherName: 'Mr. ARVIND KUMAR MAURYA', motherName: 'Mrs. SANDHYA MAURYA', contact: '9795383676' },
-  { id: 3, admissionNo: '2206', name: 'SHANVI YADAV', class: 'NUR-A', dob: '23-Aug-2024', fatherName: 'Mr. ANUP YADAV', motherName: 'Mrs. SUNITA YADAV', contact: '9935510508' },
-  { id: 4, admissionNo: '2219', name: 'DIVYA', class: 'NUR-A', dob: '08-Feb-2022', fatherName: 'Mr. DINESH KUMAR', motherName: 'Mrs. JYOTI', contact: '6388242775' },
-  { id: 5, admissionNo: '2221', name: 'PRABHAS SAHANI', class: 'NUR-A', dob: '03-Sep-2020', fatherName: 'Mr. RAVI KUMAR', motherName: 'Mrs. RAJMATI', contact: '7754072048' },
-  { id: 6, admissionNo: '2224', name: 'GAUNIK RAI', class: 'NUR-A', dob: '03-Oct-2021', fatherName: 'Mr. GAURAV RAI', motherName: 'Mrs. NIDHI RAI', contact: '9580717042' },
-  { id: 7, admissionNo: '2235', name: 'DIPENDRA NISHAD', class: 'NUR-A', dob: '02-Dec-2022', fatherName: 'Mr. MADHURENDRA NISHAD', motherName: 'Mrs. SIMA NISHAD', contact: '9506359192' },
-  { id: 8, admissionNo: '2237', name: 'NAVYA CHAURASIYA', class: 'NUR-A', dob: '29-Oct-2022', fatherName: 'Mr. NAVIN KUMAR CHAURASIYA', motherName: 'Mrs. JYOTI KUMARI', contact: '8418901397' }
-];
+import { useEffect } from 'react';
+import { toast } from 'react-toastify';
 
-function StudentsList() {
+function StudentsList({ favoritesOnly = false }) {
   const [sensitiveData, setSensitiveData] = useState(true);
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/students`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setStudents(data);
+        } else {
+          toast.error("Failed to fetch students list.");
+        }
+      } catch (error) {
+        console.error("Error fetching students:", error);
+        toast.error("An error occurred while fetching students.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStudents();
+  }, []);
+
+  const toggleFavorite = async (id, currentStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/students/${id}/favorite`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ isFavorite: !currentStatus })
+      });
+      if (response.ok) {
+        setStudents(students.map(s => s._id === id ? { ...s, isFavorite: !currentStatus } : s));
+        toast.success(currentStatus ? "Removed from favorites" : "Added to favorites");
+      } else {
+        toast.error("Failed to update favorite status");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Error updating favorite status");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this student?")) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/students/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setStudents(students.filter(s => s._id !== id));
+        toast.success("Student deleted successfully");
+      } else {
+        toast.error("Failed to delete student");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Error deleting student");
+    }
+  };
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       
       {/* Header */}
-      <div style={{ padding: '24px 32px 16px 32px' }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#2b3674', margin: 0 }}>Students List</h1>
+      <div style={{ padding: '24px 32px 16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#2b3674', margin: 0 }}>
+          {favoritesOnly ? 'Favorite Students' : 'Students List'}
+        </h1>
+        <button 
+          onClick={() => navigate('/dashboard/students/create')}
+          style={{ 
+            background: '#65c466', color: '#fff', border: 'none', borderRadius: 6, 
+            padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 8
+          }}
+        >
+          <FaPlus /> Add Student
+        </button>
       </div>
 
       {/* Filters Section */}
@@ -72,7 +145,7 @@ function StudentsList() {
           {/* Card Header */}
           <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 style={{ fontSize: 18, fontWeight: 600, color: '#334155', margin: 0 }}>
-              Students - (Total: 1232)
+              Students - (Total: {students.length})
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: '#334155' }}>Show Sensitive Data</span>
@@ -126,30 +199,68 @@ function StudentsList() {
                 </tr>
               </thead>
               <tbody>
-                {dummyData.map((student, index) => (
-                  <tr key={student.id} style={{ borderBottom: index !== dummyData.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                    <td style={{ padding: '16px 24px', fontSize: 13, color: '#475569' }}>{student.admissionNo}</td>
-                    <td style={{ padding: '16px 24px', fontSize: 13, color: '#334155', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap' }}>
-                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#64748b', overflow: 'hidden' }}>
-                         <img src={`https://ui-avatars.com/api/?name=${student.name}&background=6366f1&color=fff`} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      </div>
-                      {student.name}
-                    </td>
-                    <td style={{ padding: '16px 24px', fontSize: 13, color: '#475569' }}>{student.class}</td>
-                    <td style={{ padding: '16px 24px', fontSize: 13, color: '#475569' }}>{student.dob}</td>
-                    <td style={{ padding: '16px 24px', fontSize: 13, color: '#475569' }}>{student.fatherName}</td>
-                    <td style={{ padding: '16px 24px', fontSize: 13, color: '#475569' }}>{student.motherName}</td>
-                    <td style={{ padding: '16px 24px', fontSize: 13, color: '#475569' }}>{student.contact}</td>
-                    <td style={{ padding: '16px 24px', textAlign: 'center' }}>
-                      <button 
-                        onClick={() => navigate('/dashboard/students/profile')}
-                        style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 16 }}
-                      >
-                        <FaEye />
-                      </button>
-                    </td>
+                {loading ? (
+                  <tr>
+                    <td colSpan="8" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>Loading students...</td>
                   </tr>
-                ))}
+                ) : students.filter(s => !favoritesOnly || s.isFavorite).map((student, index, filteredArray) => {
+                  const p = student.personalDetails || {};
+                  const a = student.academicDetails || {};
+                  const f = student.familyDetails || {};
+                  const c = student.contactAddress || {};
+                  const fullName = `${p.firstName || ''} ${p.middleName || ''} ${p.lastName || ''}`.trim().replace(/\s+/g, ' ');
+                  const fatherName = f.father ? `${f.father.title || ''} ${f.father.firstName || ''} ${f.father.lastName || ''}`.trim() : '';
+                  const motherName = f.mother ? `${f.mother.title || ''} ${f.mother.firstName || ''} ${f.mother.lastName || ''}`.trim() : '';
+                  const dobDate = p.dateOfBirth ? new Date(p.dateOfBirth).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+                  const className = `${a.class || ''}-${a.section || ''}`.replace(/^-|-$/, '');
+                  
+                  return (
+                    <tr key={student._id} style={{ borderBottom: index !== filteredArray.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                      <td style={{ padding: '16px 24px', fontSize: 13, color: '#475569' }}>{a.admissionNumber}</td>
+                      <td style={{ padding: '16px 24px', fontSize: 13, color: '#334155', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap' }}>
+                        <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#64748b', overflow: 'hidden' }}>
+                           <img src={p.studentPhoto || `https://ui-avatars.com/api/?name=${fullName}&background=6366f1&color=fff`} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        {fullName}
+                      </td>
+                      <td style={{ padding: '16px 24px', fontSize: 13, color: '#475569' }}>{className}</td>
+                      <td style={{ padding: '16px 24px', fontSize: 13, color: '#475569' }}>{sensitiveData ? dobDate : '***'}</td>
+                      <td style={{ padding: '16px 24px', fontSize: 13, color: '#475569' }}>{fatherName}</td>
+                      <td style={{ padding: '16px 24px', fontSize: 13, color: '#475569' }}>{motherName}</td>
+                      <td style={{ padding: '16px 24px', fontSize: 13, color: '#475569' }}>{sensitiveData ? c.contactNumber : '***'}</td>
+                      <td style={{ padding: '16px 24px', textAlign: 'center' }}>
+                        <button 
+                          onClick={() => toggleFavorite(student._id, student.isFavorite)}
+                          style={{ background: 'none', border: 'none', color: student.isFavorite ? '#eab308' : '#cbd5e1', cursor: 'pointer', fontSize: 16, marginRight: 12 }}
+                          title="Toggle Favorite"
+                        >
+                          {student.isFavorite ? <FaStar /> : <FaRegStar />}
+                        </button>
+                        <button 
+                          onClick={() => navigate('/dashboard/students/edit/' + student._id)}
+                          style={{ background: 'none', border: 'none', color: '#6366f1', cursor: 'pointer', fontSize: 16, marginRight: 12 }}
+                          title="Edit Profile"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button 
+                          onClick={() => navigate('/dashboard/students/profile/' + student._id)}
+                          style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 16, marginRight: 12 }}
+                          title="View Profile"
+                        >
+                          <FaEye />
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(student._id)}
+                          style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 16 }}
+                          title="Delete Student"
+                        >
+                          <FaTrash />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -4,17 +4,22 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile';
 import DashboardContent from './components/DashboardContent';
 import PlaceholderPage from './pages/PlaceholderPage';
 import Students from './pages/Students';
 import Staff from './pages/Staff';
+import CreateStaff from './pages/CreateStaff';
 import Messages from './pages/Messages';
 import TransportAttendance from './pages/TransportAttendance';
 import Photos from './pages/Photos';
+import CreateAlbum from './pages/CreateAlbum';
+import EditAlbum from './pages/EditAlbum';
 import BirthdayReport from './pages/BirthdayReport';
 import Report from './pages/Report';
 import AddFavorite from './pages/AddFavorite';
 import StudentsList from './pages/StudentsList';
+import CreateStudent from './pages/CreateStudent';
 import AttendanceSummary from './pages/AttendanceSummary';
 import ClassAttendance from './pages/ClassAttendance';
 import MarkAttendance from './pages/MarkAttendance';
@@ -103,8 +108,11 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<Navigate to="/dashboard/home" replace />} />
           <Route path="home" element={<DashboardContent />} />
+          <Route path="profile" element={<Profile />} />
           <Route path="students" element={<StudentsList />} />
-          <Route path="students/profile" element={<Students />} />
+          <Route path="students/create" element={<CreateStudent />} />
+          <Route path="students/edit/:id" element={<CreateStudent />} />
+          <Route path="students/profile/:id?" element={<Students />} />
           <Route path="students/attendance/summary" element={<AttendanceSummary />} />
           <Route path="students/attendance/class" element={<ClassAttendance />} />
           <Route path="students/attendance/mark" element={<MarkAttendance />} />
@@ -117,6 +125,7 @@ function App() {
           <Route path="students/update-record/photo" element={<ManagePhoto />} />
           <Route path="students/update-record/club" element={<ManageClub />} />
           <Route path="staff" element={<Staff />} />
+          <Route path="staff/create" element={<CreateStaff />} />
           <Route path="staff/profile" element={<Staff />} />
           <Route path="staff/leave" element={<StaffLeave />} />
           <Route path="staff/attendance" element={<StaffAttendance />} />
@@ -151,8 +160,8 @@ function App() {
           <Route path="myinfo/payslip" element={<MyPayslip />} />
           <Route path="library" element={<Library />} />
           <Route path="favorites/transport" element={<TransportAttendance />} />
-          <Route path="favorites/students" element={<Students />} />
-          <Route path="favorites/staff" element={<Staff />} />
+          <Route path="favorites/students" element={<StudentsList favoritesOnly={true} />} />
+          <Route path="favorites/staff" element={<Staff favoritesOnly={true} />} />
           <Route path="favorites/photos" element={<Photos />} />
           <Route path="favorites/birthday" element={<BirthdayReport />} />
           <Route path="favorites/report" element={<Report />} />
@@ -161,7 +170,9 @@ function App() {
           <Route path="report/undertaking" element={<Report />} />
           <Route path="managesurvey" element={<ManageSurvey />} />
           <Route path="survey" element={<Survey />} />
-          <Route path="gallery/photos" element={<Photos />} />
+          <Route path="photos" element={<Photos />} />
+          <Route path="photos/create" element={<CreateAlbum />} />
+          <Route path="photos/edit/:id" element={<EditAlbum />} />
           <Route path="gallery/videos" element={<VideoGallery />} />
           <Route path="gallery/favorites" element={<AddFavorite />} />
           <Route path="gallery/media" element={<MediaGallery />} />

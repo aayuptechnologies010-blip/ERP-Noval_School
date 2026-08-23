@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { FaThList, FaThLarge, FaCaretUp, FaCaretDown, FaStar, FaEye, FaArrowLeft, FaCamera, FaUserClock, FaRunning, FaCheckCircle, FaTasks, FaFileInvoiceDollar, FaHospitalUser, FaBus, FaExclamationTriangle, FaAward, FaVideo } from 'react-icons/fa';
+
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { FaThList, FaThLarge, FaCaretUp, FaCaretDown, FaStar, FaEye, FaArrowLeft, FaCamera, FaUserClock, FaRunning, FaCheckCircle, FaTasks, FaFileInvoiceDollar, FaHospitalUser, FaBus, FaExclamationTriangle, FaAward, FaVideo, FaEdit, FaTrash } from 'react-icons/fa';
 
 const initialStudents = [
   { id: 1, adm: '1770', name: 'ARNAV GUPTA', class: 'NUR-A', dob: '15-Mar-2023', father: 'Mr. HANUMAN GUPTA', mother: 'Mrs. GAURI GUPTA', contact: '8957244533', type: 'Boarding', doj: '11-Apr-2025', gender: 'Male', city: 'MAU', state: 'UP', pincode: '275303', address: 'RAM LEELA BHAWAN GONTHA' },
@@ -19,6 +21,9 @@ const loadFavourites = () => {
 };
 
 function Students() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [loadingProfile, setLoadingProfile] = useState(false);
   const [searchBy, setSearchBy] = useState('All');
   const [searchText, setSearchText] = useState('');
   const [favourites, setFavourites] = useState(() => loadFavourites());
@@ -28,6 +33,102 @@ function Students() {
   const [viewType, setViewType] = useState('list');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [activeTab, setActiveTab] = useState('Personal details');
+  const [attendanceData, setAttendanceData] = useState(null);
+  const [attendanceLoading, setAttendanceLoading] = useState(false);
+  const [attMonth, setAttMonth] = useState(new Date().getMonth() + 1);
+  const [attYear, setAttYear] = useState(new Date().getFullYear());
+  const [showLeaveForm, setShowLeaveForm] = useState(false);
+  const [leaveData, setLeaveData] = useState({ fromDate: '', toDate: '', leaveType: 'Sick Leave', reason: '' });
+
+  
+  useEffect(() => {
+    if (id) {
+      const fetchProfile = async () => {
+        setLoadingProfile(true);
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/students/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setSelectedStudent(data);
+          }
+        } catch (error) {
+          console.error("Error fetching student profile:", error);
+        } finally {
+          setLoadingProfile(false);
+        }
+      };
+      fetchProfile();
+    } else {
+      setSelectedStudent(null);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      const fetchAttendance = async () => {
+        setAttendanceLoading(true);
+        try {
+          const token = localStorage.getItem('token');
+          const params = { year: attYear };
+          if (attMonth !== 'All') {
+            params.month = attMonth;
+          }
+          const qs = new URLSearchParams(params).toString();
+          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/attendance/student/${id}?${qs}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setAttendanceData(data);
+          } else {
+            setAttendanceData(null);
+          }
+        } catch (error) {
+          console.error(error);
+          setAttendanceData(null);
+        } finally {
+          setAttendanceLoading(false);
+        }
+      };
+      fetchAttendance();
+    } else {
+      setAttendanceData(null);
+    }
+  }, [id, attMonth, attYear]);
+
+useEffect(() => {
+    const fetchFavourites = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/students/favorites`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        
+        if (response.ok) {
+          // The backend returns an array of student objects.
+          // We map them to our local student IDs based on admissionNumber so the UI stars update correctly.
+          if (Array.isArray(data)) {
+            const favAdms = data.map(f => f?.academicDetails?.admissionNumber).filter(Boolean);
+            const favIds = initialStudents
+              .filter(s => favAdms.includes(s.adm))
+              .map(s => s.id);
+              
+            setFavourites(favIds);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching favorites:', error);
+      }
+    };
+
+    fetchFavourites();
+  }, []);
 
   const toggleFavourite = (id) => {
     setFavourites((prev) => {
@@ -66,8 +167,81 @@ function Students() {
     return '***';
   };
 
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this student profile?")) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/students/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        navigate('/dashboard/students');
+      } else {
+        alert("Failed to delete student.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error deleting student.");
+    }
+  };
+
+
+  const handleApplyLeave = async () => {
+    if (!leaveData.fromDate || !leaveData.toDate || !leaveData.reason) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/leave-requests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          studentId: id,
+          ...leaveData
+        })
+      });
+      const result = await response.json();
+      if (response.ok) {
+        toast.success(result.message || "Leave request created successfully");
+        setShowLeaveForm(false);
+        setLeaveData({ fromDate: '', toDate: '', leaveType: 'Sick Leave', reason: '' });
+      } else {
+        toast.error(result.message || "Failed to create leave request");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Error creating leave request");
+    }
+  };
+
+  if (loadingProfile) {
+    return <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading student profile...</div>;
+  }
+
   if (selectedStudent) {
     const s = selectedStudent;
+    const p = s.personalDetails || {};
+    const a = s.academicDetails || {};
+    const c = s.contactAddress || {};
+    const f = s.familyDetails || {};
+    const u = s.uniqueIds || {};
+    const g = s.guardianDetails || {};
+    
+    const fullName = `${p.firstName || ''} ${p.middleName || ''} ${p.lastName || ''}`.trim().replace(/\s+/g, ' ');
+    const className = `${a.class || ''}-${a.section || ''}`.replace(/^-|-$/, '');
+    const dobDate = p.dateOfBirth ? new Date(p.dateOfBirth).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+    const dojDate = a.dateOfJoining ? new Date(a.dateOfJoining).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+    const doaDate = a.dateOfAdmission ? new Date(a.dateOfAdmission).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+    const father = f.father || {};
+    const mother = f.mother || {};
+    
     return (
       <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', padding: '24px 32px', overflowY: 'auto' }}>
         
@@ -79,10 +253,22 @@ function Students() {
               Video Tutorial <FaVideo style={{ color: '#22c55e', fontSize: 16 }} />
             </button>
             <button 
-              onClick={() => setSelectedStudent(null)}
+              onClick={() => navigate('/dashboard/students/edit/' + s._id)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', fontSize: 14, fontWeight: 600, color: '#6366f1', cursor: 'pointer' }}
+            >
+              <FaEdit /> Edit Profile
+            </button>
+            <button 
+              onClick={() => navigate('/dashboard/students')}
               style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', fontSize: 14, fontWeight: 600, color: '#475569', cursor: 'pointer' }}
             >
               <FaArrowLeft /> Go Back
+            </button>
+            <button 
+              onClick={handleDelete}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', fontSize: 14, fontWeight: 600, color: '#ef4444', cursor: 'pointer' }}
+            >
+              <FaTrash /> Delete
             </button>
           </div>
         </div>
@@ -91,19 +277,25 @@ function Students() {
         <div style={{ display: 'flex', gap: 24, marginBottom: 24 }}>
           {/* Profile Card */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 200 }}>
-            <div style={{ width: 140, height: 140, background: '#d1d5db', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', marginBottom: 12 }}>
-              <FaCamera style={{ fontSize: 32, marginBottom: 8 }} />
-              <span style={{ fontSize: 12, fontWeight: 600 }}>Noimage</span>
+            <div style={{ width: 140, height: 140, background: '#d1d5db', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', marginBottom: 12, overflow: 'hidden' }}>
+              {p.studentPhoto ? (
+                 <img src={p.studentPhoto} alt="Student" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <>
+                  <FaCamera style={{ fontSize: 32, marginBottom: 8 }} />
+                  <span style={{ fontSize: 12, fontWeight: 600 }}>Noimage</span>
+                </>
+              )}
             </div>
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#65a30d', margin: '0 0 4px 0', textAlign: 'center', textTransform: 'uppercase' }}>{s.name}</h2>
-            <p style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', margin: '0 0 2px 0' }}>Class: <span style={{fontWeight: 500}}>{s.class}</span></p>
-            <p style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', margin: '0 0 2px 0' }}>Admission Number: <span style={{fontWeight: 500}}>{s.adm}</span></p>
-            <p style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', margin: 0 }}>Date of Joining: <span style={{fontWeight: 500}}>{s.doj}</span></p>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#65a30d', margin: '0 0 4px 0', textAlign: 'center', textTransform: 'uppercase' }}>{fullName}</h2>
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', margin: '0 0 2px 0' }}>Class: <span style={{fontWeight: 500}}>{className}</span></p>
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', margin: '0 0 2px 0' }}>Admission Number: <span style={{fontWeight: 500}}>{a.admissionNumber}</span></p>
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', margin: 0 }}>Date of Joining: <span style={{fontWeight: 500}}>{dojDate}</span></p>
           </div>
 
           {/* Stats Cards */}
           <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 16, alignContent: 'flex-start' }}>
-            <StatCard title="Attendance" value="0.00%" icon={<FaUserClock />} color="#d97706" />
+            <StatCard title="Attendance" value={attendanceData?.attendancePercentage || "0.00%"} icon={<FaUserClock />} color="#d97706" />
             <StatCard title="Leaves" value="0/0" icon={<FaRunning />} color="#ea580c" />
             <StatCard title="Last Exam Result" value="0.00%" icon={<FaCheckCircle />} color="#65a30d" />
             <StatCard title="Assignments" value="0" icon={<FaTasks />} color="#ef4444" />
@@ -119,7 +311,7 @@ function Students() {
         <div style={{ display: 'flex', gap: 24 }}>
           {/* Sidebar */}
           <div style={{ width: 220, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {['Personal details', 'Attendance', 'Academic Performance', 'Fee Details', 'Infirmary Visit', 'Library Transaction Details', 'Transport Details', 'Infraction Details', 'Appreciation', 'MedicalCard', 'Report Card', 'Session Log'].map(tab => (
+            {['Personal details', 'Attendance', 'Leave History', 'Promotion History', 'Academic Performance', 'Fee Details', 'Infirmary Visit', 'Library Transaction Details', 'Transport Details', 'Infraction Details', 'Appreciation', 'MedicalCard', 'Report Card', 'Session Log'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -164,195 +356,154 @@ function Students() {
 
                 {/* Sections */}
                 <ProfileSection title="Essentials">
-                  <DetailItem label="Admission" value="" />
-                  <DetailItem label="Admission Status" value="Continuous" />
-                  <DetailItem label="Current Status" value="STUDYING" />
-                  <DetailItem label="Reason" value="" />
-                  <DetailItem label="First Name" value={s.name} />
-                  <DetailItem label="Middle Name" value="" />
-                  <DetailItem label="Last Name" value="" />
-                  <DetailItem label="Admission Number" value={s.adm} />
-                  <DetailItem label="Date of Birth" value={maskSensitiveData(s.dob)} />
-                  <DetailItem label="Gender" value={s.gender} />
+                  <DetailItem label="Admission Status" value={a.admissionStatus} />
+                  <DetailItem label="Current Status" value={a.currentStatus} />
+                  <DetailItem label="Reason" value={a.reason} />
+                  <DetailItem label="First Name" value={p.firstName} />
+                  <DetailItem label="Middle Name" value={p.middleName} />
+                  <DetailItem label="Last Name" value={p.lastName} />
+                  <DetailItem label="Admission Number" value={a.admissionNumber} />
+                  <DetailItem label="Date of Birth" value={maskSensitiveData(dobDate)} />
+                  <DetailItem label="Gender" value={p.gender} />
                 </ProfileSection>
 
                 <ProfileSection title="Unique Ids">
-                  <DetailItem label="UDISE Number" value="" />
-                  <DetailItem label="PEN (Permanent Education Number)" value="" />
-                  <DetailItem label="APAAR ID" value="" />
-                  <DetailItem label="E-Punjab Number" value="" />
-                  <DetailItem label="Fees Number" value="" />
-                  <DetailItem label="Saral Number" value="" />
-                  <DetailItem label="S.R.N./UMRN/SATS Number" value="" />
-                  <DetailItem label="ISSEN" value="False" />
-                  <DetailItem label="ABHA Number" value="" />
-                  <DetailItem label="Bill/GR Number" value="" />
-                  <DetailItem label="Student Number" value="" />
-                  <DetailItem label="RFID Card Number" value="" />
+                  <DetailItem label="UDISE Number" value={u.udiseNumber} />
+                  <DetailItem label="PEN" value={u.pen} />
+                  <DetailItem label="APAAR ID" value={u.apaarId} />
+                  <DetailItem label="E-Punjab Number" value={u.ePunjabNumber} />
+                  <DetailItem label="Fees Number" value={u.feesNumber} />
+                  <DetailItem label="Saral Number" value={u.saralNumber} />
+                  <DetailItem label="S.R.N. Number" value={u.srnNumber} />
+                  <DetailItem label="ISSEN" value={u.issen ? "True" : "False"} />
+                  <DetailItem label="ABHA Number" value={u.abhaNumber} />
+                  <DetailItem label="Bill/GR Number" value={u.billGrNumber} />
+                  <DetailItem label="Student Number" value={u.studentNumber} />
+                  <DetailItem label="RFID Card Number" value={u.rfidCardNumber} />
                 </ProfileSection>
 
                 <ProfileSection title="Address & Communication">
-                  <DetailItem label="Contact Number" value={maskSensitiveData(s.contact)} />
-                  <DetailItem label="Secondary Contact No" value="" />
-                  <DetailItem label="Student Email" value="" />
-                  <DetailItem label="Current Address" value={s.address} />
-                  <DetailItem label="City" value={s.city} />
-                  <DetailItem label="State" value={s.state} />
-                  <DetailItem label="Pin Code" value={s.pincode} />
-                  <DetailItem label="Permanent Address" value="" />
-                  <DetailItem label="Pin Code" value="" />
-                  <DetailItem label="City" value="" />
-                  <DetailItem label="State" value="" />
-                  <DetailItem label="Domicile State" value="" />
+                  <DetailItem label="Contact Number" value={maskSensitiveData(c.contactNumber)} />
+                  <DetailItem label="Secondary Contact No" value={c.secondaryContactNo} />
+                  <DetailItem label="Student Email" value={c.studentEmail} />
+                  <DetailItem label="Current Address" value={c.currentAddress} />
+                  <DetailItem label="City" value={c.city} />
+                  <DetailItem label="State" value={c.state} />
+                  <DetailItem label="Pin Code" value={c.pinCode} />
+                  <DetailItem label="Permanent Address" value={c.permanentAddress} />
+                  <DetailItem label="Pin Code" value={c.permanentPinCode} />
+                  <DetailItem label="City" value={c.permanentCity} />
+                  <DetailItem label="State" value={c.permanentState} />
+                  <DetailItem label="Domicile State" value={c.domicileState} />
                 </ProfileSection>
 
                 <ProfileSection title="Academic Mapping">
-                  <DetailItem label="Roll Number" value="1" />
-                  <DetailItem label="Class" value={s.class.split('-')[0]} />
-                  <DetailItem label="Section" value={s.class.split('-')[1]} />
-                  <DetailItem label="Board" value="CBSE" />
-                  <DetailItem label="Date of Admission" value={s.doj} />
-                  <DetailItem label="Date of Joining" value={s.doj} />
-                  <DetailItem label="Stream" value="" />
-                  <DetailItem label="Optional Subject" value="" />
-                  <DetailItem label="Previous Class" value="0" />
-                  <DetailItem label="SixSubject" value="" />
+                  <DetailItem label="Roll Number" value={a.rollNumber} />
+                  <DetailItem label="Class" value={a.class} />
+                  <DetailItem label="Section" value={a.section} />
+                  <DetailItem label="Board" value={a.board} />
+                  <DetailItem label="Date of Admission" value={doaDate} />
+                  <DetailItem label="Date of Joining" value={dojDate} />
+                  <DetailItem label="Stream" value={a.stream} />
+                  <DetailItem label="Optional Subject" value={a.optionalSubject} />
+                  <DetailItem label="Previous Class" value={a.previousClass} />
+                  <DetailItem label="SixSubject" value={a.sixSubject} />
                 </ProfileSection>
 
                 <ProfileSection title="Personal Details">
-                  <DetailItem label="Parish" value="0" />
-                  <DetailItem label="Aadhar Card No student" value="" />
-                  <DetailItem label="House Names" value="" />
-                  <DetailItem label="Religion" value="HINDU" />
-                  <DetailItem label="School Category" value="" />
-                  <DetailItem label="Caste" value="" />
-                  <DetailItem label="Sub Caste" value="" />
-                  <DetailItem label="Nationality" value="Indian" />
-                  <DetailItem label="Place Of Birth" value="" />
-                  <DetailItem label="Is NACH/ECS" value="False" />
-                  <DetailItem label="Is EWS/CWSN" value="0" />
-                  <DetailItem label="Is Minority" value="False" />
-                  <DetailItem label="Is Disability/CWSN" value="False" />
-                  <DetailItem label="Disability Description" value="" />
-                  <DetailItem label="Is RTE" value="0" />
-                  <DetailItem label="Clubs" value="" />
-                  <DetailItem label="Cadet Type" value="" />
-                  <DetailItem label="States/National Competitions" value="0" />
-                  <DetailItem label="Food Status" value="" />
-                  <DetailItem label="Mother Tongue" value="" />
-                  <DetailItem label="Boarding/Hostel" value="No" />
+                  <DetailItem label="Parish" value={p.parish} />
+                  <DetailItem label="House Names" value={p.houseNames} />
+                  <DetailItem label="Religion" value={p.religion} />
+                  <DetailItem label="School Category" value={p.schoolCategory} />
+                  <DetailItem label="Caste" value={p.caste} />
+                  <DetailItem label="Sub Caste" value={p.subCaste} />
+                  <DetailItem label="Nationality" value={p.nationality} />
+                  <DetailItem label="Place Of Birth" value={p.placeOfBirth} />
+                  <DetailItem label="Is NACH/ECS" value={p.isNachEcs ? "True" : "False"} />
+                  <DetailItem label="Is EWS/CWSN" value={p.isEwsCwsn} />
+                  <DetailItem label="Is Minority" value={p.isMinority ? "True" : "False"} />
+                  <DetailItem label="Is Disability" value={p.isDisabilityCwsn ? "True" : "False"} />
+                  <DetailItem label="Disability Description" value={p.disabilityDescription} />
+                  <DetailItem label="Is RTE" value={p.isRte} />
+                  <DetailItem label="Clubs" value={p.clubs} />
+                  <DetailItem label="Cadet Type" value={p.cadetType} />
+                  <DetailItem label="States/National Competitions" value={p.statesNationalCompetitions} />
+                  <DetailItem label="Food Status" value={p.foodStatus} />
+                  <DetailItem label="Mother Tongue" value={p.motherTongue} />
+                  <DetailItem label="Boarding/Hostel" value={p.boardingHostel} />
                 </ProfileSection>
 
                 <ProfileSection title="Family">
-                  <DetailItem label="Staff Name" value="" />
-                  <DetailItem label="Family ID" value="" />
-                  <DetailItem label="Parent Status" value="" />
-                  <DetailItem label="Father's Title" value="Mr." />
-                  <DetailItem label="Father's First Name" value={s.father} />
-                  <DetailItem label="Middle Name" value="" />
-                  <DetailItem label="Last Name" value="" />
-                  <DetailItem label="Annual Income" value="" />
-                  <DetailItem label="DOB" value="" />
-                  <DetailItem label="Aadhar Number" value="" />
-                  <DetailItem label="PAN Number" value="" />
-                  <DetailItem label="Mobile" value="" />
-                  <DetailItem label="Phone" value="" />
-                  <DetailItem label="Email" value="" />
-                  <DetailItem label="Residence Address" value="" />
-                  <DetailItem label="Qualification" value="" />
-                  <DetailItem label="Profession" value="" />
-                  <DetailItem label="Profession Details" value="" />
-                  <DetailItem label="Designation" value="" />
-                  <DetailItem label="Designation Details" value="" />
-                  <DetailItem label="Company Name" value="" />
-                  <DetailItem label="Business Details" value="" />
-                  <DetailItem label="Service In" value="" />
-                  <DetailItem label="Office Address" value="" />
-                  <DetailItem label="Office Phone" value="" />
-                  <DetailItem label="Office Mobile" value="" />
-                  <DetailItem label="Office Website" value="" />
-                  <DetailItem label="Is Alumni" value="0" />
-                  <DetailItem label="Batch Year" value="" />
-                  <DetailItem label="Anniversary Date" value="" />
-                  <DetailItem label="Mother's Title" value="Mrs." />
-                  <DetailItem label="Mother's First Name" value={s.mother} />
-                  <DetailItem label="Last Name" value="" />
-                  <DetailItem label="Annual Income" value="" />
-                  <DetailItem label="Aadhar Number" value="" />
-                  <DetailItem label="PAN Number" value="" />
-                  <DetailItem label="Mobile" value="" />
-                  <DetailItem label="Phone" value="" />
-                  <DetailItem label="Email" value="" />
-                  <DetailItem label="Residence Address" value="" />
-                  <DetailItem label="Qualification" value="" />
-                  <DetailItem label="Profession" value="" />
-                  <DetailItem label="Designation" value="" />
-                  <DetailItem label="Designation Details" value="" />
-                  <DetailItem label="Service In" value="" />
-                  <DetailItem label="Office Address" value="" />
-                  <DetailItem label="Office Mobile" value="" />
-                  <DetailItem label="Office Website" value="" />
-                  <DetailItem label="Is Alumni" value="0" />
-                  <DetailItem label="Batch Year" value="" />
-                  <DetailItem label="Anniversary Date" value="" />
-                  <DetailItem label="Guardian Title" value="Mr." />
-                  <DetailItem label="Guardian Name" value="" />
-                  <DetailItem label="DOB" value="" />
-                  <DetailItem label="Income" value="" />
-                  <DetailItem label="Relationship With Child" value="" />
-                  <DetailItem label="Mobile" value="" />
-                  <DetailItem label="Phone" value="" />
-                  <DetailItem label="Email" value="" />
-                  <DetailItem label="Residence Address" value="" />
-                  <DetailItem label="Qualification" value="" />
-                  <DetailItem label="Profession" value="0" />
-                  <DetailItem label="Profession Details" value="" />
-                  <DetailItem label="Designation" value="0" />
-                  <DetailItem label="Company Name" value="" />
-                  <DetailItem label="Business Details" value="" />
-                  <DetailItem label="Service In" value="" />
-                  <DetailItem label="Office Address" value="" />
-                  <DetailItem label="Office Phone" value="" />
-                  <DetailItem label="Office Mobile" value="" />
-                  <DetailItem label="Office Extension" value="" />
-                  <DetailItem label="Office Email" value="" />
-                  <DetailItem label="Office Website" value="" />
-                  <DetailItem label="Secondary Guardian Name" value="" />
-                  <DetailItem label="Secondary Guardian Mobile" value="" />
-                  <DetailItem label="Secondary Guardian Relationship" value="" />
-                  <DetailItem label="Contact Person Name" value={s.father} />
-                  <DetailItem label="SMS Number" value={maskSensitiveData(s.contact)} />
-                  <DetailItem label="Contact Email" value="" />
-                  <DetailItem label="Person Name" value="" />
-                  <DetailItem label="Mobile Number" value="" />
-                  <DetailItem label="Phone Number" value="" />
-                  <DetailItem label="Address" value="" />
-                  <DetailItem label="Relation" value="" />
-                  <DetailItem label="Person Name" value="" />
-                  <DetailItem label="Mobile Number" value="" />
-                  <DetailItem label="Phone Number" value="" />
-                  <DetailItem label="Address" value="" />
-                  <DetailItem label="Relation" value="" />
-                  <DetailItem label="Is Only Child" value="False" />
-                  <DetailItem label="IsSibling" value="False" />
+                  <DetailItem label="Staff Name" value={f.staffName} />
+                  <DetailItem label="Family ID" value={f.familyId} />
+                  <DetailItem label="Parent Status" value={f.parentStatus} />
+                  
+                  {/* Father Details */}
+                  <DetailItem label="Father's Title" value={father.title} />
+                  <DetailItem label="Father's First Name" value={father.firstName} />
+                  <DetailItem label="Middle Name" value={father.middleName} />
+                  <DetailItem label="Last Name" value={father.lastName} />
+                  <DetailItem label="Annual Income" value={father.annualIncome} />
+                  <DetailItem label="Aadhar Number" value={maskSensitiveData(father.aadharNumber)} />
+                  <DetailItem label="PAN Number" value={maskSensitiveData(father.panNumber)} />
+                  <DetailItem label="Mobile" value={maskSensitiveData(father.mobile)} />
+                  <DetailItem label="Phone" value={father.phone} />
+                  <DetailItem label="Email" value={father.email} />
+                  <DetailItem label="Residence Address" value={father.residenceAddress} />
+                  <DetailItem label="Qualification" value={father.qualification} />
+                  <DetailItem label="Profession" value={father.profession} />
+                  <DetailItem label="Company Name" value={father.companyName} />
+                  
+                  {/* Mother Details */}
+                  <DetailItem label="Mother's Title" value={mother.title} />
+                  <DetailItem label="Mother's First Name" value={mother.firstName} />
+                  <DetailItem label="Middle Name" value={mother.middleName} />
+                  <DetailItem label="Last Name" value={mother.lastName} />
+                  <DetailItem label="Annual Income" value={mother.annualIncome} />
+                  <DetailItem label="Aadhar Number" value={maskSensitiveData(mother.aadharNumber)} />
+                  <DetailItem label="PAN Number" value={maskSensitiveData(mother.panNumber)} />
+                  <DetailItem label="Mobile" value={maskSensitiveData(mother.mobile)} />
+                  <DetailItem label="Phone" value={mother.phone} />
+                  <DetailItem label="Email" value={mother.email} />
+                  <DetailItem label="Residence Address" value={mother.residenceAddress} />
+                  <DetailItem label="Qualification" value={mother.qualification} />
+                  <DetailItem label="Profession" value={mother.profession} />
+                  
+                  {/* Guardian Details */}
+                  <DetailItem label="Guardian Name" value={g.name} />
+                  <DetailItem label="Relationship" value={g.relationship} />
+                  <DetailItem label="Mobile" value={maskSensitiveData(g.mobile)} />
+                  <DetailItem label="Secondary Guardian Name" value={g.secondaryGuardianName} />
+                  <DetailItem label="Secondary Guardian Mobile" value={g.secondaryGuardianMobile} />
+                  <DetailItem label="Secondary Guardian Relationship" value={g.secondaryGuardianRelationship} />
+                  
+                  {/* Emergency Contacts */}
+                  {(s.emergencyContacts || []).map((ec, idx) => (
+                    <React.Fragment key={idx}>
+                      <DetailItem label={`Emergency Contact ${idx + 1}`} value={ec.name} />
+                      <DetailItem label="Relation" value={ec.relation} />
+                      <DetailItem label="Mobile" value={ec.mobileNumber} />
+                    </React.Fragment>
+                  ))}
                   
                   {/* Photo place holders at the end of the Family section */}
                   <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'space-around', marginTop: 32, padding: '24px 0', borderTop: '1px solid #f1f5f9' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: '#334155' }}>Family Photo</span>
+                      <div style={{ width: 120, height: 120, border: '2px solid #e2e8f0', background: '#d1d5db', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', overflow: 'hidden' }}>
+                        {f.familyPhoto ? <img src={f.familyPhoto} alt="Family" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <><FaCamera style={{ fontSize: 32, marginBottom: 8 }} /><span style={{ fontSize: 11, fontWeight: 600 }}>Noimage</span></>}
+                      </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: '#334155' }}>Father Photo</span>
-                      <div style={{ width: 120, height: 120, border: '2px solid #e2e8f0', background: '#d1d5db', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
-                        <FaCamera style={{ fontSize: 32, marginBottom: 8 }} />
-                        <span style={{ fontSize: 11, fontWeight: 600 }}>Noimage</span>
+                      <div style={{ width: 120, height: 120, border: '2px solid #e2e8f0', background: '#d1d5db', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', overflow: 'hidden' }}>
+                        {father.photo ? <img src={father.photo} alt="Father" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <><FaCamera style={{ fontSize: 32, marginBottom: 8 }} /><span style={{ fontSize: 11, fontWeight: 600 }}>Noimage</span></>}
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: '#334155' }}>Mother Photo</span>
-                      <div style={{ width: 120, height: 120, border: '2px solid #e2e8f0', background: '#d1d5db', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
-                        <FaCamera style={{ fontSize: 32, marginBottom: 8 }} />
-                        <span style={{ fontSize: 11, fontWeight: 600 }}>Noimage</span>
+                      <div style={{ width: 120, height: 120, border: '2px solid #e2e8f0', background: '#d1d5db', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', overflow: 'hidden' }}>
+                        {mother.photo ? <img src={mother.photo} alt="Mother" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <><FaCamera style={{ fontSize: 32, marginBottom: 8 }} /><span style={{ fontSize: 11, fontWeight: 600 }}>Noimage</span></>}
                       </div>
                     </div>
                   </div>
@@ -363,21 +514,150 @@ function Students() {
                 </div>
               </div>
             )}
-            
+
+            {/* Other Tabs remain unchanged */}
             {activeTab === 'Attendance' && (
               <div style={{ background: '#fff', padding: 24, borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 24 }}>
-                  <div style={{ border: '1px solid #e2e8f0', padding: '4px 12px', borderRadius: 4, display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: 10, color: '#94a3b8' }}>Academic Year</span>
-                    <span style={{ fontSize: 13, color: '#334155', fontWeight: 600 }}>2026-2027</span>
+                {showLeaveForm && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <div style={{ background: '#fff', padding: 24, borderRadius: 12, width: 400, boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+                      <h3 style={{ margin: '0 0 16px 0', color: '#1e293b' }}>Apply for Leave</h3>
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: 13, color: '#475569', marginBottom: 4 }}>Leave Type</label>
+                          <select value={leaveData.leaveType} onChange={e => setLeaveData({...leaveData, leaveType: e.target.value})} style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 4 }}>
+                            <option>Sick Leave</option>
+                            <option>Casual Leave</option>
+                            <option>Emergency Leave</option>
+                          </select>
+                        </div>
+                        <div style={{ display: 'flex', gap: 12 }}>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ display: 'block', fontSize: 13, color: '#475569', marginBottom: 4 }}>From Date</label>
+                            <input type="date" value={leaveData.fromDate} onChange={e => setLeaveData({...leaveData, fromDate: e.target.value})} style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 4 }} />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ display: 'block', fontSize: 13, color: '#475569', marginBottom: 4 }}>To Date</label>
+                            <input type="date" value={leaveData.toDate} onChange={e => setLeaveData({...leaveData, toDate: e.target.value})} style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 4 }} />
+                          </div>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: 13, color: '#475569', marginBottom: 4 }}>Reason</label>
+                          <textarea value={leaveData.reason} onChange={e => setLeaveData({...leaveData, reason: e.target.value})} style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 4, minHeight: 80 }} placeholder="Reason for leave..."></textarea>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 24 }}>
+                        <button onClick={() => setShowLeaveForm(false)} style={{ padding: '8px 16px', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
+                        <button onClick={handleApplyLeave} style={{ padding: '8px 16px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 }}>Submit</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <h3 style={{ margin: 0, fontSize: 16, color: '#1e293b' }}>Attendance Overview</h3>
+                    <button 
+                      onClick={() => setShowLeaveForm(true)}
+                      style={{ padding: '6px 12px', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                    >
+                      Apply Leave
+                    </button>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    <select 
+                      value={attMonth} 
+                      onChange={e => setAttMonth(e.target.value)}
+                      style={{ padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, outline: 'none', color: '#334155', fontSize: 13, fontWeight: 600 }}
+                    >
+                      <option value="All">All Months</option>
+                      {Array.from({ length: 12 }).map((_, i) => (
+                        <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('en', { month: 'long' })}</option>
+                      ))}
+                    </select>
+                    <select 
+                      value={attYear} 
+                      onChange={e => setAttYear(e.target.value)}
+                      style={{ padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, outline: 'none', color: '#334155', fontSize: 13, fontWeight: 600 }}
+                    >
+                      {Array.from({ length: 5 }).map((_, i) => {
+                        const y = new Date().getFullYear() - 2 + i;
+                        return <option key={y} value={y}>{y}</option>;
+                      })}
+                    </select>
                   </div>
                 </div>
-                <div style={{ padding: '60px 0', textAlign: 'center', fontSize: 14, fontWeight: 700, color: '#334155' }}>
-                  No Data Found
-                </div>
+                
+                {attendanceLoading ? (
+                  <div style={{ padding: '60px 0', textAlign: 'center', fontSize: 14, fontWeight: 700, color: '#334155' }}>
+                    Loading attendance...
+                  </div>
+                ) : attendanceData && attendanceData.summary ? (
+                  <div>
+                     {/* Summary */}
+                     <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
+                        {Object.entries(attendanceData.summary).map(([key, val]) => {
+                            if (key === '_id') return null;
+                            return (
+                              <div key={key} style={{ background: '#f8fafc', padding: '16px', borderRadius: 8, border: '1px solid #e2e8f0', flex: 1, minWidth: 100, textAlign: 'center' }}>
+                                 <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>{key}</div>
+                                 <div style={{ fontSize: 24, color: key === 'Present' ? '#22c55e' : key === 'Absent' ? '#ef4444' : '#0f172a', fontWeight: 700 }}>{val}</div>
+                              </div>
+                            );
+                        })}
+                     </div>
+                     
+                     {/* Table of records */}
+                     <h4 style={{ margin: '0 0 16px 0', fontSize: 15, color: '#1e293b' }}>Recent Attendance Records</h4>
+                     <div style={{ overflow: 'auto' }}>
+                       <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 400 }}>
+                         <thead>
+                           <tr style={{ background: '#f8fafc' }}>
+                              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 13, color: '#475569', fontWeight: 700, borderBottom: '1px solid #e2e8f0' }}>Date</th>
+                              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 13, color: '#475569', fontWeight: 700, borderBottom: '1px solid #e2e8f0' }}>Status</th>
+                              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 13, color: '#475569', fontWeight: 700, borderBottom: '1px solid #e2e8f0' }}>Remarks</th>
+                           </tr>
+                         </thead>
+                         <tbody>
+                           {(attendanceData.records || []).map(r => (
+                             <tr key={r._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                               <td style={{ padding: '12px 16px', fontSize: 13, color: '#334155', fontWeight: 500 }}>
+                                 {new Date(r.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                               </td>
+                               <td style={{ padding: '12px 16px', fontSize: 13, color: r.status === 'Present' ? '#22c55e' : r.status === 'Absent' ? '#ef4444' : '#f59e0b', fontWeight: 700 }}>
+                                 {r.status}
+                               </td>
+                               <td style={{ padding: '12px 16px', fontSize: 13, color: '#64748b' }}>
+                                 {r.remarks || '-'}
+                               </td>
+                             </tr>
+                           ))}
+                           {(!attendanceData.records || attendanceData.records.length === 0) && (
+                             <tr>
+                               <td colSpan="3" style={{ padding: '24px', textAlign: 'center', color: '#94a3b8' }}>No specific records found</td>
+                             </tr>
+                           )}
+                         </tbody>
+                       </table>
+                     </div>
+                  </div>
+                ) : (
+                  <div style={{ padding: '60px 0', textAlign: 'center', fontSize: 14, fontWeight: 700, color: '#334155' }}>
+                    No Attendance Data Found
+                  </div>
+                )}
               </div>
             )}
 
+                        {activeTab === 'Leave History' && (
+              <LeaveHistoryTab studentId={id} />
+            )}
+            {activeTab === 'Promotion History' && (
+              <PromotionHistoryTab studentId={id} />
+            )}
             {activeTab === 'Academic Performance' && (
               <div style={{ background: '#fff', padding: 24, borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 24 }}>
@@ -622,6 +902,7 @@ function Students() {
     );
   }
 
+  
   // --- Main List View ---
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', padding: '24px 32px', overflowY: 'auto' }}>
@@ -956,4 +1237,196 @@ const DetailItem = ({ label, value }) => (
   </div>
 );
 
+
+const LeaveHistoryTab = ({ studentId }) => {
+  const [history, setHistory] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/leave-requests/student/${studentId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setHistory(data);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (studentId) fetchHistory();
+  }, [studentId]);
+
+  if (loading) return <div style={{ padding: 24, textAlign: 'center', color: '#64748b' }}>Loading history...</div>;
+  if (!history) return <div style={{ padding: 24, textAlign: 'center', color: '#64748b' }}>No leave history found.</div>;
+
+  return (
+    <div style={{ background: '#fff', padding: 24, borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+      <h3 style={{ margin: '0 0 16px 0', color: '#1e293b' }}>Leave Summary</h3>
+      <div style={{ display: 'flex', gap: 16, marginBottom: 32 }}>
+        <div style={{ flex: 1, padding: 16, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', textAlign: 'center' }}>
+          <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600 }}>Total Requests</div>
+          <div style={{ fontSize: 24, color: '#1e293b', fontWeight: 700 }}>{history.summary?.Total || 0}</div>
+        </div>
+        <div style={{ flex: 1, padding: 16, background: '#f0fdf4', borderRadius: 8, border: '1px solid #bbf7d0', textAlign: 'center' }}>
+          <div style={{ fontSize: 13, color: '#166534', fontWeight: 600 }}>Approved</div>
+          <div style={{ fontSize: 24, color: '#15803d', fontWeight: 700 }}>{history.summary?.Approved || 0}</div>
+        </div>
+        <div style={{ flex: 1, padding: 16, background: '#fef2f2', borderRadius: 8, border: '1px solid #fecaca', textAlign: 'center' }}>
+          <div style={{ fontSize: 13, color: '#991b1b', fontWeight: 600 }}>Rejected</div>
+          <div style={{ fontSize: 24, color: '#b91c1c', fontWeight: 700 }}>{history.summary?.Rejected || 0}</div>
+        </div>
+        <div style={{ flex: 1, padding: 16, background: '#fffbeb', borderRadius: 8, border: '1px solid #fde68a', textAlign: 'center' }}>
+          <div style={{ fontSize: 13, color: '#92400e', fontWeight: 600 }}>Pending</div>
+          <div style={{ fontSize: 24, color: '#d97706', fontWeight: 700 }}>{history.summary?.Pending || 0}</div>
+        </div>
+      </div>
+
+      <h3 style={{ margin: '0 0 16px 0', color: '#1e293b' }}>Request History</h3>
+      {history.leaveRequests?.length > 0 ? (
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ background: '#f8fafc', color: '#475569', fontSize: 12, textTransform: 'uppercase' }}>
+                <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0' }}>Leave Type</th>
+                <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0' }}>From</th>
+                <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0' }}>To</th>
+                <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0' }}>Days</th>
+                <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0' }}>Status</th>
+                <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0' }}>Reason / Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {history.leaveRequests.map(req => (
+                <tr key={req._id} style={{ borderBottom: '1px solid #e2e8f0', fontSize: 13, color: '#334155' }}>
+                  <td style={{ padding: '12px 16px', fontWeight: 500 }}>{req.leaveType || 'General'}</td>
+                  <td style={{ padding: '12px 16px' }}>{new Date(req.fromDate).toLocaleDateString()}</td>
+                  <td style={{ padding: '12px 16px' }}>{new Date(req.toDate).toLocaleDateString()}</td>
+                  <td style={{ padding: '12px 16px' }}>{req.totalDays}</td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <span style={{ 
+                      padding: '4px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600,
+                      background: req.status === 'Approved' ? '#dcfce7' : req.status === 'Rejected' ? '#fee2e2' : '#fef3c7',
+                      color: req.status === 'Approved' ? '#166534' : req.status === 'Rejected' ? '#991b1b' : '#92400e'
+                    }}>
+                      {req.status}
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <div style={{ marginBottom: req.adminRemarks ? 4 : 0 }}>{req.reason}</div>
+                    {req.adminRemarks && <div style={{ fontSize: 11, color: '#64748b' }}>Admin: {req.adminRemarks}</div>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div style={{ padding: 24, textAlign: 'center', color: '#64748b', background: '#f8fafc', borderRadius: 8 }}>
+          No leave requests recorded yet.
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default Students;
+
+
+
+function PromotionHistoryTab({ studentId }) {
+  const [history, setHistory] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/promotions/history/student/${studentId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setHistory(data.history || []);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHistory();
+  }, [studentId]);
+
+
+  const handleDeleteHistory = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this promotion history record? Note: Student class will NOT be reverted automatically.")) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/promotions/history/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setHistory(history.filter(r => r._id !== id));
+      } else {
+        alert("Failed to delete record.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error deleting record.");
+    }
+  };
+
+  if (loading) return <div style={{ padding: 24, textAlign: 'center', color: '#64748b' }}>Loading promotion history...</div>;
+  if (!history || history.length === 0) return <div style={{ padding: 24, textAlign: 'center', color: '#64748b' }}>No promotion history found.</div>;
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ margin: 0, fontSize: 16, color: '#0f172a', fontWeight: 600 }}>Promotion History</h3>
+        <span style={{ fontSize: 13, color: '#64748b', fontWeight: 500 }}>Total: {history.length}</span>
+      </div>
+      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <thead style={{ background: '#f8fafc' }}>
+          <tr>
+            <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', color: '#475569', fontSize: 13, fontWeight: 600 }}>Date</th>
+            <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', color: '#475569', fontSize: 13, fontWeight: 600 }}>Promoted From</th>
+            <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', color: '#475569', fontSize: 13, fontWeight: 600 }}>Promoted To</th>
+            <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', color: '#475569', fontSize: 13, fontWeight: 600 }}>Remarks</th>
+            <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', color: '#475569', fontSize: 13, fontWeight: 600 }}>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {history.map(rec => (
+            <tr key={rec._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+              <td style={{ padding: '12px 16px', fontSize: 13, color: '#334155' }}>
+                {new Date(rec.promotedAt).toLocaleDateString()}
+              </td>
+              <td style={{ padding: '12px 16px', fontSize: 13, color: '#334155' }}>
+                {rec.fromClass} {rec.fromSection} <br/><span style={{fontSize: 11, color: '#64748b'}}>{rec.fromSession}</span>
+              </td>
+              <td style={{ padding: '12px 16px', fontSize: 13, color: '#334155' }}>
+                <span style={{color: '#22c55e', fontWeight: 600}}>{rec.toClass} {rec.toSection}</span> <br/><span style={{fontSize: 11, color: '#64748b'}}>{rec.toSession}</span>
+              </td>
+              <td style={{ padding: '12px 16px', fontSize: 13, color: '#334155' }}>
+                {rec.remarks || '-'}
+              </td>
+              <td style={{ padding: '12px 16px', fontSize: 13 }}>
+                <button onClick={() => handleDeleteHistory(rec._id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 14 }}>
+                  🗑️
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}

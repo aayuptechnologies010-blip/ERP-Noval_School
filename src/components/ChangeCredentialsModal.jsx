@@ -6,6 +6,56 @@ function ChangeCredentialsModal({ isOpen, onClose }) {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Change Password state
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      alert("New Password and Confirm Password do not match.");
+      return;
+    }
+    
+    if (newPassword.length < 5 || newPassword.length > 12) {
+      alert("Password must be between 5 to 12 characters.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/change-password`, {
+        method: 'POST', // Usually POST or PUT for this action
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          oldPassword,
+          newPassword
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Password successfully changed! Please login again.");
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/'; // Redirect to login
+      } else {
+        alert(data.message || "Failed to change password.");
+      }
+    } catch (error) {
+      console.error("Error changing password:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -42,6 +92,8 @@ function ChangeCredentialsModal({ isOpen, onClose }) {
                 <label className="block text-gray-600 text-sm mb-2">Current Password</label>
                 <input 
                   type="password" 
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
                   className="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none focus:border-green-500 transition-colors"
                 />
               </div>
@@ -51,6 +103,8 @@ function ChangeCredentialsModal({ isOpen, onClose }) {
                 <div className="relative">
                   <input 
                     type={showNewPassword ? "text" : "password"} 
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none focus:border-green-500 transition-colors pr-10"
                   />
                   <button 
@@ -68,6 +122,8 @@ function ChangeCredentialsModal({ isOpen, onClose }) {
                 <div className="relative">
                   <input 
                     type={showConfirmPassword ? "text" : "password"} 
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none focus:border-green-500 transition-colors pr-10"
                   />
                   <button 
@@ -80,8 +136,12 @@ function ChangeCredentialsModal({ isOpen, onClose }) {
                 </div>
               </div>
 
-              <button className="bg-[#5cb85c] text-white px-6 py-2.5 rounded text-sm hover:bg-green-600 transition-colors">
-                Change Password
+              <button 
+                onClick={handleChangePassword}
+                disabled={loading}
+                className="bg-[#5cb85c] text-white px-6 py-2.5 rounded text-sm hover:bg-green-600 transition-colors disabled:opacity-50"
+              >
+                {loading ? 'Changing...' : 'Change Password'}
               </button>
             </div>
 

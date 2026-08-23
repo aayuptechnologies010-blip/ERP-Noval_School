@@ -1,23 +1,64 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { FaVideo, FaSearch, FaDownload, FaEye } from 'react-icons/fa';
 
-const dummyData = [
-  { id: 1, class: 'NUR A' },
-  { id: 2, class: 'NUR B' },
-  { id: 3, class: 'LKG A' },
-  { id: 4, class: 'LKG B' },
-  { id: 5, class: 'UKG A' },
-  { id: 6, class: 'UKG B' },
-  { id: 7, class: 'UKG C' },
-  { id: 8, class: '1 A' },
-  { id: 9, class: '1 B' },
-  { id: 10, class: '1 C' },
-  { id: 11, class: '2 A' },
+const CLASSES = [
+  'NUR A','NUR B','LKG A','LKG B','UKG A','UKG B','UKG C',
+  '1 A','1 B','1 C','2 A','2 B','2 C','3 A','3 B','3 C',
+  '4 A','4 B','4 C','5 A','5 B','5 C','6 A','6 B','6 C',
+  '7 A','7 B','7 C','8 A','8 B','8 C','9 A','9 B','9 C','9 D','9 E','9 F',
+  '10 A','10 B','10 C','10 D','11 A','11 B','11 C','11 D','11 E','11 F',
+  '12 A','12 B','12 C','12 D'
 ];
 
 function AttendanceSummary() {
   const navigate = useNavigate();
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [summaries, setSummaries] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const fetchSummaries = async () => {
+    setLoading(true);
+    const token = localStorage.getItem('token');
+    let currentSummaries = {};
+    
+    // Process in chunks to avoid overwhelming the backend
+    for (let i = 0; i < CLASSES.length; i += 5) {
+      const chunk = CLASSES.slice(i, i + 5);
+      await Promise.all(chunk.map(async (className) => {
+        const parts = className.split(' ');
+        const cls = parts[0];
+        const sec = parts[1];
+        
+        try {
+          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/attendance/summary?class=${cls}&section=${sec}&date=${date}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            currentSummaries[className] = data.summary;
+          }
+        } catch (e) {
+          console.error(`Error fetching summary for ${className}`, e);
+        }
+      }));
+      setSummaries({ ...currentSummaries });
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchSummaries();
+  }, []);
+
+  const handleGo = () => {
+    setSummaries({});
+    fetchSummaries();
+  };
+
+  const filteredClasses = CLASSES.filter(c => c.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -36,14 +77,16 @@ function AttendanceSummary() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <input 
             type="text" 
-            value="03-Aug-2026"
-            readOnly
+            type="date"
+            value={date}
+            onChange={e => setDate(e.target.value)}
+            
             style={{ 
               width: 150, border: '1px solid #e2e8f0', borderRadius: 4, background: '#f1f5f9', 
               padding: '8px 12px', fontSize: 14, color: '#334155', outline: 'none' 
             }}
           />
-          <button style={{ background: '#65c466', color: '#fff', border: 'none', borderRadius: 4, padding: '9px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+          <button onClick={handleGo} disabled={loading} style={{ background: '#65c466', color: '#fff', border: 'none', borderRadius: 4, padding: '9px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
             GO
           </button>
         </div>
@@ -54,6 +97,8 @@ function AttendanceSummary() {
             <input 
               type="text" 
               placeholder="Search class"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
               style={{ 
                 width: 150, border: '1px solid #e2e8f0', borderRight: 'none', borderRadius: '4px 0 0 4px', 
                 padding: '8px 12px', fontSize: 14, color: '#334155', outline: 'none' 
@@ -96,28 +141,37 @@ function AttendanceSummary() {
                 </tr>
               </thead>
               <tbody>
-                {dummyData.map((item) => (
-                  <tr key={item.id} style={{ background: '#f87171', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-                    <td style={{ padding: '12px 20px', fontSize: 12, color: '#475569' }}>{item.id}</td>
-                    <td style={{ padding: '12px 20px', fontSize: 12, color: '#334155', fontWeight: 500 }}>{item.class}</td>
-                    <td style={{ padding: '12px 20px', fontSize: 12, color: '#475569' }}>0</td>
-                    <td style={{ padding: '12px 20px', fontSize: 12, color: '#475569' }}>0</td>
-                    <td style={{ padding: '12px 20px', fontSize: 12, color: '#475569' }}>0</td>
-                    <td style={{ padding: '12px 20px', fontSize: 12, color: '#475569' }}>0</td>
-                    <td style={{ padding: '12px 20px', fontSize: 12, color: '#475569' }}>0</td>
-                    <td style={{ padding: '12px 20px', fontSize: 12, color: '#475569' }}>0</td>
-                    <td style={{ padding: '12px 20px', fontSize: 12, color: '#475569' }}>0</td>
-                    <td style={{ padding: '12px 20px', fontSize: 12, color: '#475569' }}>0</td>
+                {filteredClasses.map((className, index) => {
+                  const summary = summaries[className] || { Total: 0, Present: 0, Absent: 0, Leave: 0, HalfDay: 0, Late: 0, NA: 0 };
+                  const totalPresent = summary.Present + summary.HalfDay + summary.Late; // Depending on how you calculate total present
+                  
+                  return (
+                  <tr key={className} style={{ background: index % 2 === 0 ? '#fff' : '#f8fafc', borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '12px 20px', fontSize: 13, color: '#475569' }}>{index + 1}</td>
+                    <td style={{ padding: '12px 20px', fontSize: 13, color: '#334155', fontWeight: 600 }}>{className}</td>
+                    <td style={{ padding: '12px 20px', fontSize: 13, color: '#475569' }}>{summary.Total}</td>
+                    <td style={{ padding: '12px 20px', fontSize: 13, color: '#65c466', fontWeight: 600 }}>{totalPresent}</td>
+                    <td style={{ padding: '12px 20px', fontSize: 13, color: '#475569' }}>{summary.Present}</td>
+                    <td style={{ padding: '12px 20px', fontSize: 13, color: '#475569' }}>{summary.HalfDay}</td>
+                    <td style={{ padding: '12px 20px', fontSize: 13, color: '#ef4444', fontWeight: 600 }}>{summary.Absent}</td>
+                    <td style={{ padding: '12px 20px', fontSize: 13, color: '#f59e0b', fontWeight: 600 }}>{summary.Leave}</td>
+                    <td style={{ padding: '12px 20px', fontSize: 13, color: '#475569' }}>{summary.NA}</td>
+                    <td style={{ padding: '12px 20px', fontSize: 13, color: '#8b5cf6', fontWeight: 600 }}>{summary.Late}</td>
                     <td style={{ padding: '12px 20px', textAlign: 'center' }}>
                       <button 
-                        onClick={() => navigate('/dashboard/students/attendance/class')}
-                        style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: 14 }}
+                        onClick={() => navigate(`/dashboard/students/attendance/class?class=${className.replace(' ', '&section=')}`)}
+                        style={{ background: 'none', border: 'none', color: '#6366f1', cursor: 'pointer', fontSize: 16 }}
                       >
                         <FaEye />
                       </button>
                     </td>
                   </tr>
-                ))}
+                )})}
+                {loading && filteredClasses.length === 0 && (
+                  <tr>
+                    <td colSpan="11" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>Loading summaries...</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

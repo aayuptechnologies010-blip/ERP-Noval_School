@@ -1,21 +1,27 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaSearch, FaThLarge, FaCog, FaBell, FaAngleDown, FaAngleUp, FaUserPlus, FaKey, FaSignOutAlt, FaCheck, FaTimes, FaMoneyCheckAlt, FaBoxOpen, FaCalendarAlt, FaDesktop, FaArrowRight, FaMoneyBill, FaBuilding, FaStethoscope, FaBook, FaChartBar, FaFileInvoice, FaFileSignature, FaUserCheck } from 'react-icons/fa';
 
 function Header({ currentTheme, setTheme, onSettingsClick, onProfileClick, onCredentialsClick }) {
+  const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAppsOpen, setIsAppsOpen] = useState(false);
 
-
-
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+  const fullName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Admin';
+  const role = user?.role || 'Admin';
+  const initials = user ? `${(user.firstName || 'A')[0]}${(user.lastName || '')[0] || ''}`.toUpperCase() : 'A';
+  const profileImage = user?.profileImage;
 
   const themes = ['#2d2d2d', '#9f3453', '#2c3983', '#4f3b7b', '#13838e', '#a68c2d', '#48714b'];
 
   return (
     <div className="h-16 flex items-center justify-between px-6 text-white flex-shrink-0 relative z-50" style={{ backgroundColor: currentTheme }}>
       <div className="text-sm">
-        Welcome Mr. <span className="font-bold">ANKIT KUMAR</span>
+        Welcome <span className="font-bold">{fullName}</span>
       </div>
       
       <div className="flex items-center gap-6">
@@ -209,10 +215,16 @@ function Header({ currentTheme, setTheme, onSettingsClick, onProfileClick, onCre
             className="flex items-center gap-3 cursor-pointer" 
             onClick={() => setIsProfileOpen(!isProfileOpen)}
           >
-            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Profile" className="w-9 h-9 rounded-full border-2 border-white object-cover" />
+            {profileImage ? (
+              <img src={profileImage} alt="Profile" className="w-9 h-9 rounded-full border-2 border-white object-cover" />
+            ) : (
+              <div className="w-9 h-9 rounded-full border-2 border-white bg-white/20 flex items-center justify-center font-bold text-white text-sm">
+                {initials}
+              </div>
+            )}
             <div className="flex flex-col leading-tight">
-              <span className="text-sm font-bold">Mr. ANKIT KUMAR</span>
-              <span className="text-xs text-teal-200">Manager</span>
+              <span className="text-sm font-bold uppercase">{fullName}</span>
+              <span className="text-xs text-teal-200 capitalize">{role}</span>
             </div>
             {isProfileOpen ? <FaAngleUp className="ml-2" /> : <FaAngleDown className="ml-2" />}
           </div>
@@ -221,17 +233,23 @@ function Header({ currentTheme, setTheme, onSettingsClick, onProfileClick, onCre
           {isProfileOpen && (
             <div className="absolute right-0 top-12 w-64 bg-white text-gray-800 rounded shadow-xl border border-gray-100 py-2">
               <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Profile" className="w-10 h-10 rounded-full object-cover" />
+                {profileImage ? (
+                  <img src={profileImage} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-600 text-lg">
+                    {initials}
+                  </div>
+                )}
                 <div className="flex flex-col">
-                  <span className="text-sm font-bold text-gray-900">Mr. ANKIT KUMAR</span>
-                  <span className="text-xs text-gray-500">Manager</span>
+                  <span className="text-sm font-bold text-gray-900 uppercase">{fullName}</span>
+                  <span className="text-xs text-gray-500 capitalize">{role}</span>
                 </div>
               </div>
               
               <div 
                 className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 border-b border-gray-100 transition"
                 onClick={() => {
-                  if(onProfileClick) onProfileClick();
+                  navigate('/dashboard/profile');
                   setIsProfileOpen(false);
                 }}
               >

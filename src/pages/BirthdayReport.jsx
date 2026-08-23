@@ -1,33 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaGift, FaBirthdayCake, FaSearch, FaFileExcel } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const dummyBirthdays = [
-  { id: 1, name: 'Aarav Sharma', class: 'Class 10', dob: '2009-08-04', type: 'Student', gender: 'Male' },
-  { id: 2, name: 'Priya Verma', class: 'Class 9', dob: '2010-08-06', type: 'Student', gender: 'Female' },
-  { id: 3, name: 'Miss Kavita Singh', class: 'N/A', dob: '1992-08-04', type: 'Staff', gender: 'Female' },
-  { id: 4, name: 'Rohan Gupta', class: 'Class 8', dob: '2011-08-10', type: 'Student', gender: 'Male' },
-  { id: 5, name: 'Mr. Anil Kumar', class: 'N/A', dob: '1985-08-12', type: 'Staff', gender: 'Male' },
-  { id: 6, name: 'Sneha Patel', class: 'Class 7', dob: '2012-08-15', type: 'Student', gender: 'Female' },
-];
-
-const monthlyCount = [
-  { month: 'Jan', count: 8 }, { month: 'Feb', count: 12 }, { month: 'Mar', count: 6 },
-  { month: 'Apr', count: 14 }, { month: 'May', count: 10 }, { month: 'Jun', count: 9 },
-  { month: 'Jul', count: 11 }, { month: 'Aug', count: 16 }, { month: 'Sep', count: 7 },
-  { month: 'Oct', count: 13 }, { month: 'Nov', count: 8 }, { month: 'Dec', count: 15 },
-];
+import { toast } from 'react-toastify';
 
 function BirthdayReport() {
+  const [birthdays, setBirthdays] = useState([]);
+  const [chartData, setChartData] = useState([]);
+  const [todaysBirthdays, setTodaysBirthdays] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('All');
   const [search, setSearch] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState('2026-08');
+  
+  // Use current month/year as default
+  const todayDate = new Date();
+  const defaultMonth = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, '0')}`;
+  const [selectedMonth, setSelectedMonth] = useState(defaultMonth);
 
-  const filtered = dummyBirthdays.filter(b => {
+  useEffect(() => {
+    const fetchReportData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = { 'Authorization': `Bearer ${token}` };
+
+        const [birthdaysRes, chartRes, todayRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/birthdays`, { headers }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/birthdays/chart`, { headers }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/birthdays/today`, { headers })
+        ]);
+        
+        if (birthdaysRes.ok && chartRes.ok && todayRes.ok) {
+          const bData = await birthdaysRes.json();
+          const cData = await chartRes.json();
+          const tData = await todayRes.json();
+          setBirthdays(bData);
+          setChartData(cData);
+          setTodaysBirthdays(tData);
+        } else {
+          toast.error("Failed to load birthday report data");
+        }
+      } catch (error) {
+        console.error("Error fetching birthday report:", error);
+        toast.error("An error occurred while fetching report data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReportData();
+  }, []);
+
+  // Compute filtered list based on Search and Type only.
+  // The month filter is usually for filtering the table, let's keep it.
+  const filtered = birthdays.filter(b => {
     const matchType = filterType === 'All' || b.type === filterType;
     const matchSearch = b.name.toLowerCase().includes(search.toLowerCase());
-    return matchType && matchSearch;
+    
+    // Check if dob matches selectedMonth (format: YYYY-MM)
+    const dobDate = new Date(b.dateOfBirth);
+    const bMonth = `${dobDate.getFullYear()}-${String(dobDate.getMonth() + 1).padStart(2, '0')}`;
+    const matchMonth = !selectedMonth || bMonth === selectedMonth || bMonth.endsWith(selectedMonth.split('-')[1]); // Match only month, or ignore if clear
+    
+    // Actually, usually birthdays are celebrated by Month regardless of Year. 
+    // If selectedMonth is "2026-08", maybe we just want to match the "08" month.
+    const selectedM = selectedMonth ? selectedMonth.split('-')[1] : null;
+    const isSameMonth = selectedM ? String(dobDate.getMonth() + 1).padStart(2, '0') === selectedM : true;
+
+    return matchType && matchSearch && isSameMonth;
   });
+
+  const thStyle = { textAlign: 'left', padding: '14px 24px', fontSize: 13, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' };
+  const tdStyle = { padding: '16px 24px', fontSize: 14, color: '#334155', fontWeight: 500 };
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -44,27 +86,35 @@ function BirthdayReport() {
       <div style={{ padding: '16px 32px 32px', flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
 
         {/* Today Banner */}
-        <div style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', borderRadius: 10, padding: 24, color: '#fff', display: 'flex', alignItems: 'center', gap: 16 }}>
-          <FaBirthdayCake size={32} />
-          <div>
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>🎉 Aarav Sharma & Miss Kavita Singh have birthdays Today!</h3>
-            <p style={{ margin: '4px 0 0', opacity: 0.85, fontSize: 13 }}>Don't forget to wish them.</p>
+        {todaysBirthdays.length > 0 && (
+          <div style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', borderRadius: 10, padding: 24, color: '#fff', display: 'flex', alignItems: 'center', gap: 16 }}>
+            <FaBirthdayCake size={32} />
+            <div>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>
+                🎉 {todaysBirthdays.map(b => b.name).join(', ')} {todaysBirthdays.length > 1 ? 'have' : 'has'} birthdays Today!
+              </h3>
+              <p style={{ margin: '4px 0 0', opacity: 0.85, fontSize: 13 }}>Don't forget to wish them.</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Bar Chart */}
         <div style={{ background: '#fff', padding: 24, borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
           <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>Month-wise Birthday Distribution</h3>
           <div style={{ height: 240 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyCount}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Birthdays" />
-              </BarChart>
-            </ResponsiveContainer>
+            {loading ? (
+              <div className="w-full h-full flex items-center justify-center text-gray-400">Loading chart...</div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Birthdays" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 
@@ -81,7 +131,14 @@ function BirthdayReport() {
               </button>
             ))}
             <input type="month" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #cbd5e1', outline: 'none', fontSize: 13 }} />
+            <button 
+              onClick={() => setSelectedMonth('')} 
+              style={{ background: 'none', border: 'none', color: '#3b82f6', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}
+            >
+              Clear Month
+            </button>
           </div>
+          
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#f8fafc' }}>
@@ -91,23 +148,41 @@ function BirthdayReport() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(b => (
-                <tr key={b.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={tdStyle}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 34, height: 34, borderRadius: '50%', background: b.type === 'Staff' ? '#dcfce7' : '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: b.type === 'Staff' ? '#16a34a' : '#3b82f6', fontSize: 13 }}>
-                        {b.name.charAt(0)}
+              {loading ? (
+                <tr><td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>Loading records...</td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>No birthdays found.</td></tr>
+              ) : (
+                filtered.map(b => (
+                  <tr key={b.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={tdStyle}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        {b.photo ? (
+                          <img src={b.photo} alt={b.name} style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{ width: 34, height: 34, borderRadius: '50%', background: b.type === 'Staff' ? '#dcfce7' : '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: b.type === 'Staff' ? '#16a34a' : '#3b82f6', fontSize: 13 }}>
+                            {b.name ? b.name.charAt(0) : '?'}
+                          </div>
+                        )}
+                        <span style={{ fontWeight: 600 }}>{b.name}</span>
                       </div>
-                      <span style={{ fontWeight: 600, color: '#1e293b' }}>{b.name}</span>
-                    </div>
-                  </td>
-                  <td style={tdStyle}><span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: b.type === 'Staff' ? '#dcfce7' : '#eff6ff', color: b.type === 'Staff' ? '#16a34a' : '#3b82f6' }}>{b.type}</span></td>
-                  <td style={tdStyle}>{b.class}</td>
-                  <td style={tdStyle}>{b.dob}</td>
-                  <td style={tdStyle}>{b.gender}</td>
-                </tr>
-              ))}
-              {filtered.length === 0 && <tr><td colSpan="5" style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>No birthdays found.</td></tr>}
+                    </td>
+                    <td style={tdStyle}>
+                      <span style={{ padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: b.type === 'Staff' ? '#dcfce7' : '#eff6ff', color: b.type === 'Staff' ? '#16a34a' : '#2563eb' }}>
+                        {b.type}
+                      </span>
+                    </td>
+                    <td style={tdStyle}>{b.class || 'N/A'}</td>
+                    <td style={tdStyle}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <FaGift color="#94a3b8" /> 
+                        {b.dateOfBirth ? new Date(b.dateOfBirth).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
+                      </div>
+                    </td>
+                    <td style={tdStyle}>{b.gender || 'N/A'}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -116,8 +191,5 @@ function BirthdayReport() {
     </div>
   );
 }
-
-const thStyle = { padding: '14px 16px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#0f172a', borderBottom: '2px solid #e2e8f0', whiteSpace: 'nowrap' };
-const tdStyle = { padding: '14px 16px', fontSize: 14, color: '#475569', verticalAlign: 'middle' };
 
 export default BirthdayReport;
