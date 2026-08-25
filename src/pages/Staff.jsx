@@ -37,6 +37,7 @@ function Staff({ favoritesOnly = false }) {
   const [viewType, setViewType] = useState('list');
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [activeTab, setActiveTab] = useState('Full Profile');
+  const [staffLeaves, setStaffLeaves] = useState([]);
 
   const handleViewProfile = async (id) => {
     try {
@@ -47,6 +48,27 @@ function Staff({ favoritesOnly = false }) {
       if (response.ok) {
         const data = await response.json();
         setSelectedStaff(data);
+        
+        // Fetch leaves for this staff
+        try {
+          const leaveRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff-leaves`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const leaveData = await leaveRes.json();
+          if (leaveRes.ok && leaveData.leaveRequests) {
+            const filtered = leaveData.leaveRequests.filter(l => 
+              l.staffId && (l.staffId === id || l.staffId._id === id)
+            );
+            filtered.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+            setStaffLeaves(filtered);
+          } else {
+            setStaffLeaves([]);
+          }
+        } catch (err) {
+          console.error("Error fetching staff leaves", err);
+          setStaffLeaves([]);
+        }
+
       } else {
         toast.error("Failed to fetch staff details.");
       }
@@ -202,7 +224,7 @@ function Staff({ favoritesOnly = false }) {
             <StatCard title="Sent Message" value="0" icon={<FaEnvelope />} color="#84cc16" />
             <StatCard title="Work Load" value="0" icon={<FaClipboardList />} color="#a855f7" />
             <StatCard title="Attendance" value="0%" icon={<FaUserClock />} color="#eab308" />
-            <StatCard title="Leaves" value="N/A" icon={<FaBriefcase />} color="#bef264" />
+            <StatCard title="Leaves" value={staffLeaves.length.toString()} icon={<FaBriefcase />} color="#bef264" />
             <StatCard title="Current Salary" value="₹ 0.00" icon={<FaMoneyBillWave />} color="#f472b6" />
             <StatCard title="Advance Given" value="₹ 0.00" icon={<FaHandHoldingUsd />} color="#a3e635" />
           </div>
@@ -212,7 +234,7 @@ function Staff({ favoritesOnly = false }) {
         <div style={{ display: 'flex', gap: 24 }}>
           {/* Sidebar */}
           <div style={{ width: 220, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {['Full Profile', 'Attendance', 'Timetable', 'Salary Structure', 'Session Log'].map(tab => (
+            {['Full Profile', 'Attendance', 'Leave', 'Timetable', 'Salary Structure', 'Session Log'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -282,6 +304,64 @@ function Staff({ favoritesOnly = false }) {
                 <div style={{ padding: '60px 0', textAlign: 'center', fontSize: 14, fontWeight: 700, color: '#334155' }}>
                   No Data Found
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'Leave' && (
+              <div style={{ background: '#fff', padding: 24, borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                <div style={{ background: '#f1f5f9', padding: '10px 16px', borderRadius: '4px 4px 0 0', borderBottom: '2px solid #4ade80', fontSize: 14, fontWeight: 700, color: '#334155' }}>
+                  Leave Records
+                </div>
+                
+                {staffLeaves.length > 0 ? (
+                  <div style={{ overflowX: 'auto', marginTop: 16 }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ background: '#f8fafc' }}>
+                          <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 13, color: '#1e293b', borderBottom: '1px solid #e2e8f0' }}>Applied On</th>
+                          <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 13, color: '#1e293b', borderBottom: '1px solid #e2e8f0' }}>Leave Type</th>
+                          <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 13, color: '#1e293b', borderBottom: '1px solid #e2e8f0' }}>Duration</th>
+                          <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 13, color: '#1e293b', borderBottom: '1px solid #e2e8f0' }}>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {staffLeaves.map(leave => (
+                          <tr key={leave._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '12px 16px', fontSize: 13, color: '#475569' }}>
+                              {leave.createdAt ? new Date(leave.createdAt).toLocaleDateString('en-GB') : '-'}
+                            </td>
+                            <td style={{ padding: '12px 16px', fontSize: 13, color: '#475569' }}>
+                              {leave.leaveType || 'Annual Leave'}
+                            </td>
+                            <td style={{ padding: '12px 16px', fontSize: 13, color: '#475569' }}>
+                              <span style={{ fontWeight: 600, color: '#334155' }}>
+                                {leave.fromDate ? leave.fromDate.split('T')[0] : ''} 
+                                <span style={{ color: '#94a3b8', margin: '0 4px' }}>to</span> 
+                                {leave.toDate ? leave.toDate.split('T')[0] : ''}
+                              </span>
+                              <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                                {leave.totalDays} Day(s)
+                              </div>
+                            </td>
+                            <td style={{ padding: '12px 16px', fontSize: 13 }}>
+                              <span style={{ 
+                                padding: '4px 8px', borderRadius: 4, fontSize: 11, fontWeight: 700,
+                                background: leave.status === 'Approved' ? '#dcfce7' : leave.status === 'Rejected' ? '#fee2e2' : '#fef3c7',
+                                color: leave.status === 'Approved' ? '#16a34a' : leave.status === 'Rejected' ? '#ef4444' : '#d97706'
+                              }}>
+                                {leave.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div style={{ padding: '60px 0', textAlign: 'center', fontSize: 14, fontWeight: 700, color: '#334155' }}>
+                    No Leave Records Found
+                  </div>
+                )}
               </div>
             )}
 

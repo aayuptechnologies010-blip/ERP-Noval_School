@@ -6,6 +6,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import DashboardContent from './components/DashboardContent';
+import AdmissionLayout from './layouts/AdmissionLayout';
+import AdmissionDashboard from './pages/AdmissionDashboard';
 import PlaceholderPage from './pages/PlaceholderPage';
 import Students from './pages/Students';
 import Staff from './pages/Staff';
@@ -105,6 +107,12 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
+        
+        {/* Admission Module Routes */}
+        <Route path="/admission" element={<AdmissionLayout />}>
+          <Route index element={<AdmissionDashboard />} />
+        </Route>
+
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<Navigate to="/dashboard/home" replace />} />
           <Route path="home" element={<DashboardContent />} />

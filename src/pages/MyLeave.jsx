@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function MyLeave() {
   const [leaveType, setLeaveType] = useState('Sick Leave');
@@ -6,10 +6,47 @@ function MyLeave() {
   const [toDate, setToDate] = useState('');
   const [reason, setReason] = useState('');
 
-  const [leaves, setLeaves] = useState([
-    { id: 1, type: 'Sick Leave', from: '2023-10-10', to: '2023-10-11', status: 'Approved', appliedOn: '2023-10-09' },
-    { id: 2, type: 'Casual Leave', from: '2023-09-15', to: '2023-09-15', status: 'Rejected', appliedOn: '2023-09-10' },
-  ]);
+  const [leaves, setLeaves] = useState([]);
+
+  // NOTE: Replace this static staffId with the dynamic ID from auth/user state
+  const staffId = "6a84671ca9a89a398b948b56";
+
+  useEffect(() => {
+    const fetchLeaves = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff-leaves`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        
+        if (response.ok && data.leaveRequests) {
+          // Filter by the current staff ID
+          const staffLeaves = data.leaveRequests.filter(leave => 
+            leave.staffId && (leave.staffId === staffId || leave.staffId._id === staffId)
+          );
+
+          const formattedLeaves = staffLeaves.map(leave => ({
+            id: leave._id,
+            type: leave.leaveType || 'N/A',
+            from: leave.fromDate ? leave.fromDate.split('T')[0] : '',
+            to: leave.toDate ? leave.toDate.split('T')[0] : '',
+            status: leave.status || 'Pending',
+            appliedOn: leave.createdAt ? leave.createdAt.split('T')[0] : ''
+          }));
+          
+          // Sort by appliedOn descending
+          formattedLeaves.sort((a, b) => new Date(b.appliedOn) - new Date(a.appliedOn));
+          
+          setLeaves(formattedLeaves);
+        }
+      } catch (error) {
+        console.error("Error fetching leaves:", error);
+      }
+    };
+    
+    fetchLeaves();
+  }, []);
 
   const handleApply = async () => {
     if (!fromDate || !toDate || !reason) {
@@ -18,9 +55,6 @@ function MyLeave() {
     }
 
     try {
-      // NOTE: Replace this static staffId with the dynamic ID from auth/user state
-      const staffId = "6a70ca17725fe0a34ed8e89e"; 
-
       const payload = {
         staffId,
         leaveType,
@@ -29,10 +63,12 @@ function MyLeave() {
         reason
       };
 
+      const token = localStorage.getItem('token');
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff-leaves`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(payload)
       });
@@ -86,6 +122,7 @@ function MyLeave() {
                 <option value="Sick Leave">Sick Leave</option>
                 <option value="Casual Leave">Casual Leave</option>
                 <option value="Earned Leave">Earned Leave</option>
+                <option value="Annual Leave">Annual Leave</option>
               </select>
             </div>
             

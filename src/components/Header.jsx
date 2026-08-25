@@ -83,15 +83,14 @@ function Header({ currentTheme, setTheme, onSettingsClick, onProfileClick, onCre
                 </div>
 
                 <div className="flex-1 overflow-y-auto">
-                  <div className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition">
-                    <div className="flex items-center gap-4">
-                      <FaFileInvoice className="text-xl text-black" />
-                      <span className="text-[15px] font-bold text-black">Account Manager</span>
-                    </div>
-                    <span className="text-green-500 text-sm flex items-center gap-1">Go <FaArrowRight className="text-xs font-light" /></span>
-                  </div>
-
-                  <div className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition">
+                  {/* Active Apps */}
+                  <div 
+                    className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition"
+                    onClick={() => {
+                      navigate('/admission');
+                      setIsAppsOpen(false);
+                    }}
+                  >
                     <div className="flex items-center gap-4">
                       <FaFileSignature className="text-xl text-black" />
                       <span className="text-[15px] font-bold text-black">Admission Manager</span>
@@ -114,31 +113,7 @@ function Header({ currentTheme, setTheme, onSettingsClick, onProfileClick, onCre
                     </div>
                     <span className="text-green-500 text-sm flex items-center gap-1">Go <FaArrowRight className="text-xs font-light" /></span>
                   </div>
-                  
-                  <div className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition">
-                    <div className="flex items-center gap-4">
-                      <FaBuilding className="text-xl text-black" />
-                      <span className="text-[15px] font-bold text-black">Front Office</span>
-                    </div>
-                    <span className="text-green-500 text-sm flex items-center gap-1">Go <FaArrowRight className="text-xs font-light" /></span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition">
-                    <div className="flex items-center gap-4">
-                      <FaStethoscope className="text-xl text-black" />
-                      <span className="text-[15px] font-bold text-black">HealthCare Manager</span>
-                    </div>
-                    <span className="text-green-500 text-sm flex items-center gap-1">Go <FaArrowRight className="text-xs font-light" /></span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition">
-                    <div className="flex items-center gap-4">
-                      <FaBook className="text-xl text-black" />
-                      <span className="text-[15px] font-bold text-black">Library Manager</span>
-                    </div>
-                    <span className="text-green-500 text-sm flex items-center gap-1">Go <FaArrowRight className="text-xs font-light" /></span>
-                  </div>
-                  
+
                   <div className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition">
                     <div className="flex items-center gap-4">
                       <FaChartBar className="text-xl text-black" />
@@ -151,14 +126,6 @@ function Header({ currentTheme, setTheme, onSettingsClick, onProfileClick, onCre
                     <div className="flex items-center gap-4">
                       <FaMoneyCheckAlt className="text-xl text-black" />
                       <span className="text-[15px] font-bold text-black">Payroll</span>
-                    </div>
-                    <span className="text-green-500 text-sm flex items-center gap-1">Go <FaArrowRight className="text-xs font-light" /></span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition">
-                    <div className="flex items-center gap-4">
-                      <FaBoxOpen className="text-xl text-black" />
-                      <span className="text-[15px] font-bold text-black">Stock Manager</span>
                     </div>
                     <span className="text-green-500 text-sm flex items-center gap-1">Go <FaArrowRight className="text-xs font-light" /></span>
                   </div>
@@ -177,6 +144,47 @@ function Header({ currentTheme, setTheme, onSettingsClick, onProfileClick, onCre
                       <span className="text-[15px] font-bold text-black">Web Admin</span>
                     </div>
                     <span className="text-green-500 text-sm flex items-center gap-1">Go <FaArrowRight className="text-xs font-light" /></span>
+                  </div>
+
+                  {/* Coming Soon Apps */}
+                  <div className="flex items-center justify-between px-6 py-4 opacity-60 cursor-not-allowed border-b border-gray-100 transition" title="Coming Soon">
+                    <div className="flex items-center gap-4">
+                      <FaFileInvoice className="text-xl text-black" />
+                      <span className="text-[15px] font-bold text-black">Account Manager</span>
+                    </div>
+                    <span className="text-gray-400 text-[10px] uppercase font-bold tracking-wider px-2 py-1 bg-gray-100 rounded">Coming Soon</span>
+                  </div>
+
+                  <div className="flex items-center justify-between px-6 py-4 opacity-60 cursor-not-allowed border-b border-gray-100 transition" title="Coming Soon">
+                    <div className="flex items-center gap-4">
+                      <FaBuilding className="text-xl text-black" />
+                      <span className="text-[15px] font-bold text-black">Front Office</span>
+                    </div>
+                    <span className="text-gray-400 text-[10px] uppercase font-bold tracking-wider px-2 py-1 bg-gray-100 rounded">Coming Soon</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between px-6 py-4 opacity-60 cursor-not-allowed border-b border-gray-100 transition" title="Coming Soon">
+                    <div className="flex items-center gap-4">
+                      <FaStethoscope className="text-xl text-black" />
+                      <span className="text-[15px] font-bold text-black">HealthCare Manager</span>
+                    </div>
+                    <span className="text-gray-400 text-[10px] uppercase font-bold tracking-wider px-2 py-1 bg-gray-100 rounded">Coming Soon</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between px-6 py-4 opacity-60 cursor-not-allowed border-b border-gray-100 transition" title="Coming Soon">
+                    <div className="flex items-center gap-4">
+                      <FaBook className="text-xl text-black" />
+                      <span className="text-[15px] font-bold text-black">Library Manager</span>
+                    </div>
+                    <span className="text-gray-400 text-[10px] uppercase font-bold tracking-wider px-2 py-1 bg-gray-100 rounded">Coming Soon</span>
+                  </div>
+
+                  <div className="flex items-center justify-between px-6 py-4 opacity-60 cursor-not-allowed border-b border-gray-100 transition" title="Coming Soon">
+                    <div className="flex items-center gap-4">
+                      <FaBoxOpen className="text-xl text-black" />
+                      <span className="text-[15px] font-bold text-black">Stock Manager</span>
+                    </div>
+                    <span className="text-gray-400 text-[10px] uppercase font-bold tracking-wider px-2 py-1 bg-gray-100 rounded">Coming Soon</span>
                   </div>
                 </div>
               </div>

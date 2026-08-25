@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPrint, FaCheck, FaTimes, FaSearch } from 'react-icons/fa';
 
 const dummyLeaveRequests = [
@@ -11,16 +11,96 @@ const dummyLeaveRequests = [
 
 function StaffLeave() {
   const [activeTab, setActiveTab] = useState('Pending');
-  const [requests, setRequests] = useState(dummyLeaveRequests);
+  const [requests, setRequests] = useState([]);
+  const [stats, setStats] = useState({});
+
+  useEffect(() => {
+    const fetchLeaves = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff-leaves`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (response.ok && data.leaveRequests) {
+          const mappedLeaves = data.leaveRequests.map(req => {
+            const firstName = req.staffId?.firstName || '';
+            const lastName = req.staffId?.lastName || '';
+            const staffName = (firstName || lastName) ? `${firstName} ${lastName}`.trim() : 'Unknown Staff';
+            return {
+              id: req._id,
+              staffName,
+              department: req.staffId?.designation || 'Staff',
+              fromDate: req.fromDate ? req.fromDate.split('T')[0] : '',
+              toDate: req.toDate ? req.toDate.split('T')[0] : '',
+              days: req.totalDays || 1,
+              reason: req.reason,
+              status: req.status,
+              appliedOn: req.createdAt ? new Date(req.createdAt).toLocaleDateString('en-GB') : '',
+              createdAtRaw: req.createdAt || ''
+            };
+          });
+          // Sort by createdAt descending
+          mappedLeaves.sort((a, b) => new Date(b.createdAtRaw || 0) - new Date(a.createdAtRaw || 0));
+          setRequests(mappedLeaves);
+        }
+      } catch (error) {
+        console.error("Error fetching staff leaves:", error);
+      }
+    };
+
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff-leaves/stats`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (response.ok && data.stats) {
+          const statsMap = {};
+          data.stats.forEach(item => {
+            statsMap[item._id] = item.count;
+          });
+          setStats(statsMap);
+        }
+      } catch (error) {
+        console.error("Error fetching staff leave stats:", error);
+      }
+    };
+
+    fetchLeaves();
+    fetchStats();
+  }, []);
 
   const tabs = ['Pending', 'Approved', 'Rejected', 'Cancelled'];
 
-  const pendingCount = requests.filter(r => r.status === 'Pending').length;
+  const pendingCount = stats['Pending'] || 0;
 
-  const handleUpdateStatus = (id, newStatus) => {
-    setRequests(requests.map(req => 
-      req.id === id ? { ...req, status: newStatus } : req
-    ));
+  const handleUpdateStatus = async (id, newStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff-leaves/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          status: newStatus,
+          adminRemarks: newStatus === 'Approved' ? 'Enjoy the function' : ''
+        })
+      });
+      if (response.ok) {
+        setRequests(requests.map(req => 
+          req.id === id ? { ...req, status: newStatus } : req
+        ));
+      } else {
+        alert("Failed to update status");
+      }
+    } catch (error) {
+      console.error("Error updating status", error);
+      alert("Error updating status");
+    }
   };
 
   const filteredRequests = requests.filter(req => req.status === activeTab);
@@ -59,13 +139,13 @@ function StaffLeave() {
                   >
                     {tab}
                   </button>
-                  {/* Notification Badge for Pending Tab */}
-                  {tab === 'Pending' && pendingCount > 0 && (
+                  {/* Notification Badge for Tab */}
+                  {stats[tab] > 0 && (
                     <span style={{
                       position: 'absolute',
                       top: '-6px',
                       right: '-6px',
-                      background: '#dc3545',
+                      background: tab === 'Pending' ? '#dc3545' : tab === 'Approved' ? '#28a745' : '#6c757d',
                       color: '#fff',
                       fontSize: '11px',
                       fontWeight: 700,
@@ -77,7 +157,7 @@ function StaffLeave() {
                       borderRadius: '50%',
                       border: '2px solid #fff'
                     }}>
-                      {pendingCount}
+                      {stats[tab]}
                     </span>
                   )}
                 </div>
