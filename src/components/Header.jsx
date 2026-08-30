@@ -148,7 +148,12 @@ function Header({ currentTheme, setTheme, onSettingsClick, onProfileClick, onCre
                     <span className="text-green-500 text-sm flex items-center gap-1">Go <FaArrowRight className="text-xs font-light" /></span>
                   </div>
 
-                  <div className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition">
+                  <div className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition"
+                    onClick={() => {
+                      navigate('/webadmin');
+                      setIsAppsOpen(false);
+                    }}
+                  >
                     <div className="flex items-center gap-4">
                       <FaDesktop className="text-xl text-black" />
                       <span className="text-[15px] font-bold text-black">Web Admin</span>

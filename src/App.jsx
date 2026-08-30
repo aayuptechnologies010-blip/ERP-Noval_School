@@ -103,6 +103,7 @@ import VideoGallery from './pages/VideoGallery';
 import MediaGallery from './pages/MediaGallery';
 import FeeManagementDashboard from './pages/FeeManagementDashboard';
 import EnterpriseApp from './EnterpriseApp';
+import WebAdminApp from './pages/WebAdminApp';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -257,6 +258,7 @@ function App() {
         {/* Fee Management Module */}
         <Route path="/fee" element={<FeeManagementDashboard />} />
         <Route path="/enterprise-fee" element={<EnterpriseApp />} />
+        <Route path="/webadmin" element={<WebAdminApp />} />
         
         {/* Payroll Module */}
         <Route path="/payroll" element={<ErrorBoundary><PayrollDashboard /></ErrorBoundary>} />

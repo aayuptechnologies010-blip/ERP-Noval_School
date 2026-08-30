@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import QuickAccessTabs from './QuickAccessTabs';
 import AssignAmountGroup from './AssignAmountGroup';
 import AssignMultipleGroup from './AssignMultipleGroup';
+import WebAdmin from './WebAdmin';
 import Toast from './Toast';
 import './styles.css';
 
@@ -51,6 +52,9 @@ export default function EnterpriseApp() {
           )}
           {activeTab === 'Assign Multiple Group to Student' && (
             <AssignMultipleGroup setToast={showToast} />
+          )}
+          {activeTab === 'Web Admin' && (
+            <WebAdmin setToast={showToast} />
           )}
         </div>
       </div>

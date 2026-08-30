@@ -374,3 +374,135 @@
 .erp-content::-webkit-scrollbar-thumb {
   background: #ccc; 
 }
+
+/* Web Admin Styles */
+.wa-container {
+  padding: 10px;
+  background-color: #f4f5f7;
+  min-height: 100%;
+}
+.wa-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.wa-title {
+  margin: 0;
+  font-size: 18px;
+  color: #2c3e50;
+  font-weight: 600;
+}
+.wa-breadcrumb {
+  font-size: 12px;
+  color: #555;
+  font-weight: bold;
+}
+.wa-top-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 25px;
+}
+.wa-top-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.wa-tc-content {
+  display: flex;
+  flex-direction: column;
+}
+.wa-tc-label {
+  font-size: 12px;
+  color: #777;
+  margin-bottom: 5px;
+}
+.wa-tc-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+}
+.wa-tc-sub {
+  font-size: 12px;
+  color: #999;
+}
+.wa-tc-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+}
+
+.wa-section {
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.wa-section-header {
+  background-color: #f0f2f5;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+}
+.wa-card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px;
+}
+.wa-card {
+  background: #f8f9fa;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  width: 140px;
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+.wa-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #dc3545;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.wa-card-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+.wa-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #444;
+}

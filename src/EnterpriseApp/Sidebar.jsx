@@ -20,6 +20,12 @@ export default function Sidebar({ activeTab, onNavigate }) {
         <div className="erp-nav-item parent">
           <span className="erp-nav-icon">▼</span> Fee Master
         </div>
+        <div 
+          className={`erp-nav-item child ${activeTab === 'Web Admin' ? 'active' : ''}`}
+          onClick={() => onNavigate('Web Admin')}
+        >
+          Web Admin
+        </div>
         <div className="erp-nav-item child">Define Fee Master</div>
         <div className="erp-nav-item child">Fee Group to Fee Head</div>
         <div 
