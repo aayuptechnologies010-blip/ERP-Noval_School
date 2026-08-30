@@ -7,7 +7,7 @@ import {
   FaCalendarAlt, FaCalendarCheck, FaQuestion, FaRegCommentDots, 
   FaCalendarPlus, FaListUl, FaClipboardCheck, FaFileSignature, 
   FaChartPie, FaNetworkWired, FaBus, FaImages, FaUserGraduate, 
-  FaBirthdayCake, FaPlus, FaFileAlt
+  FaBirthdayCake, FaPlus, FaFileAlt, FaMoneyBill
 } from 'react-icons/fa';
 import logo from '../assets/logo.png';
 

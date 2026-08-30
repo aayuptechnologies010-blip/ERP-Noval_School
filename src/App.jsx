@@ -13,6 +13,7 @@ import Students from './pages/Students';
 import Staff from './pages/Staff';
 import CreateStaff from './pages/CreateStaff';
 import Messages from './pages/Messages';
+import PayrollDashboard from './pages/PayrollDashboard';
 import TransportAttendance from './pages/TransportAttendance';
 import Photos from './pages/Photos';
 import CreateAlbum from './pages/CreateAlbum';
@@ -100,6 +101,37 @@ import ManageSurvey from './pages/ManageSurvey';
 import Survey from './pages/Survey';
 import VideoGallery from './pages/VideoGallery';
 import MediaGallery from './pages/MediaGallery';
+import FeeManagementDashboard from './pages/FeeManagementDashboard';
+import EnterpriseApp from './EnterpriseApp';
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Uncaught error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '20px', color: 'red', backgroundColor: '#fff', height: '100vh', overflow: 'auto' }}>
+          <h1>Something went wrong.</h1>
+          <pre>{this.state.error.toString()}</pre>
+          <pre>{this.state.error.stack}</pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -107,7 +139,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
-        
+
         {/* Admission Module Routes */}
         <Route path="/admission" element={<AdmissionLayout />}>
           <Route index element={<AdmissionDashboard />} />
@@ -221,6 +253,13 @@ function App() {
           <Route path="report/survey" element={<SurveyReport />} />
           <Route path="*" element={<PlaceholderPage />} />
         </Route>
+
+        {/* Fee Management Module */}
+        <Route path="/fee" element={<FeeManagementDashboard />} />
+        <Route path="/enterprise-fee" element={<EnterpriseApp />} />
+        
+        {/* Payroll Module */}
+        <Route path="/payroll" element={<ErrorBoundary><PayrollDashboard /></ErrorBoundary>} />
       </Routes>
     </BrowserRouter>
   );

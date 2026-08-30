@@ -1,0 +1,1004 @@
+/* src/styles/payroll.css */
+:root {
+  --payroll-sidebar-bg: #292E3D;
+  --payroll-header-bg: #707BCD;
+  --payroll-bg: #EDF2F6;
+  --payroll-text-primary: #1F2933;
+  --payroll-text-blue: #159BD7;
+  --payroll-female: #FF6B72;
+  --payroll-male: #7C8B99;
+  --payroll-green: #48DDB5;
+  --payroll-orange: #FFCA68;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--payroll-text-primary);
+  background-color: var(--payroll-bg);
+}
+
+.payroll-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.payroll-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 64px;
+  background-color: var(--payroll-sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  transition: width 0.3s ease;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.payroll-sidebar.expanded {
+  width: 250px;
+}
+
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  height: 70px;
+  cursor: pointer;
+  color: white;
+  gap: 15px;
+}
+
+.sidebar-title {
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.sidebar-search-container {
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.search-box-collapsed {
+  width: 44px;
+  height: 40px;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.search-box-expanded {
+  width: 100%;
+  height: 40px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 4px;
+  gap: 10px;
+}
+.search-box-expanded input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.menu-item {
+  color: #c4c5c8;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-item-header {
+  display: flex;
+  align-items: center;
+  padding: 15px 22px;
+  gap: 15px;
+}
+.menu-item-header:hover {
+  background-color: rgba(255,255,255,0.05);
+  color: white;
+}
+
+.menu-item.active .menu-item-header {
+  background-color: var(--payroll-header-bg);
+  color: white;
+}
+
+.menu-text {
+  flex: 1;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.menu-arrow {
+  opacity: 0.7;
+}
+
+.submenu {
+  background-color: var(--payroll-sidebar-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.submenu-item {
+  padding: 12px 20px 12px 55px;
+  font-size: 13px;
+  color: #c4c5c8;
+  white-space: nowrap;
+}
+.submenu-item:hover {
+  color: white;
+}
+.submenu-item.active-sub {
+  color: white;
+  font-weight: bold;
+}
+
+/* Main Area */
+.payroll-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--payroll-bg);
+  min-width: 0;
+}
+
+/* Header */
+.payroll-header {
+  position: sticky;
+  top: 0;
+  height: 70px;
+  background-color: var(--payroll-header-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 999;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.school-name {
+  color: #FF4A4A;
+  font-weight: bold;
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+.payroll-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.header-dropdown-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-size: 14px;
+}
+
+.header-select {
+  background-color: var(--payroll-header-bg);
+  border: 1px solid white;
+  color: white;
+  border-radius: 16px;
+  padding: 2px 8px;
+  outline: none;
+  font-size: 13px;
+  cursor: pointer;
+}
+.header-select option {
+  background-color: white;
+  color: black;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  color: white;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Quick Access Strip */
+.quick-access-strip {
+  height: 50px;
+  background-color: var(--payroll-header-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.qa-btn {
+  background-color: white;
+  color: var(--payroll-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 15px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.qa-left { width: 170px; }
+
+.qa-customize {
+  color: var(--payroll-text-blue);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Dashboard Content */
+.dashboard-content {
+  padding: 25px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.dashboard-row {
+  display: grid;
+  gap: 30px;
+}
+
+.row-3-cols { grid-template-columns: repeat(3, 1fr); }
+.row-2-cols { grid-template-columns: repeat(2, 1fr); }
+
+/* Card Styling */
+.summary-card {
+  background-color: white;
+  border: 1px solid #e1e5eb;
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.card-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--payroll-text-primary);
+  text-align: center;
+  margin: 0;
+}
+
+.card-title-left { text-align: left; }
+
+.card-body {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-link {
+  color: var(--payroll-text-blue);
+  text-decoration: underline;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* Specific Card Layouts */
+.headcount-total {
+  font-size: 22px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.progress-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  gap: 15px;
+}
+.progress-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 70px;
+  font-size: 14px;
+}
+.progress-bar-container {
+  flex: 1;
+  height: 6px;
+  background-color: #f0f0f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+}
+.progress-value {
+  width: 80px;
+  text-align: right;
+  font-size: 13px;
+}
+
+.retirements-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  height: 100%;
+}
+
+.retirement-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.retirement-label { font-size: 13px; color: #666; margin-top: 5px; }
+.retirement-val { font-size: 20px; font-weight: bold; }
+.view-all { display: flex; align-items: center; gap: 5px; margin-top: 5px; }
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+.stat-row-left { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 500; }
+.stat-row-val { font-size: 20px; font-weight: bold; }
+
+/* Charts */
+.chart-container {
+  width: 100%;
+  height: 250px;
+  position: relative;
+}
+.donut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 80px;
+  font-weight: bold;
+  color: var(--payroll-text-primary);
+}
+
+.empty-chart-note {
+  font-size: 11px;
+  color: #999;
+  margin-top: 10px;
+}
+
+/* Birthday/Anniversary */
+.bday-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.bday-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.bday-title {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+.bday-placeholder {
+  width: 100px;
+  height: 120px;
+  border: 1px dashed #ccc;
+  border-radius: 10px 10px 40px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+  background-color: #fafafa;
+  margin-bottom: 15px;
+}
+
+@media (max-width: 1024px) {
+  .row-4-cols, .row-3-cols, .row-2-cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mail Template Styles */
+.mail-template-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.mail-template-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.mail-search-input {
+  border: 1px solid #e1e5eb;
+  padding: 8px 15px;
+  border-radius: 20px;
+  width: 250px;
+  outline: none;
+  font-size: 14px;
+}
+.mail-search-input:focus {
+  border-color: var(--payroll-text-blue);
+}
+
+.add-template-btn {
+  background-color: #159BD7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.add-template-btn:hover {
+  background-color: #128ac0;
+}
+
+.mail-table-wrapper {
+  overflow-x: auto;
+}
+
+.mail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.mail-table th {
+  padding: 12px 10px;
+  font-weight: bold;
+  color: var(--payroll-text-primary);
+  border-bottom: 1px solid #dee2e6;
+  text-align: left;
+}
+
+.sort-arrows {
+  color: #adb5bd;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.mail-table td {
+  padding: 12px 10px;
+  color: #495057;
+  border-bottom: 1px solid #f2f4f6;
+}
+
+.row-even {
+  background-color: #f8f9fa;
+}
+.row-odd {
+  background-color: white;
+}
+
+.action-icons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.mail-pagination {
+  margin-top: 20px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.entries-select {
+  padding: 4px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  outline: none;
+}
+
+/* Import Staff Styles */
+.import-staff-container {
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  min-height: 500px;
+}
+
+.upload-header {
+  background-color: #E9ECEF;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-radius: 4px 4px 0 0;
+}
+
+.upload-title {
+  font-weight: bold;
+  color: #495057;
+  font-size: 14px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #495057;
+  cursor: pointer;
+}
+
+.import-content {
+  padding: 30px;
+}
+
+.staff-details-title {
+  text-align: center;
+  text-decoration: underline;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 30px;
+}
+
+.file-upload-section {
+  max-width: 500px;
+  margin-bottom: 20px;
+}
+
+.file-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.file-input-group {
+  display: flex;
+  height: 38px;
+}
+
+.file-text-input {
+  flex: 1;
+  border: 1px solid #ced4da;
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+  background-color: white;
+}
+
+.select-file-btn {
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  padding: 0 15px;
+  color: #495057;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  font-size: 14px;
+}
+.select-file-btn:hover {
+  background-color: #dde0e3;
+}
+
+.action-buttons-left {
+  margin-bottom: 20px;
+}
+
+.action-buttons-center {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.blue-btn {
+  background-color: #36B9CC;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.blue-btn:hover {
+  background-color: #2da1b3;
+}
+
+/* Session Transfer Styles */
+.session-transfer-container {
+  display: flex;
+  justify-content: center;
+  padding-top: 100px;
+  min-height: 500px;
+}
+
+.module-cards-wrapper {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.module-card {
+  width: 200px;
+  height: 200px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid transparent;
+}
+.module-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+  border-color: rgba(0,0,0,0.05);
+}
+
+.module-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-overlay-user {
+  position: absolute;
+  bottom: 0;
+  right: -10px;
+}
+.icon-overlay-card {
+  position: absolute;
+  right: -25px;
+  top: 10px;
+}
+.icon-overlay-hand {
+  position: absolute;
+  bottom: -5px;
+}
+.icon-overlay-book {
+  position: absolute;
+  right: -25px;
+  top: 5px;
+}
+
+.module-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Payroll Transfer Styles */
+.payroll-transfer-container {
+  background-color: white;
+  padding: 30px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  min-height: 500px;
+}
+
+.transfer-filters {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  border-bottom: 1px solid #f2f4f6;
+  padding-bottom: 20px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filter-group label {
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+}
+
+.transfer-select {
+  padding: 8px 12px;
+  border: 1px solid #e1e5eb;
+  border-radius: 4px;
+  width: 220px;
+  outline: none;
+  font-size: 14px;
+  color: #495057;
+}
+
+.transfer-table-title {
+  font-size: 15px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.transfer-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 40px;
+}
+
+.transfer-table th {
+  padding: 12px;
+  font-weight: bold;
+  color: #333;
+  border: 1px solid #dee2e6;
+  text-align: center;
+  background-color: #f8f9fa;
+}
+
+.transfer-table td {
+  padding: 12px;
+  color: #333;
+  border: 1px solid #dee2e6;
+  text-align: center;
+}
+
+.empty-checkbox-box {
+  width: 16px;
+  height: 16px;
+  background-color: #e9ecef;
+  margin: 0 auto;
+}
+
+.transfer-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.transfer-next-btn {
+  background-color: white;
+  color: #f39c12;
+  border: 1px solid #f39c12;
+  border-radius: 4px;
+  padding: 8px 30px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.transfer-next-btn:hover {
+  background-color: #fcf6ec;
+}
+
+/* Global Settings Styles */
+.global-settings-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  min-height: 500px;
+}
+
+.settings-tabs {
+  display: flex;
+  margin-bottom: 25px;
+  gap: 10px;
+  justify-content: center;
+}
+
+.settings-tab {
+  padding: 10px 25px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.active-tab {
+  background-color: #36B9CC;
+  color: white;
+}
+
+.inactive-tab {
+  background-color: #f8f9fa;
+  color: #495057;
+  border: 1px solid #dee2e6;
+}
+
+.settings-section {
+  margin-bottom: 30px;
+}
+
+.section-header {
+  background-color: #E9ECEF;
+  padding: 8px 0;
+  text-align: center;
+  font-weight: bold;
+  font-size: 13px;
+  color: #495057;
+  margin-bottom: 20px;
+}
+
+.settings-row {
+  display: grid;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.row-4-cols {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.settings-input {
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  outline: none;
+  font-size: 14px;
+  color: #495057;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+}
+
+/* Dynamic Open Tabs Bar */
+.payroll-tabs-bar {
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 0 10px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.payroll-tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 15px;
+  font-size: 13px;
+  color: #495057;
+  background-color: #f8f9fa;
+  border: 1px solid transparent;
+  border-bottom: none;
+  cursor: pointer;
+  border-right: 1px solid #dee2e6;
+  margin-top: 5px;
+}
+
+.payroll-tab.active {
+  background-color: white;
+  border-top: 2px solid #159BD7;
+  border-left: 1px solid #dee2e6;
+  border-right: 1px solid #dee2e6;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: -1px;
+  padding-bottom: 9px;
+}
+
+.payroll-tab-close {
+  color: #adb5bd;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 0 5px;
+}
+
+.payroll-tab-close:hover {
+  color: #dc3545;
+}
+
+.tab-scroll-btn {
+  padding: 8px;
+  color: #495057;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.tab-scroll-btn:hover {
+  background-color: #e9ecef;
+}
+
+/* Action Buttons (Add / Export) */
+.header-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-add, .btn-export {
+  background-color: #17a2b8; /* Cyan blue color */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-add:hover, .btn-export:hover {
+  background-color: #138496;
+}
+
+.btn-export {
+  background-color: #159BD7;
+}
+
+.btn-export:hover {
+  background-color: #128ac0;
+}

@@ -1,0 +1,56 @@
+import React from 'react';
+import { Eye } from 'lucide-react';
+
+export default function HeadWiseGrossSalaryReport() {
+  return (
+    <div style={{ display: 'flex', height: '100%', backgroundColor: '#f0f2f5' }}>
+      <div style={{ width: '300px', backgroundColor: 'white', padding: '20px', borderRight: '1px solid #ddd', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto' }}>
+        
+        <div className="form-group">
+          <label style={{ fontWeight: 'bold' }}>School Bank</label>
+          <select className="settings-input"><option>All Salary A/C</option></select>
+        </div>
+
+        <div className="form-group">
+          <label style={{ fontWeight: 'bold' }}>Salary A/c No.</label>
+          <select className="settings-input"><option>All Salary A/C No.</option></select>
+        </div>
+
+        <div className="form-group">
+          <label style={{ fontWeight: 'bold' }}>Staff Type</label>
+          <select className="settings-input"><option>All Staff Types</option></select>
+        </div>
+
+        <div className="form-group">
+          <label style={{ fontWeight: 'bold' }}>Designation</label>
+          <select className="settings-input"><option>All (38)</option></select>
+        </div>
+
+        <div className="form-group">
+          <label style={{ fontWeight: 'bold' }}>Months</label>
+          <select className="settings-input"><option>None selected</option></select>
+        </div>
+
+        <div className="form-group">
+          <label style={{ fontWeight: 'bold' }}>Note :</label>
+          <div style={{ fontSize: '11px', color: '#666', marginTop: '5px' }}>
+            This report does not include...
+          </div>
+        </div>
+
+        <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'center' }}>
+          <button style={{ backgroundColor: '#159BD7', color: 'white', border: 'none', padding: '8px 25px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+            <Eye size={16} /> Show
+          </button>
+        </div>
+
+      </div>
+      
+      <div style={{ flex: 1, backgroundColor: '#e0e0e0', margin: '20px', borderRadius: '4px', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: '50%', left: '-10px', width: '20px', height: '40px', backgroundColor: 'white', border: '1px solid #ddd', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}>
+          <span style={{ fontSize: '12px' }}>◀</span>
+        </div>
+      </div>
+    </div>
+  );
+}
