@@ -151,7 +151,12 @@ function AttendanceDashboard() {
         <div className="attendance-brand">
           <span>NAVALS NATIONAL ACADEMY</span>
         </div>
-        <div className="attendance-menu-title">
+        <div 
+          className="attendance-menu-title"
+          onClick={() => setDrawerOpen(!drawerOpen)}
+          style={{ cursor: "pointer", userSelect: "none" }}
+          title="Toggle Navigation"
+        >
           <FaBars /> <span>Navigation</span>
         </div>
         <div className="attendance-search" role="search">
@@ -342,15 +347,6 @@ function AttendanceDashboard() {
 
       <main className="attendance-main">
         <header className="attendance-header" style={{ backgroundColor: activeTheme.headerBg }}>
-          <button 
-            type="button" 
-            className="attendance-icon-button"
-            onClick={() => setDrawerOpen(!drawerOpen)}
-            title="Toggle Menu"
-          >
-            <FaBars />
-          </button>
-
           <div className="attendance-title">
             <strong className="text-[#e53935] font-extrabold tracking-wider text-sm sm:text-base">NAVALS NATIONAL ACADEMY</strong>
           </div>

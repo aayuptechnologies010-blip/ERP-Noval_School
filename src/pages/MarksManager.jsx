@@ -5739,16 +5739,6 @@ export default function MarksManager() {
           >
             {/* Left Items */}
             <div className="flex items-center gap-3 flex-wrap">
-              {/* Hamburger Button */}
-              <button
-                type="button"
-                onClick={() => setIsSidebarPinned(!isSidebarPinned)}
-                className="text-white hover:text-gray-200 p-1.5 rounded transition cursor-pointer"
-                title="Toggle Sidebar Pin"
-              >
-                <FaBars className="text-base" />
-              </button>
-
               {/* School Name in Bold Red */}
               <h1 
                 onClick={() => { setActiveTab("dashboard"); setSelectedSubItem(""); }}
