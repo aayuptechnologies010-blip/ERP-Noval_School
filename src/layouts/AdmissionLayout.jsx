@@ -211,10 +211,12 @@ function SubChildItem({ text, onItemClick, activeTab }) {
   const isActive = text === activeTab;
   return (
     <div 
-      className={`flex items-center gap-2 pl-8 pr-4 py-1.5 text-[12px] cursor-pointer transition-colors ${isActive ? 'bg-[#eaf7fd] text-[#32a3d7] font-bold' : 'text-[#32a3d7] hover:bg-[#eaf7fd]'}`}
+      className={`flex items-center gap-2 pl-8 pr-4 py-1.5 text-[12px] cursor-pointer transition-colors ${
+        isActive ? 'bg-gray-700 text-white font-bold' : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+      }`}
       onClick={() => onItemClick(text)}
     >
-      <span className={`font-bold text-[10px] ${isActive ? 'text-[#32a3d7]' : 'text-gray-400'}`}>&gt;</span>
+      <span className={`font-bold text-[10px] ${isActive ? 'text-[#00a2db]' : 'text-gray-500'}`}>&gt;</span>
       {text}
     </div>
   );
@@ -227,21 +229,23 @@ function ChildItem({ text, children = [], isOpen, onToggle, onItemClick, activeT
   return (
     <div>
       <div
-        className={`flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-[#eaf7fd] transition-colors group ${isActive ? 'bg-[#eaf7fd]' : ''}`}
+        className={`flex items-center justify-between px-4 py-2 cursor-pointer transition-colors group ${
+          isActive ? 'bg-gray-700/60 text-white' : 'hover:bg-gray-700/40'
+        }`}
         onClick={() => hasChildren ? onToggle() : onItemClick(text)}
       >
         <div className="flex items-center gap-2">
-          <span className={`w-2 h-2 rounded-full border-2 border-[#32a3d7] shrink-0 ${isActive ? 'bg-[#32a3d7]' : 'bg-white'}`}></span>
-          <span className={`text-[12.5px] font-medium ${isActive ? 'text-[#32a3d7] font-bold' : isOpen ? 'text-[#32a3d7]' : 'text-gray-600 group-hover:text-[#32a3d7]'}`}>{text}</span>
+          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? 'bg-[#00a2db]' : 'bg-gray-400'}`}></span>
+          <span className={`text-[12.5px] font-medium ${isActive ? 'text-white font-bold' : isOpen ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>{text}</span>
         </div>
         {hasChildren && (
-          <FaAngleDown
-            className={`text-[10px] text-[#32a3d7] transition-transform duration-200 ${isOpen ? '' : '-rotate-90'}`}
-          />
+          <span className={`text-[10px] text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-90 text-white' : ''}`}>
+            &gt;
+          </span>
         )}
       </div>
       {hasChildren && isOpen && (
-        <div className="bg-white">
+        <div className="bg-[#191f26]">
           {children.map((sub, i) => (
             <SubChildItem key={i} text={sub.text} onItemClick={onItemClick} activeTab={activeTab} />
           ))}
@@ -251,32 +255,52 @@ function ChildItem({ text, children = [], isOpen, onToggle, onItemClick, activeT
   );
 }
 
-function SidebarItem({ icon, text, active = false, children = [], isOpen, onToggle, onItemClick, activeTab }) {
+function SidebarItem({ icon, text, active = false, children = [], isOpen, isExpanded, onToggle, onItemClick, activeTab }) {
   const [openChildIndex, setOpenChildIndex] = useState(null);
   const hasChildren = children && children.length > 0;
+
+  if (!isExpanded) {
+    return (
+      <div
+        className={`w-10 h-10 flex items-center justify-center cursor-pointer transition-colors ${
+          active 
+            ? 'text-white bg-[#00a2db] rounded-lg' 
+            : 'text-gray-400 hover:text-white hover:bg-gray-700/60 rounded-lg'
+        }`}
+        title={text}
+        onClick={onToggle}
+      >
+        <span className="text-lg">{icon}</span>
+      </div>
+    );
+  }
 
   return (
     <div>
       <div
         className={`flex items-center justify-between px-4 py-2.5 cursor-pointer transition-colors ${
-          active ? 'bg-[#32a3d7] text-white font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+          active ? 'bg-gray-700/70 text-white font-semibold' : 'text-gray-300 hover:bg-gray-700/40 hover:text-white font-medium'
         }`}
         onClick={() => hasChildren ? onToggle() : onItemClick(text)}
       >
-        <div className="flex items-center gap-3">
-          <span className={`text-base ${active ? 'text-white' : 'text-[#32a3d7] opacity-80'}`}>{icon}</span>
-          <span className="text-[13px] font-medium">{text}</span>
+        <div className="flex items-center gap-3.5 min-w-0">
+          <span className={`text-base shrink-0 ${active ? 'text-[#00a2db]' : 'text-gray-400'}`}>{icon}</span>
+          <span className="text-[13px] truncate">{text}</span>
         </div>
         {hasChildren && (
-          <FaAngleDown
-            className={`text-[11px] transition-transform duration-200 ${active ? 'text-white' : 'text-gray-400'} ${isOpen ? '' : '-rotate-90'}`}
-          />
+          <span
+            className={`text-[12px] text-gray-400 font-bold transition-transform duration-200 ${
+              isOpen ? 'rotate-90 text-white' : ''
+            }`}
+          >
+            &gt;
+          </span>
         )}
       </div>
 
       {/* Level-2 children */}
       {hasChildren && isOpen && (
-        <div className="bg-[#f8fbfc]">
+        <div className="bg-[#1f262e] border-l-2 border-[#00a2db]/40 ml-4 my-1">
           {children.map((child, i) => (
             <ChildItem 
               key={i} 
@@ -296,7 +320,9 @@ function SidebarItem({ icon, text, active = false, children = [], isOpen, onTogg
 
 
 function AdmissionLayout() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isPinned, setIsPinned] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const isExpanded = isPinned || isHovered;
   const [openTopLevelIndex, setOpenTopLevelIndex] = useState(null);
   const [tabs, setTabs] = useState([{ id: 'Dashboard', title: 'Dashboard' }]);
   const [activeTab, setActiveTab] = useState('Dashboard');
@@ -1584,24 +1610,61 @@ function AdmissionLayout() {
   return (
     <div className="flex h-screen w-full font-sans bg-[#f4f7f6] overflow-hidden">
 
-      {/* Sidebar */}
+      {/* 1. Dark Slate Single Unified Sidebar (Hover to Expand, Collapse to Icons) */}
       <div
-        className={`bg-white border-r border-gray-200 transition-all duration-300 flex flex-col z-20 shrink-0 ${
-          isSidebarOpen ? 'w-60' : 'w-0 overflow-hidden'
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={`bg-[#262f38] text-gray-200 transition-all duration-300 ease-in-out flex flex-col z-50 shrink-0 select-none shadow-md h-full ${
+          isExpanded ? 'w-64' : 'w-14'
         }`}
       >
-        <div className="h-14 flex items-center justify-center px-4 border-b border-gray-100 bg-[#32a3d7]">
-          <span className="text-base font-semibold text-white tracking-wide">≡ Navigation</span>
-        </div>
-
-        <div className="p-3 border-b border-gray-100">
-          <div className="flex items-center border border-gray-300 rounded px-3 py-1.5 bg-white">
-            <FaSearch className="text-gray-400 mr-2 text-sm" />
-            <input type="text" placeholder="Search Menu" className="bg-transparent outline-none w-full text-xs text-gray-600" />
+        {/* Top Header / Hamburger */}
+        {isExpanded ? (
+          <div className="h-12 flex items-center justify-between px-4 text-white shrink-0 border-b border-gray-700/50">
+            <span className="text-base font-bold tracking-wide flex items-center gap-3">
+              <FaBars className="text-lg cursor-pointer hover:text-gray-300" onClick={() => setIsPinned(!isPinned)} />
+              <span>Navigation</span>
+            </span>
           </div>
-        </div>
+        ) : (
+          <div 
+            className="h-12 flex items-center justify-center text-white shrink-0 cursor-pointer hover:text-gray-300 transition" 
+            onClick={() => setIsPinned(!isPinned)}
+            title="Expand Navigation"
+          >
+            <FaBars className="text-xl" />
+          </div>
+        )}
 
-        <div className="flex-1 overflow-y-auto">
+        {/* Search Box */}
+        {isExpanded ? (
+          <div className="p-3 border-b border-gray-700/40">
+            <div className="flex items-center border border-gray-300 rounded-md px-2.5 py-1.5 bg-white shadow-2xs">
+              <FaSearch className="text-gray-400 mr-2 text-xs" />
+              <input
+                type="text"
+                placeholder="Search Menu"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-transparent outline-none w-full text-xs text-gray-800 placeholder-gray-400"
+                autoFocus={isHovered}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="p-2 flex justify-center border-b border-gray-700/30">
+            <button
+              onClick={() => setIsPinned(!isPinned)}
+              className="w-10 h-10 flex items-center justify-center bg-white rounded-lg text-gray-500 hover:text-gray-800 shadow transition cursor-pointer"
+              title="Search Menu"
+            >
+              <FaSearch className="text-base" />
+            </button>
+          </div>
+        )}
+
+        {/* Menu Items */}
+        <div className={`flex-1 overflow-y-auto ${isExpanded ? 'py-2' : 'flex flex-col gap-3 py-3 items-center'}`}>
           {menuItems.map((item, i) => {
             const isTopLevelActive = item.text === activeTab || (item.children && item.children.some(child => 
               child.text === activeTab || (child.children && child.children.some(sub => sub.text === activeTab))
@@ -1614,61 +1677,72 @@ function AdmissionLayout() {
                 active={isTopLevelActive}
                 children={item.children}
                 isOpen={openTopLevelIndex === i}
-                onToggle={() => setOpenTopLevelIndex(openTopLevelIndex === i ? null : i)}
+                isExpanded={isExpanded}
+                onToggle={() => {
+                  if (!isExpanded) {
+                    setIsPinned(true);
+                  }
+                  setOpenTopLevelIndex(openTopLevelIndex === i ? null : i);
+                }}
                 onItemClick={handleMenuClick}
                 activeTab={activeTab}
               />
             );
           })}
         </div>
+
+        {/* Bottom Weather / Notification Widget */}
+        <div className="p-2.5 border-t border-gray-700/50 flex justify-center items-center shrink-0">
+          <div className="relative cursor-pointer">
+            <span className="text-xl">🌙</span>
+            <span className="absolute -top-1 -right-1 bg-pink-400 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+              3
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* Main Content Area */}
+      {/* 2. Main Content Container (Header + Subheader + Dashboard) */}
       <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
 
-        {/* Header */}
-        <div className="h-14 bg-[#32a3d7] flex items-center justify-between px-4 text-white flex-shrink-0 z-30">
+        {/* Top Header */}
+        <div className="h-12 bg-[#00a2db] flex items-center justify-between px-4 text-white flex-shrink-0 z-40 shadow-xs">
           <div className="flex items-center gap-3 min-w-0">
-            <FaBars
-              className="text-lg cursor-pointer hover:text-gray-200 shrink-0"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            />
-
-            <Link to="/dashboard" className="text-[#ea1f23] font-bold text-base tracking-wider hover:opacity-80 whitespace-nowrap shrink-0">
+            <Link to="/dashboard" className="text-[#e53935] font-extrabold text-base tracking-wider hover:opacity-90 whitespace-nowrap shrink-0 drop-shadow-xs">
               NAVALS NATIONAL ACADEMY
             </Link>
 
-            <div className="flex items-center gap-1.5 border-l border-white/30 pl-3 whitespace-nowrap shrink-0">
-              <FaBook className="text-base" />
-              <span className="text-sm font-medium">Admission</span>
+            <div className="flex items-center gap-1.5 border border-white/40 rounded px-2.5 py-1 whitespace-nowrap shrink-0 bg-white/10">
+              <FaGraduationCap className="text-base" />
+              <span className="text-xs font-bold tracking-wide">Admission</span>
             </div>
 
             <div className="flex items-center gap-3 ml-2">
-              <div className="flex items-center gap-1.5 whitespace-nowrap">
-                <FaGraduationCap className="text-base opacity-80" />
-                <span className="text-xs">Academic Year :</span>
-                <select className="bg-[#2a95c8] border border-white/40 rounded text-xs py-0.5 px-1.5 outline-none text-white cursor-pointer">
-                  <option className="text-black">2026-2027</option>
-                  <option className="text-black">2025-2026</option>
+              <div className="flex items-center gap-1.5 whitespace-nowrap text-xs">
+                <FaGraduationCap className="text-sm opacity-90" />
+                <span>Academic Year :</span>
+                <select className="bg-white/20 border border-white/40 rounded text-xs py-0.5 px-2 outline-none text-white cursor-pointer font-medium">
+                  <option className="text-gray-900">2026-2027</option>
+                  <option className="text-gray-900">2025-2026</option>
                 </select>
               </div>
 
-              <div className="flex items-center gap-1.5 whitespace-nowrap">
-                <FaChartPie className="text-base opacity-80" />
-                <span className="text-xs">Financial Year :</span>
-                <select className="bg-[#2a95c8] border border-white/40 rounded text-xs py-0.5 px-1.5 outline-none text-white cursor-pointer">
-                  <option className="text-black">2026-2027</option>
-                  <option className="text-black">2025-2026</option>
+              <div className="flex items-center gap-1.5 whitespace-nowrap text-xs">
+                <FaChartPie className="text-sm opacity-90" />
+                <span>Financial Year :</span>
+                <select className="bg-white/20 border border-white/40 rounded text-xs py-0.5 px-2 outline-none text-white cursor-pointer font-medium">
+                  <option className="text-gray-900">2026-2027</option>
+                  <option className="text-gray-900">2025-2026</option>
                 </select>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 ml-3 shrink-0">
-            <div className="flex gap-3 text-base opacity-90">
-              <FaQuestionCircle className="cursor-pointer hover:opacity-70" />
-              <FaInfoCircle className="cursor-pointer hover:opacity-70" />
-              <FaCog className="cursor-pointer hover:opacity-70" />
+          <div className="flex items-center gap-4 ml-3 shrink-0">
+            <div className="flex gap-3 text-sm opacity-95">
+              <FaQuestionCircle className="cursor-pointer hover:opacity-75" title="Help" />
+              <FaInfoCircle className="cursor-pointer hover:opacity-75" title="Info" />
+              <FaCog className="cursor-pointer hover:opacity-75" title="Settings" />
             </div>
 
             <div className="flex items-center gap-1 cursor-pointer hover:text-gray-200 whitespace-nowrap">
@@ -1678,47 +1752,54 @@ function AdmissionLayout() {
           </div>
         </div>
 
-        {/* Sub-header / Quick Access */}
-        <div className="h-9 bg-[#4db7e2] flex items-center justify-between px-4 text-white shadow-sm flex-shrink-0">
-          <div className="flex items-center gap-1 bg-white text-[#4db7e2] px-3 py-1 rounded-t-sm text-[11px] font-bold mt-1.5 border border-b-0 border-gray-200">
-            QUICK ACCESS &gt;
+        {/* Sub-header / Quick Access Bar */}
+        <div className="h-10 bg-[#00a2db] flex items-center justify-between px-3 text-white flex-shrink-0 border-t border-white/20 z-30">
+          <div className="flex items-center gap-3">
+            <div className="bg-white text-[#00a2db] px-3.5 py-1 text-xs font-bold tracking-tight rounded-none shadow-2xs">
+              QUICK ACCESS &gt;
+            </div>
+            <button className="bg-white text-[#0284c7] hover:bg-blue-50 border border-blue-200 text-xs font-semibold px-4 py-1 rounded-full shadow-2xs transition">
+              UP Board TC Form
+            </button>
           </div>
-          <div className="bg-white text-[#4db7e2] border border-gray-200 px-3 py-1 text-[10px] uppercase font-bold rounded cursor-pointer hover:bg-gray-50 flex items-center gap-1">
-            <FaCog /> Customize
-          </div>
+
+          <button className="bg-white text-[#00a2db] border border-blue-200 px-3.5 py-1 text-xs font-bold rounded-2xs cursor-pointer hover:bg-gray-50 flex items-center gap-1.5 shadow-2xs transition">
+            <FaCog className="text-sm" /> Customize
+          </button>
         </div>
 
-        {/* Tabs Bar */}
-        {tabs.length > 0 && (
-          <div className="flex items-center gap-1 bg-[#eef1f5] pt-3 px-4">
-            {tabs.map((tab) => (
-              <div
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-1.5 text-xs rounded-t-md cursor-pointer border ${
-                  activeTab === tab.id
-                    ? 'bg-white text-gray-700 border-gray-200 border-b-white z-10'
-                    : 'bg-[#e4e9f0] text-gray-500 border-transparent hover:bg-gray-200 border-b-gray-200'
-                }`}
-                style={{ marginBottom: activeTab === tab.id ? '-1px' : '0' }}
-              >
-                {tab.title}
-                {tab.id !== 'Dashboard' && (
-                  <span
-                    onClick={(e) => closeTab(tab.id, e)}
-                    className="text-gray-400 hover:text-red-500 ml-2 font-bold text-[10px]"
-                  >
-                    ✕
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0 bg-[#edf2f7]">
+          {/* Tab Bar (Only when multiple non-Dashboard tabs are open) */}
+          {tabs.length > 1 && (
+            <div className="flex items-center gap-1 bg-[#eef1f5] pt-2 px-4 border-b border-gray-200 shrink-0">
+              {tabs.map((tab) => (
+                <div
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-1.5 text-xs rounded-t-md cursor-pointer border ${
+                    activeTab === tab.id
+                      ? 'bg-white text-gray-700 border-gray-200 border-b-white z-10 font-bold'
+                      : 'bg-[#e4e9f0] text-gray-500 border-transparent hover:bg-gray-200 border-b-gray-200 font-medium'
+                  }`}
+                  style={{ marginBottom: activeTab === tab.id ? '-1px' : '0' }}
+                >
+                  {tab.title}
+                  {tab.id !== 'Dashboard' && (
+                    <span
+                      onClick={(e) => closeTab(tab.id, e)}
+                      className="text-gray-400 hover:text-red-500 ml-2 font-bold text-[10px]"
+                    >
+                      ✕
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
-        {/* Content Outlet */}
-        <div className="flex-1 overflow-y-auto bg-[#eef1f5] p-4 pt-0 flex flex-col">
-          <div className="bg-white p-4 rounded-b-md rounded-tr-md shadow-sm border border-gray-200 flex-1 flex flex-col min-h-0">
+          {/* Scrollable Page Content */}
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col">
             {activeTab === 'Dashboard' ? (
               <Outlet />
             ) : activeTab === 'Relate Class Section' ? (
@@ -6747,7 +6828,6 @@ function AdmissionLayout() {
             )}
           </div>
         </div>
-
       </div>
 
       {/* Add Modal */}

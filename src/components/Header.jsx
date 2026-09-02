@@ -232,6 +232,11 @@ function Header({
                   <div
                     className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition"
                     onClick={() => {
+                      try {
+                        localStorage.setItem("timetable_activeTab", "dashboard");
+                        localStorage.setItem("timetable_selectedSubItem", "");
+                        localStorage.setItem("timetable_openMenu", "");
+                      } catch {}
                       window.open("/timetable", "_blank");
                       setIsAppsOpen(false);
                     }}
