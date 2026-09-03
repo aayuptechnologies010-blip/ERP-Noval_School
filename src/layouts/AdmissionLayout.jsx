@@ -18255,28 +18255,86 @@ function AdmissionLayout() {
                           </div>
                           {cwsdFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Session</label><select value={cwsdSession} onChange={(e) => setCwsdSession(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>Select Session</option><option>2025-2026</option><option>2026-2027</option></select></div>
                               <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">School</label><select value={cwsdSchool} onChange={(e) => setCwsdSchool(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Schools</option><option>NAVALS NATIONAL ACADEMY</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={cwsdClass} onChange={(e) => setCwsdClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Class</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={cwsdSection} onChange={(e) => setCwsdSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Section</option><option>A</option><option>B</option></select></div>
-                              <button onClick={() => { setCwsdShow(true); setCwsdNotification('Class Wise Student Details loaded.'); setTimeout(() => setCwsdNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={cwsdClass} onChange={(e) => setCwsdClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All (51)</option><option>NUR A</option><option>NUR B</option><option>LKG A</option><option>LKG B</option><option>UKG A</option></select></div>
+                              <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="checkbox" className="rounded text-[#28aae1]" /> Is Day Scholar/Boarding Show On Report</label>
+                              <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="checkbox" className="rounded text-[#28aae1]" /> Show Roll No. On Report</label>
+                              <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="checkbox" className="rounded text-[#28aae1]" /> Format 1</label>
+                              <div className="flex flex-col gap-2 mt-2">
+                                <button onClick={() => { setCwsdShow(true); setCwsdNotification('Class Wise Student Details loaded.'); setTimeout(() => setCwsdNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-2 rounded text-xs font-medium cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
+                                <button onClick={() => { setCwsdNotification('Exporting UDISE Excel...'); setTimeout(() => setCwsdNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-2 rounded text-xs font-medium cursor-pointer">Export UDISE Excel</button>
+                              </div>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {cwsdShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {cwsdShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer text-gray-400 hover:text-gray-600" /><span>1</span><FaChevronRight className="cursor-pointer text-gray-400 hover:text-gray-600" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer text-gray-500 hover:text-gray-700" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div><div className="text-gray-500">Affiliated to CBSE, New Delhi</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CLASS WISE STUDENT DETAILS</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">SECTION</th><th className="border border-gray-300 px-2 py-1">FATHER NAME</th><th className="border border-gray-300 px-2 py-1">MOBILE</th></tr></thead>
-                                  <tbody><tr><td colSpan="7" className="text-center py-3 text-gray-500 font-medium">No record found!</td></tr></tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Wise Student Details printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 30</span></div>
+                                  <button className="px-2 py-1 bg-white border border-gray-300 rounded text-xs hover:bg-gray-100 cursor-pointer">&gt;</button>
+                                  <button className="px-2 py-1 bg-white border border-gray-300 rounded text-xs hover:bg-gray-100 cursor-pointer">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[950px] p-6 text-xs text-gray-900 font-sans">
+                                  <div className="flex items-center justify-center relative mb-4">
+                                    <div className="absolute left-0 border border-green-600 rounded-full p-1"><img src={schoolLogo} alt="School Logo" className="w-12 h-12 object-contain"/></div>
+                                    <div className="text-center">
+                                      <h1 className="text-lg font-bold tracking-wide">NAVALS NATIONAL ACADEMY</h1>
+                                      <p className="text-xs text-gray-600 font-semibold">DOHRIGHAT , MAU</p>
+                                    </div>
+                                  </div>
+                                  <div className="border-t-2 border-orange-200 pt-2 mb-3 flex items-center justify-between text-xs font-bold text-gray-800">
+                                    <span>Student List of Class : NUR A</span>
+                                    <span>Teacher's Name : </span>
+                                  </div>
+                                  <table className="w-full border-collapse border border-amber-400 text-[11px]">
+                                    <thead className="bg-[#fef9c3]">
+                                      <tr>
+                                        <th className="border border-amber-300 px-2 py-1 text-center w-10">SN</th>
+                                        <th className="border border-amber-300 px-2 py-1 text-center w-20">ADM. NO.</th>
+                                        <th className="border border-amber-300 px-2 py-1 text-left">NAME</th>
+                                        <th className="border border-amber-300 px-2 py-1 w-24"></th>
+                                        <th className="border border-amber-300 px-2 py-1 w-24"></th>
+                                        <th className="border border-amber-300 px-2 py-1 w-24"></th>
+                                        <th className="border border-amber-300 px-2 py-1 w-24"></th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {studentImageDatabase['NUR-A'].map((st) => (
+                                        <tr key={st.sr} className="hover:bg-amber-50/50">
+                                          <td className="border border-amber-200 px-2 py-1 text-center font-medium">{st.sr}</td>
+                                          <td className="border border-amber-200 px-2 py-1 text-center font-mono">{st.adm}</td>
+                                          <td className="border border-amber-200 px-2 py-1 font-bold text-gray-800">{st.name}</td>
+                                          <td className="border border-amber-200 px-2 py-1"></td>
+                                          <td className="border border-amber-200 px-2 py-1"></td>
+                                          <td className="border border-amber-200 px-2 py-1"></td>
+                                          <td className="border border-amber-200 px-2 py-1"></td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold border-t border-gray-300 pt-3 mt-4">
+                                    <span>Academic Year : 2026-2027</span>
+                                    <span>Student List as on 03-Sep-2026 at 10:08 PM</span>
+                                    <span>Page 1 of 30</span>
+                                  </div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -18298,20 +18356,43 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {cstrShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {cstrShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CLASS SECTION TRANSFER REPORT</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">FROM CLASS</th><th className="border border-gray-300 px-2 py-1">TO CLASS</th><th className="border border-gray-300 px-2 py-1">DATE</th></tr></thead>
-                                  <tbody><tr><td colSpan="6" className="text-center py-3 text-gray-500 font-medium">No record found!</td></tr></tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Section Transfer Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CLASS SECTION TRANSFER REPORT</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">FROM CLASS</th><th className="border border-gray-300 px-2 py-1">TO CLASS</th><th className="border border-gray-300 px-2 py-1">DATE</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">1770</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">NUR B</td><td className="border border-gray-300 px-2 py-1 text-center">15-Apr-2026</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">1850</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">LKG A</td><td className="border border-gray-300 px-2 py-1 text-center">LKG B</td><td className="border border-gray-300 px-2 py-1 text-center">20-May-2026</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">2203</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">UKG B</td><td className="border border-gray-300 px-2 py-1 text-center">UKG A</td><td className="border border-gray-300 px-2 py-1 text-center">10-Jul-2026</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Section Transfer Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -18333,20 +18414,43 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {cwsibShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {cwsibShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CLASS WISE SIBLING REPORT</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">SIBLING NAME</th><th className="border border-gray-300 px-2 py-1">SIBLING CLASS</th><th className="border border-gray-300 px-2 py-1">FATHER NAME</th></tr></thead>
-                                  <tbody><tr><td colSpan="6" className="text-center py-3 text-gray-500 font-medium">No record found!</td></tr></tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Wise Sibling printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CLASS WISE SIBLING REPORT</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">SIBLING NAME</th><th className="border border-gray-300 px-2 py-1">SIBLING CLASS</th><th className="border border-gray-300 px-2 py-1">FATHER NAME</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1">AADITYA GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">CLASS 4 A</td><td className="border border-gray-300 px-2 py-1">RAJESH GUPTA</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">LKG A</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1">SHIVANI JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">CLASS 7 B</td><td className="border border-gray-300 px-2 py-1">MANOJ JAISWAL</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">UKG A</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1">ANURAG MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">CLASS 9 A</td><td className="border border-gray-300 px-2 py-1">SUNIL MAURYA</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Wise Sibling printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -18369,20 +18473,44 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {cwmlShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {cwmlShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CLASS WISE MARK LIST</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">MARKS</th><th className="border border-gray-300 px-2 py-1">GRADE</th></tr></thead>
-                                  <tbody><tr><td colSpan="6" className="text-center py-3 text-gray-500 font-medium">No record found!</td></tr></tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Wise Mark List printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CLASS WISE MARK LIST</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">MARKS</th><th className="border border-gray-300 px-2 py-1">GRADE</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">1770</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">94.5%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-700">A1</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">1850</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">91.0%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-700">A1</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">1858</td><td className="border border-gray-300 px-2 py-1 font-bold">KARTIK MADDHESIYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">88.5%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-blue-700">A2</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center">2203</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">96.0%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-700">A1</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Wise Mark List printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -18403,20 +18531,45 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {tssrShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {tssrShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">TOTAL SESSION STRENGTH WISE REPORT</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">SESSION</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                  <tbody><tr><td colSpan="6" className="text-center py-3 text-gray-500 font-medium">No record found!</td></tr></tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Total Session Strength Wise Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">TOTAL SESSION STRENGTH WISE REPORT</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">SESSION</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">45</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">80</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">50</td><td className="border border-gray-300 px-2 py-1 text-center">40</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">90</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">48</td><td className="border border-gray-300 px-2 py-1 text-center">42</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">90</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">1</td><td className="border border-gray-300 px-2 py-1 text-center">55</td><td className="border border-gray-300 px-2 py-1 text-center">45</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">100</td></tr>
+                                      <tr className="bg-gray-100 font-bold"><td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">198</td><td className="border border-gray-300 px-2 py-1 text-center">162</td><td className="border border-gray-300 px-2 py-1 text-center">360</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Total Session Strength Wise Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -18439,20 +18592,44 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {dwarShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {dwarShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">DATE WISE ADMISSION REPORT</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">DATE</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">FATHER NAME</th></tr></thead>
-                                  <tbody><tr><td colSpan="6" className="text-center py-3 text-gray-500 font-medium">No record found!</td></tr></tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Date Wise Admission Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">DATE WISE ADMISSION REPORT</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">DATE</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">FATHER NAME</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">02-Apr-2026</td><td className="border border-gray-300 px-2 py-1 text-center">1770</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1">RAJESH GUPTA</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">05-Apr-2026</td><td className="border border-gray-300 px-2 py-1 text-center">1850</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1">MANOJ JAISWAL</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">12-Apr-2026</td><td className="border border-gray-300 px-2 py-1 text-center">1858</td><td className="border border-gray-300 px-2 py-1 font-bold">KARTIK MADDHESIYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1">VIJAY MADDHESIYA</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center">18-Apr-2026</td><td className="border border-gray-300 px-2 py-1 text-center">2203</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1">SUNIL MAURYA</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Date Wise Admission Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -18474,20 +18651,44 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {shwrShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {shwrShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">STUDENT HOUSE WISE REPORT</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">HOUSE</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">SECTION</th><th className="border border-gray-300 px-2 py-1">ROLL NO.</th></tr></thead>
-                                  <tbody><tr><td colSpan="6" className="text-center py-3 text-gray-500 font-medium">No record found!</td></tr></tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Student House Wise Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">STUDENT HOUSE WISE REPORT</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">HOUSE</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">SECTION</th><th className="border border-gray-300 px-2 py-1">ROLL NO.</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-bold text-red-600">Red House</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">101</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-bold text-blue-600">Blue House</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">102</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-bold text-green-600">Green House</td><td className="border border-gray-300 px-2 py-1 font-bold">KARTIK MADDHESIYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">103</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-bold text-yellow-600">Yellow House</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">104</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Student House Wise Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -18509,20 +18710,43 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {srdwrShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {srdwrShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">STUDENT REGISTER DATE WISE REPORT</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">DATE</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">FATHER NAME</th></tr></thead>
-                                  <tbody><tr><td colSpan="6" className="text-center py-3 text-gray-500 font-medium">No record found!</td></tr></tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Student Register Date Wise Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">STUDENT REGISTER DATE WISE REPORT</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">DATE</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">FATHER NAME</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">01-Apr-2026</td><td className="border border-gray-300 px-2 py-1 text-center">1770</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1">RAJESH GUPTA</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">03-Apr-2026</td><td className="border border-gray-300 px-2 py-1 text-center">1850</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1">MANOJ JAISWAL</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">10-Apr-2026</td><td className="border border-gray-300 px-2 py-1 text-center">1858</td><td className="border border-gray-300 px-2 py-1 font-bold">KARTIK MADDHESIYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1">VIJAY MADDHESIYA</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Student Register Date Wise Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -18543,20 +18767,44 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {sherShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {sherShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">STUDENT HEALTH ENTRY REPORT</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">HEIGHT (cm)</th><th className="border border-gray-300 px-2 py-1">WEIGHT (kg)</th><th className="border border-gray-300 px-2 py-1">BLOOD GROUP</th></tr></thead>
-                                  <tbody><tr><td colSpan="7" className="text-center py-3 text-gray-500 font-medium">No record found!</td></tr></tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Student Health Entry Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">STUDENT HEALTH ENTRY REPORT</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">HEIGHT (cm)</th><th className="border border-gray-300 px-2 py-1">WEIGHT (kg)</th><th className="border border-gray-300 px-2 py-1">BLOOD GROUP</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">1770</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">98</td><td className="border border-gray-300 px-2 py-1 text-center">15.5</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-red-600">B+</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">1850</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">102</td><td className="border border-gray-300 px-2 py-1 text-center">16.0</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-red-600">O+</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">1858</td><td className="border border-gray-300 px-2 py-1 font-bold">KARTIK MADDHESIYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">96</td><td className="border border-gray-300 px-2 py-1 text-center">14.8</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-red-600">A+</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center">2203</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">97</td><td className="border border-gray-300 px-2 py-1 text-center">15.0</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-red-600">AB+</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Student Health Entry Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -18578,20 +18826,43 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {grwsrShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {grwsrShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">GENDER / RELIGION WISE STUDENT REPORT</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">RELIGION</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                  <tbody><tr><td colSpan="6" className="text-center py-3 text-gray-500 font-medium">No record found!</td></tr></tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Gender/Religion Wise Student Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">GENDER / RELIGION WISE STUDENT REPORT</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">RELIGION</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center">21</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">46</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">Muslim</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">6</td></tr>
+                                      <tr className="bg-gray-100 font-bold"><td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">29</td><td className="border border-gray-300 px-2 py-1 text-center">23</td><td className="border border-gray-300 px-2 py-1 text-center">52</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Gender/Religion Wise Student Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -18613,20 +18884,44 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {cwsrShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {cwsrShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CATEGORY WISE STUDENT REPORT</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CATEGORY</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                  <tbody><tr><td colSpan="6" className="text-center py-3 text-gray-500 font-medium">No record found!</td></tr></tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Category Wise Student Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CATEGORY WISE STUDENT REPORT</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CATEGORY</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">18</td><td className="border border-gray-300 px-2 py-1 text-center">15</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">33</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center">16</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">36</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">SC / ST</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">7</td><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">11</td></tr>
+                                      <tr className="bg-gray-100 font-bold"><td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">45</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center">80</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Category Wise Student Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -18648,20 +18943,44 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {swsdShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {swsdShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">SURNAME WISE STUDENT DETAILS</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">SURNAME</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">SECTION</th><th className="border border-gray-300 px-2 py-1">FATHER NAME</th></tr></thead>
-                                  <tbody><tr><td colSpan="6" className="text-center py-3 text-gray-500 font-medium">No record found!</td></tr></tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Surname Wise Student Details printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">SURNAME WISE STUDENT DETAILS</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">SURNAME</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">SECTION</th><th className="border border-gray-300 px-2 py-1">FATHER NAME</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-bold text-blue-700">GUPTA</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1">RAJESH GUPTA</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-bold text-blue-700">JAISWAL</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1">MANOJ JAISWAL</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-bold text-blue-700">MADDHESIYA</td><td className="border border-gray-300 px-2 py-1 font-bold">KARTIK MADDHESIYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1">VIJAY MADDHESIYA</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-bold text-blue-700">MAURYA</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1">SUNIL MAURYA</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Surname Wise Student Details printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -18683,20 +19002,44 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {aisdrShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {aisdrShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">ACTIVE / INACTIVE STUDENTS DETAIL REPORT</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">STATUS</th><th className="border border-gray-300 px-2 py-1">FATHER NAME</th><th className="border border-gray-300 px-2 py-1">MOBILE</th></tr></thead>
-                                  <tbody><tr><td colSpan="7" className="text-center py-3 text-gray-500 font-medium">No record found!</td></tr></tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Active/Inactive Students Detail Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">ACTIVE / INACTIVE STUDENTS DETAIL REPORT</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">STATUS</th><th className="border border-gray-300 px-2 py-1">FATHER NAME</th><th className="border border-gray-300 px-2 py-1">MOBILE</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">1770</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-600">Active</td><td className="border border-gray-300 px-2 py-1">RAJESH GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">9839000001</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">1850</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-600">Active</td><td className="border border-gray-300 px-2 py-1">MANOJ JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">9839000002</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">1858</td><td className="border border-gray-300 px-2 py-1 font-bold">KARTIK MADDHESIYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-600">Active</td><td className="border border-gray-300 px-2 py-1">VIJAY MADDHESIYA</td><td className="border border-gray-300 px-2 py-1 text-center">9839000003</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center">1902</td><td className="border border-gray-300 px-2 py-1 font-bold">RAHUL KUMAR</td><td className="border border-gray-300 px-2 py-1 text-center">NUR B</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-red-600">Inactive</td><td className="border border-gray-300 px-2 py-1">ANIL KUMAR</td><td className="border border-gray-300 px-2 py-1 text-center">9839000004</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Active/Inactive Students Detail Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -18717,20 +19060,42 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {swlrShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {swlrShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">STAFF WARD LIST REPORT</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">STAFF NAME</th><th className="border border-gray-300 px-2 py-1">DESIGNATION</th><th className="border border-gray-300 px-2 py-1">MOBILE</th></tr></thead>
-                                  <tbody><tr><td colSpan="7" className="text-center py-3 text-gray-500 font-medium">No record found!</td></tr></tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Staff Ward List Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">STAFF WARD LIST REPORT</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">STAFF NAME</th><th className="border border-gray-300 px-2 py-1">DESIGNATION</th><th className="border border-gray-300 px-2 py-1">MOBILE</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">1770</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1">PREETI GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">TEACHER</td><td className="border border-gray-300 px-2 py-1 text-center">9839111101</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">2203</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1">SUNIL MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">ADMIN STAFF</td><td className="border border-gray-300 px-2 py-1 text-center">9839111102</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Staff Ward List Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -18752,20 +19117,44 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {slerShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {slerShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">STUDENT LAST EXAM REPORT</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">EXAM YEAR</th><th className="border border-gray-300 px-2 py-1">LAST RESULT</th><th className="border border-gray-300 px-2 py-1">MARKS</th></tr></thead>
-                                  <tbody><tr><td colSpan="7" className="text-center py-3 text-gray-500 font-medium">No record found!</td></tr></tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Student Last Exam Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">STUDENT LAST EXAM REPORT</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">EXAM YEAR</th><th className="border border-gray-300 px-2 py-1">LAST RESULT</th><th className="border border-gray-300 px-2 py-1">MARKS</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">1770</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">2025-2026</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-600">PASSED</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">94.5%</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">1850</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">2025-2026</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-600">PASSED</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">91.0%</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">1858</td><td className="border border-gray-300 px-2 py-1 font-bold">KARTIK MADDHESIYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">2025-2026</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-600">PASSED</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">88.5%</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center">2203</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">2025-2026</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-600">PASSED</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">96.0%</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Student Last Exam Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -19176,34 +19565,52 @@ function AdmissionLayout() {
                             <button onClick={() => setCcrssFilterOpen(!ccrssFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{ccrssFilterOpen ? '◀' : '▶'}</button>
                           </div>
                           {ccrssFilterOpen && (
-                            <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">School</label><select value={ccrssSchool} onChange={(e) => setCcrssSchool(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Schools</option><option>NAVALS NATIONAL ACADEMY</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Wing</label><select value={ccrssWing} onChange={(e) => setCcrssWing(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Wings</option><option>Senior Wing</option><option>Junior Wing</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={ccrssClass} onChange={(e) => setCcrssClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={ccrssSection} onChange={(e) => setCcrssSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Sections</option><option>A</option><option>B</option></select></div>
-                              <button onClick={() => { setCcrssShow(true); setCcrssNotification('Category / Classification / Religion Wise Strength loaded.'); setTimeout(() => setCcrssNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
+                            <div className="flex flex-col gap-3 text-xs w-full">
+                              <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="radio" name="ccrssMode" defaultChecked className="text-[#28aae1]" /> Religion Wise</label>
+                              <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="radio" name="ccrssMode" className="text-[#28aae1]" /> Category Wise</label>
+                              <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="radio" name="ccrssMode" className="text-[#28aae1]" /> Classification Wise</label>
+                              <button onClick={() => { setCcrssShow(true); setCcrssNotification('Category / Classification / Religion Wise Strength loaded.'); setTimeout(() => setCcrssNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-4 py-2 rounded text-xs font-medium mt-3 cursor-pointer w-24"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {ccrssShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {ccrssShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CATEGORY / CLASSIFICATION / RELIGION WISE STRENGTH</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CATEGORY</th><th className="border border-gray-300 px-2 py-1">CLASSIFICATION</th><th className="border border-gray-300 px-2 py-1">RELIGION</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                  <tbody>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Day Scholar</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">320</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Hostel</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">30</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1">Day Scholar</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">310</td></tr>
-                                    <tr className="bg-gray-100 font-bold"><td colSpan="4" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">660</td></tr>
-                                  </tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Category / Classification / Religion Wise Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CATEGORY / CLASSIFICATION / RELIGION WISE STRENGTH</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CATEGORY</th><th className="border border-gray-300 px-2 py-1">CLASSIFICATION</th><th className="border border-gray-300 px-2 py-1">RELIGION</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Day Scholar</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">320</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Hostel</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">30</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1">Day Scholar</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">310</td></tr>
+                                      <tr className="bg-gray-100 font-bold"><td colSpan="4" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">660</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Category / Classification / Religion Wise Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
@@ -19218,32 +19625,51 @@ function AdmissionLayout() {
                           </div>
                           {tssrTransFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">School</label><select value={tssrTransSchool} onChange={(e) => setTssrTransSchool(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Schools</option><option>NAVALS NATIONAL ACADEMY</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Wing</label><select value={tssrTransWing} onChange={(e) => setTssrTransWing(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Wings</option><option>Senior Wing</option><option>Junior Wing</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={tssrTransClass} onChange={(e) => setTssrTransClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={tssrTransSection} onChange={(e) => setTssrTransSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Sections</option><option>A</option><option>B</option></select></div>
                               <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Route</label><select value={tssrTransRoute} onChange={(e) => setTssrTransRoute(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Routes</option><option>Route 1 - Betiahata</option><option>Route 2 - Mohaddipur</option></select></div>
-                              <button onClick={() => { setTssrTransShow(true); setTssrTransNotification('Transport Student Strength Report loaded.'); setTimeout(() => setTssrTransNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
+                              <button onClick={() => { setTssrTransShow(true); setTssrTransNotification('Transport Student Strength Report loaded.'); setTimeout(() => setTssrTransNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-4 py-2 rounded text-xs font-medium mt-1 cursor-pointer w-24"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {tssrTransShow && (
+                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                          {tssrTransShow ? (
                             <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">TRANSPORT STUDENT STRENGTH REPORT</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ROUTE</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                  <tbody>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 1 - Betiahata</td><td className="border border-gray-300 px-2 py-1 text-center">45</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">80</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 2 - Mohaddipur</td><td className="border border-gray-300 px-2 py-1 text-center">50</td><td className="border border-gray-300 px-2 py-1 text-center">40</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">90</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 3 - Golghar</td><td className="border border-gray-300 px-2 py-1 text-center">38</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">68</td></tr>
-                                    <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">133</td><td className="border border-gray-300 px-2 py-1 text-center">105</td><td className="border border-gray-300 px-2 py-1 text-center">238</td></tr>
-                                  </tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Transport Student Strength Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
+                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">TRANSPORT STUDENT STRENGTH REPORT</div>
+                                  <table className="w-full border border-gray-300 text-[11px]">
+                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ROUTE</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
+                                    <tbody>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 1 - Betiahata</td><td className="border border-gray-300 px-2 py-1 text-center">45</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">80</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 2 - Mohaddipur</td><td className="border border-gray-300 px-2 py-1 text-center">50</td><td className="border border-gray-300 px-2 py-1 text-center">40</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">90</td></tr>
+                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 3 - Golghar</td><td className="border border-gray-300 px-2 py-1 text-center">38</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">68</td></tr>
+                                      <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">133</td><td className="border border-gray-300 px-2 py-1 text-center">105</td><td className="border border-gray-300 px-2 py-1 text-center">238</td></tr>
+                                    </tbody>
+                                  </table>
+                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Transport Student Strength Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                                </div>
                               </div>
                             </>
+                          ) : (
+                            <div className="flex-1 bg-[#e5e7eb]" />
                           )}
                         </div>
                       </div>
