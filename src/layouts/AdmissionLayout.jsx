@@ -1487,7 +1487,7 @@ function AdmissionLayout() {
   const [cwarFromDate, setCwarFromDate] = useState('03-Sep-2026');
   const [cwarToDate, setCwarToDate] = useState('03-Sep-2026');
   const [cwarFilterOpen, setCwarFilterOpen] = useState(true);
-  const [cwarShow, setCwarShow] = useState(false);
+  const [cwarShow, setCwarShow] = useState(true);
   const [cwarPage, setCwarPage] = useState(1);
   const [cwarSearch, setCwarSearch] = useState('');
   const [cwarNotification, setCwarNotification] = useState('');
@@ -1598,7 +1598,7 @@ function AdmissionLayout() {
   const [cwsdClass, setCwsdClass] = useState('All Class');
   const [cwsdSection, setCwsdSection] = useState('All Section');
   const [cwsdFilterOpen, setCwsdFilterOpen] = useState(true);
-  const [cwsdShow, setCwsdShow] = useState(false);
+  const [cwsdShow, setCwsdShow] = useState(true);
   const [cwsdNotification, setCwsdNotification] = useState('');
 
   // 41. Class Section Transfer Report States (Students Reports)
@@ -1606,7 +1606,7 @@ function AdmissionLayout() {
   const [cstrClass, setCstrClass] = useState('All Class');
   const [cstrSection, setCstrSection] = useState('All Section');
   const [cstrFilterOpen, setCstrFilterOpen] = useState(true);
-  const [cstrShow, setCstrShow] = useState(false);
+  const [cstrShow, setCstrShow] = useState(true);
   const [cstrNotification, setCstrNotification] = useState('');
 
   // 42. Class Wise Sibling States (Students Reports)
@@ -1614,7 +1614,7 @@ function AdmissionLayout() {
   const [cwsibSchool, setCwsibSchool] = useState('All Schools');
   const [cwsibClass, setCwsibClass] = useState('All Class');
   const [cwsibFilterOpen, setCwsibFilterOpen] = useState(true);
-  const [cwsibShow, setCwsibShow] = useState(false);
+  const [cwsibShow, setCwsibShow] = useState(true);
   const [cwsibNotification, setCwsibNotification] = useState('');
 
   // 43. Class Wise Mark List States (Students Reports)
@@ -1623,91 +1623,102 @@ function AdmissionLayout() {
   const [cwmlSection, setCwmlSection] = useState('All Section');
   const [cwmlExamYear, setCwmlExamYear] = useState('2026-2027');
   const [cwmlFilterOpen, setCwmlFilterOpen] = useState(true);
-  const [cwmlShow, setCwmlShow] = useState(false);
+  const [cwmlShow, setCwmlShow] = useState(true);
   const [cwmlNotification, setCwmlNotification] = useState('');
 
   // 44. Total Session Strength Wise Report States (Students Reports)
   const [tssrSession, setTssrSession] = useState('Select Session');
   const [tssrClass, setTssrClass] = useState('All Class');
   const [tssrFilterOpen, setTssrFilterOpen] = useState(true);
-  const [tssrShow, setTssrShow] = useState(false);
+  const [tssrShow, setTssrShow] = useState(true);
   const [tssrNotification, setTssrNotification] = useState('');
 
   // 45. Date Wise Admission Report States (Students Reports)
   const [dwarFromDate, setDwarFromDate] = useState('03-Sep-2026');
   const [dwarToDate, setDwarToDate] = useState('03-Sep-2026');
   const [dwarClass, setDwarClass] = useState('All Class');
+  const [dwarSection, setDwarSection] = useState('All Section');
   const [dwarSession, setDwarSession] = useState('Select Session');
   const [dwarFilterOpen, setDwarFilterOpen] = useState(true);
   const [dwarShow, setDwarShow] = useState(false);
   const [dwarNotification, setDwarNotification] = useState('');
 
   // 46. Student House Wise Report States (Students Reports)
-  const [shwrClass, setShwrClass] = useState('All Class');
-  const [shwrSection, setShwrSection] = useState('All Section');
-  const [shwrHouse, setShwrHouse] = useState('All House');
+  const [shwrClass, setShwrClass] = useState('All Classes');
+  const [shwrSectionWise, setShwrSectionWise] = useState(false);
+  const [shwrHouse, setShwrHouse] = useState('All Houses');
+  const [shwrClub, setShwrClub] = useState('All Club');
+  const [shwrStatus, setShwrStatus] = useState('All');
+  const [shwrRangeType, setShwrRangeType] = useState('Select Range');
+  const [shwrFromAge, setShwrFromAge] = useState('');
   const [shwrFilterOpen, setShwrFilterOpen] = useState(true);
   const [shwrShow, setShwrShow] = useState(false);
   const [shwrNotification, setShwrNotification] = useState('');
 
   // 47. Student Register Date Wise Report States (Students Reports)
-  const [srdwrFromDate, setSrdwrFromDate] = useState('03-Sep-2026');
-  const [srdwrToDate, setSrdwrToDate] = useState('03-Sep-2026');
-  const [srdwrClass, setSrdwrClass] = useState('All Class');
+  const [srdwrFromDate, setSrdwrFromDate] = useState('04-Sep-2026');
+  const [srdwrToDate, setSrdwrToDate] = useState('04-Sep-2026');
+  const [srdwrClass, setSrdwrClass] = useState('All Classes');
+  const [srdwrSection, setSrdwrSection] = useState('All Sections');
   const [srdwrFilterOpen, setSrdwrFilterOpen] = useState(true);
   const [srdwrShow, setSrdwrShow] = useState(false);
   const [srdwrNotification, setSrdwrNotification] = useState('');
 
   // 48. Student Health Entry Report States (Students Reports)
-  const [sherClass, setSherClass] = useState('All Class');
-  const [sherSection, setSherSection] = useState('All Section');
+  const [sherClass, setSherClass] = useState('All (51)');
   const [sherFilterOpen, setSherFilterOpen] = useState(true);
   const [sherShow, setSherShow] = useState(false);
   const [sherNotification, setSherNotification] = useState('');
 
   // 49. Gender/Religion Wise Student Report States (Students Reports)
-  const [grwsrSession, setGrwsrSession] = useState('Select Session');
-  const [grwsrClass, setGrwsrClass] = useState('All Class');
-  const [grwsrSection, setGrwsrSection] = useState('All Section');
+  const [grwsrReligion, setGrwsrReligion] = useState('All Religions');
+  const [grwsrClass, setGrwsrClass] = useState('All Classes');
+  const [grwsrSection, setGrwsrSection] = useState('All Sections');
+  const [grwsrGender, setGrwsrGender] = useState('All Genders');
   const [grwsrFilterOpen, setGrwsrFilterOpen] = useState(true);
   const [grwsrShow, setGrwsrShow] = useState(false);
   const [grwsrNotification, setGrwsrNotification] = useState('');
 
   // 50. Category Wise Student Report States (Students Reports)
-  const [cwsrSession, setCwsrSession] = useState('Select Session');
-  const [cwsrClass, setCwsrClass] = useState('All Class');
-  const [cwsrSection, setCwsrSection] = useState('All Section');
+  const [cwsrCategory, setCwsrCategory] = useState('All Categories');
+  const [cwsrClass, setCwsrClass] = useState('All Classes');
+  const [cwsrSection, setCwsrSection] = useState('All Sections');
+  const [cwsrFatherProf, setCwsrFatherProf] = useState('All Professions');
   const [cwsrFilterOpen, setCwsrFilterOpen] = useState(true);
   const [cwsrShow, setCwsrShow] = useState(false);
   const [cwsrNotification, setCwsrNotification] = useState('');
 
   // 51. Surname Wise Student Details States (Students Reports)
-  const [swsdClass, setSwsdClass] = useState('All Class');
-  const [swsdSection, setSwsdSection] = useState('All Section');
-  const [swsdSurname, setSwsdSurname] = useState('');
+  const [swsdClass, setSwsdClass] = useState('Select Class');
+  const [swsdSection, setSwsdSection] = useState('Select Section');
+  const [swsdStudentDetails, setSwsdStudentDetails] = useState('All (128)');
   const [swsdFilterOpen, setSwsdFilterOpen] = useState(true);
   const [swsdShow, setSwsdShow] = useState(false);
   const [swsdNotification, setSwsdNotification] = useState('');
 
   // 52. Active/Inactive Students Detail Report States (Students Reports)
-  const [aisdrClass, setAisdrClass] = useState('All Class');
-  const [aisdrSection, setAisdrSection] = useState('All Section');
+  const [aisdrClass, setAisdrClass] = useState('All Classes');
+  const [aisdrSection, setAisdrSection] = useState('All Sections');
+  const [aisdrUser, setAisdrUser] = useState('All Users');
+  const [aisdrFromDate, setAisdrFromDate] = useState('04-Sep-2026');
+  const [aisdrTillDate, setAisdrTillDate] = useState('04-Sep-2026');
   const [aisdrStatus, setAisdrStatus] = useState('Active');
   const [aisdrFilterOpen, setAisdrFilterOpen] = useState(true);
   const [aisdrShow, setAisdrShow] = useState(false);
   const [aisdrNotification, setAisdrNotification] = useState('');
 
   // 53. Staff Ward List Report States (Students Reports)
-  const [swlrClass, setSwlrClass] = useState('All Class');
-  const [swlrSection, setSwlrSection] = useState('All Section');
+  const [swlrClass, setSwlrClass] = useState('All Classes');
+  const [swlrSection, setSwlrSection] = useState('All Sections');
+  const [swlrStaffType, setSwlrStaffType] = useState('All Types');
+  const [swlrStaffName, setSwlrStaffName] = useState('All Staffs');
   const [swlrFilterOpen, setSwlrFilterOpen] = useState(true);
   const [swlrShow, setSwlrShow] = useState(false);
   const [swlrNotification, setSwlrNotification] = useState('');
 
   // 54. Student Last Exam Report States (Students Reports)
-  const [slerClass, setSlerClass] = useState('All Class');
-  const [slerSection, setSlerSection] = useState('All Section');
-  const [slerExamYear, setSlerExamYear] = useState('2026-2027');
+  const [slerClass, setSlerClass] = useState('All Classes');
+  const [slerSection, setSlerSection] = useState('All Sections');
   const [slerFilterOpen, setSlerFilterOpen] = useState(true);
   const [slerShow, setSlerShow] = useState(false);
   const [slerNotification, setSlerNotification] = useState('');
@@ -1722,7 +1733,7 @@ function AdmissionLayout() {
   const [cwssClass, setCwssClass] = useState('All Classes');
   const [cwssSectionWise, setCwssSectionWise] = useState(false);
   const [cwssFilterOpen, setCwssFilterOpen] = useState(true);
-  const [cwssShow, setCwssShow] = useState(false);
+  const [cwssShow, setCwssShow] = useState(true);
   const [cwssNotification, setCwssNotification] = useState('');
 
   // 55.2 Student Strength Consolidated
@@ -1732,7 +1743,7 @@ function AdmissionLayout() {
   const [sscSection, setSscSection] = useState('All Sections');
   const [sscDateOfAdm, setSscDateOfAdm] = useState('03-Sep-2026');
   const [sscFilterOpen, setSscFilterOpen] = useState(true);
-  const [sscShow, setSscShow] = useState(false);
+  const [sscShow, setSscShow] = useState(true);
   const [sscNotification, setSscNotification] = useState('');
 
   // 55.3 Student Strength Ratio Wise Report
@@ -1743,7 +1754,7 @@ function AdmissionLayout() {
   const [ssrwDateOfAdm, setSsrwDateOfAdm] = useState('03-Sep-2026');
   const [ssrwWithNewOld, setSsrwWithNewOld] = useState(false);
   const [ssrwFilterOpen, setSsrwFilterOpen] = useState(true);
-  const [ssrwShow, setSsrwShow] = useState(false);
+  const [ssrwShow, setSsrwShow] = useState(true);
   const [ssrwNotification, setSsrwNotification] = useState('');
 
   // 55.4 Religion / Gender Wise Student Strength
@@ -1754,7 +1765,7 @@ function AdmissionLayout() {
   const [rgssSection, setRgssSection] = useState('All Sections');
   const [rgssType, setRgssType] = useState('Religion Wise');
   const [rgssFilterOpen, setRgssFilterOpen] = useState(true);
-  const [rgssShow, setRgssShow] = useState(false);
+  const [rgssShow, setRgssShow] = useState(true);
   const [rgssNotification, setRgssNotification] = useState('');
 
   // 55.5 Nationality Wise Student Strength
@@ -1765,7 +1776,7 @@ function AdmissionLayout() {
   const [nwssSection, setNwssSection] = useState('All Sections');
   const [nwssHostelWise, setNwssHostelWise] = useState(false);
   const [nwssFilterOpen, setNwssFilterOpen] = useState(true);
-  const [nwssShow, setNwssShow] = useState(false);
+  const [nwssShow, setNwssShow] = useState(true);
   const [nwssNotification, setNwssNotification] = useState('');
 
   // 55.6 Category / Gender Wise Student Strength
@@ -1778,7 +1789,7 @@ function AdmissionLayout() {
   const [cgssSection, setCgssSection] = useState('All Sections');
   const [cgssCategoryWise, setCgssCategoryWise] = useState(true);
   const [cgssFilterOpen, setCgssFilterOpen] = useState(true);
-  const [cgssShow, setCgssShow] = useState(false);
+  const [cgssShow, setCgssShow] = useState(true);
   const [cgssNotification, setCgssNotification] = useState('');
 
   // 55.7 Route Wise Student Strength
@@ -1789,7 +1800,7 @@ function AdmissionLayout() {
   const [rwssInstallment, setRwssInstallment] = useState('All (11)');
   const [rwssMonth, setRwssMonth] = useState('All');
   const [rwssFilterOpen, setRwssFilterOpen] = useState(true);
-  const [rwssShow, setRwssShow] = useState(false);
+  const [rwssShow, setRwssShow] = useState(true);
   const [rwssNotification, setRwssNotification] = useState('');
 
   // 55.8 Ews ClassWise Strength Report
@@ -1798,7 +1809,7 @@ function AdmissionLayout() {
   const [ewsSection, setEwsSection] = useState('All Sections');
   const [ewsStaffWardWise, setEwsStaffWardWise] = useState(false);
   const [ewsFilterOpen, setEwsFilterOpen] = useState(true);
-  const [ewsShow, setEwsShow] = useState(false);
+  const [ewsShow, setEwsShow] = useState(true);
   const [ewsNotification, setEwsNotification] = useState('');
 
   // 55.9 Category / Gender / Religion Wise Student Strength
@@ -1807,7 +1818,7 @@ function AdmissionLayout() {
   const [cgrssClass, setCgrssClass] = useState('All Classes');
   const [cgrssSection, setCgrssSection] = useState('All Sections');
   const [cgrssFilterOpen, setCgrssFilterOpen] = useState(true);
-  const [cgrssShow, setCgrssShow] = useState(false);
+  const [cgrssShow, setCgrssShow] = useState(true);
   const [cgrssNotification, setCgrssNotification] = useState('');
 
   // 55.10 Category / Classification / Religion Wise Strength
@@ -1816,7 +1827,7 @@ function AdmissionLayout() {
   const [ccrssClass, setCcrssClass] = useState('All Classes');
   const [ccrssSection, setCcrssSection] = useState('All Sections');
   const [ccrssFilterOpen, setCcrssFilterOpen] = useState(true);
-  const [ccrssShow, setCcrssShow] = useState(false);
+  const [ccrssShow, setCcrssShow] = useState(true);
   const [ccrssNotification, setCcrssNotification] = useState('');
 
   // 55.11 Transport Student Strength Report
@@ -1824,7 +1835,7 @@ function AdmissionLayout() {
   const [tssrTransWing, setTssrTransWing] = useState('All Wings');
   const [tssrTransRoute, setTssrTransRoute] = useState('All Routes');
   const [tssrTransFilterOpen, setTssrTransFilterOpen] = useState(true);
-  const [tssrTransShow, setTssrTransShow] = useState(false);
+  const [tssrTransShow, setTssrTransShow] = useState(true);
   const [tssrTransNotification, setTssrTransNotification] = useState('');
 
   // Initial SMS Dataset generator
@@ -2685,14 +2696,16 @@ function AdmissionLayout() {
   const handleAddOptionalSubject = () => {
     if (!optionalSubjectModalInput.trim()) return;
     const newSr = optionalSubjectData.length > 0 ? Math.max(...optionalSubjectData.map(p => p.sr)) + 1 : 1;
-    setOptionalSubjectData([...optionalSubjectData, { sr: newSr, name: optionalSubjectModalInput, modifyDetails: today }]);
+    const todayStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
+    setOptionalSubjectData([...optionalSubjectData, { sr: newSr, name: optionalSubjectModalInput, modifyDetails: todayStr }]);
     setIsAddOptionalSubjectModalOpen(false);
     setOptionalSubjectModalInput('');
   };
 
   const handleEditOptionalSubject = () => {
     if (!optionalSubjectModalInput.trim() || !editOptionalSubjectItem) return;
-    setOptionalSubjectData(optionalSubjectData.map(p => p.sr === editOptionalSubjectItem.sr ? { ...p, name: optionalSubjectModalInput, modifyDetails: today } : p));
+    const todayStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
+    setOptionalSubjectData(optionalSubjectData.map(p => p.sr === editOptionalSubjectItem.sr ? { ...p, name: optionalSubjectModalInput, modifyDetails: todayStr } : p));
     setEditOptionalSubjectItem(null);
     setOptionalSubjectModalInput('');
   };
@@ -3047,6 +3060,28 @@ function AdmissionLayout() {
       setTabs([...tabs, { id: itemText, title: itemText }]);
     }
     setActiveTab(itemText);
+    setDwarShow(false);
+    setCwarShow(false);
+    setSrdwrShow(false);
+    setShwrShow(false);
+    setSherShow(false);
+    setGrwsrShow(false);
+    setCwsrShow(false);
+    setSwsdShow(false);
+    setAisdrShow(false);
+    setSwlrShow(false);
+    setSlerShow(false);
+    setCwssShow(true);
+    setSscShow(true);
+    setSsrwShow(true);
+    setRgssShow(true);
+    setNwssShow(true);
+    setCgssShow(true);
+    setRwssShow(true);
+    setEwsShow(true);
+    setCgrssShow(true);
+    setCcrssShow(true);
+    setTssrTransShow(true);
   };
 
   const closeTab = (id, e) => {
@@ -3300,7 +3335,7 @@ function AdmissionLayout() {
           )}
 
           {/* Scrollable Page Content */}
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col">
+          <div className={`flex-1 overflow-y-auto flex flex-col ${['Class Section Transfer Report', 'Class Wise Sibling', 'Class Wise Mark List', 'Total Session Strength Wise Report', 'Date Wise Admission Report', 'Class Wise Admission report', 'Student House Wise Report', 'Student Register Date Wise Report', 'Student Health Entry Report', 'Gender/Religion Wise Student Report', 'Category Wise Student Report', 'Surname Wise Student Details', 'Active/Inactive Students Detail Report', 'Staff Ward List Report', 'Student Last Exam Report', 'Class Wise Student Strength', 'Student Strength Consolidated', 'Student Strength Ratio Wise Report', 'Religion / Gender Wise Student Strength', 'Nationality Wise Student Strength', 'Category / Gender Wise Student Strength', 'Route Wise Student Strength', 'Ews ClassWise Strength Report', 'Category / Gender / Religion Wise Student Strength', 'Category / Classification / Religion Wise Strength', 'Transport Student Strength Report'].includes(activeTab) ? 'p-0 bg-[#e5e7eb]' : 'p-4'}`}>
             {activeTab === 'Dashboard' ? (
               <Outlet />
             ) : activeTab === 'Relate Class Section' ? (
@@ -3380,69 +3415,71 @@ function AdmissionLayout() {
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center border border-gray-300 rounded-full px-4 py-1.5 w-64">
-                    <FaSearch className="text-gray-400 mr-2 text-sm" />
-                    <input 
-                      type="text" 
-                      placeholder={`Search ${activeTab}`} 
-                      className="bg-transparent outline-none w-full text-sm text-gray-700"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)} 
-                    />
+              <div className="flex flex-col h-full flex-1">
+                {!['Class Section Transfer Report', 'Class Wise Sibling', 'Class Wise Mark List', 'Total Session Strength Wise Report', 'Date Wise Admission Report', 'Class Wise Admission report', 'Student House Wise Report', 'Student Register Date Wise Report', 'Student Health Entry Report', 'Gender/Religion Wise Student Report', 'Category Wise Student Report', 'Surname Wise Student Details', 'Active/Inactive Students Detail Report', 'Staff Ward List Report', 'Student Last Exam Report', 'Class Wise Student Strength', 'Student Strength Consolidated', 'Student Strength Ratio Wise Report', 'Religion / Gender Wise Student Strength', 'Nationality Wise Student Strength', 'Category / Gender Wise Student Strength', 'Route Wise Student Strength', 'Ews ClassWise Strength Report', 'Category / Gender / Religion Wise Student Strength', 'Category / Classification / Religion Wise Strength', 'Transport Student Strength Report'].includes(activeTab) && (
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center border border-gray-300 rounded-full px-4 py-1.5 w-64">
+                      <FaSearch className="text-gray-400 mr-2 text-sm" />
+                      <input 
+                        type="text" 
+                        placeholder={`Search ${activeTab}`} 
+                        className="bg-transparent outline-none w-full text-sm text-gray-700"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)} 
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      {!['Meeting Details', 'Import Student', 'Country Setting', 'Global Search Option Settings', 'Change Academic Year', 'Admission Setting', 'Enquiry No Setting', 'Prospectus & Registration No Setting', 'User Permission', 'Update Address and Blood', 'Receipt Certificate Setting', 'Certificate Ref No. Setting', 'Admission Form Settings', 'Saral ID Setting', 'Stationary Details', 'TC Setting', 'Image Setting', 'Report Layout Setting', 'Define Document Type', 'Enquiry', 'Enquiry FollowUp', 'Prospectus Entry', 'Admission Form Registration', 'Possible Siblings', 'Manual List Generation', 'Student Registration', 'DOB Request', 'Download Photos', 'Update Student Details', 'Set Student Status', 'Change Active/Inactive Status', 'Assign Computer No. To Student', 'Assign Roll No. To Student', 'Upload Student Document', 'Student Bank Details', 'Student Last Exam Details', 'Student Class Promotion', 'Student Class Section Transfer', 'Upload Student Image', 'Delete Student', 'Upload Parent Image', 'Slot Creation', 'Define Merit Criteria', 'Slot Wise Point Entry', 'Merit List Generation', 'Re Slotting', 'Upload School Details Document', 'Requests for changes from Parent', 'Admission Fee Collection', 'Adm Entry AmtStructure', 'Challan Amount', 'Create ID Card', 'Generate Student Info Performa In Bulk', 'Print Student Label', 'Child Portrait', 'Prospectus Settlement Entry', 'Send SMS', 'Certificates', 'UP Board TC Form', 'TC Form', 'TC Form Class Wise', 'Generate TC', 'Generate TC In Bulk', 'TC Report', 'Assign Characteristics to student', 'Bonafide Form', 'Assign Visa details to student', 'CBSE registration Form', 'CBSE Exam Confirmation Form', 'Student Details', 'Student Details New', 'Student Data Capture Report', 'Enquiry Followup Details', 'Enquiry Details New', 'Enquiry Details', 'Prospectus Charges Report', 'Merit Generation List', 'Merit Criteria Print', 'Merit List Report', 'Admission Collection Report', 'Slot Report', 'Search and import online Registration', 'Sms Report', 'Sibling Report', 'Student HouseWise Strength Report', 'Student Document Details', 'Class Wise Admission report', 'Student Repeater list', 'Verification Admission Form', 'Admission Withdrawal Register', 'Challan Amount Collection Report', 'Total Collection Report Student Wise', 'Manual List Generation Report', 'Student Modification History Report', 'Certificates History', 'Student Strength', 'Class Wise Student Details', 'Class Section Transfer Report', 'Class Wise Sibling', 'Class Wise Mark List', 'Total Session Strength Wise Report', 'Date Wise Admission Report', 'Student House Wise Report', 'Student Register Date Wise Report', 'Student Health Entry Report', 'Gender/Religion Wise Student Report', 'Category Wise Student Report', 'Surname Wise Student Details', 'Active/Inactive Students Detail Report', 'Staff Ward List Report', 'Student Last Exam Report', 'Class Wise Student Strength', 'Student Strength Consolidated', 'Student Strength Ratio Wise Report', 'Religion / Gender Wise Student Strength', 'Nationality Wise Student Strength', 'Category / Gender Wise Student Strength', 'Route Wise Student Strength', 'Ews ClassWise Strength Report', 'Category / Gender / Religion Wise Student Strength', 'Category / Classification / Religion Wise Strength', 'Transport Student Strength Report'].includes(activeTab) && (
+                        <button 
+                          onClick={() => { 
+                            if (activeTab === 'Define Profession') { setIsAddModalOpen(true); setModalInput(''); }
+                            else if (activeTab === 'Define Academic Year') { setIsAddAcademicModalOpen(true); setAcademicModalInput(initialAcademicState); }
+                            else if (activeTab === 'Define Financial Year') { setIsAddFinancialModalOpen(true); setFinancialModalInput(initialAcademicState); }
+                            else if (activeTab === 'School Global Details') { setIsAddSchoolModalOpen(true); setSchoolModalInput(initialSchoolState); }
+                            else if (activeTab === 'School Global Details With FeeType') { setIsAddSchoolFeeTypeModalOpen(true); setSchoolFeeTypeModalInput(initialSchoolFeeTypeState); }
+                            else if (activeTab === 'Define Wing') { setIsAddWingModalOpen(true); setWingModalInput(''); }
+                            else if (activeTab === 'Define Class') { setIsAddClassModalOpen(true); setClassModalInput(initialClassState); }
+                            else if (activeTab === 'Define Section') { setIsAddSectionModalOpen(true); setSectionModalInput(initialSectionState); }
+                            else if (activeTab === 'Define Religion') { setIsAddReligionModalOpen(true); setReligionModalInput(''); }
+                            else if (activeTab === 'Define Caste') { setIsAddCasteModalOpen(true); setCasteModalInput(''); }
+                            else if (activeTab === 'Define Sub Caste') { setIsAddSubCasteModalOpen(true); setSubCasteModalInput({ casteName: '', subCasteName: '' }); }
+                            else if (activeTab === 'Define Category') { setIsAddCategoryModalOpen(true); setCategoryModalInput({ name: '', isDefault: false }); }
+                            else if (activeTab === 'Define Parish') { setIsAddParishModalOpen(true); setParishModalInput({ parish: '', religion: '' }); }
+                            else if (activeTab === 'Define House') { setIsAddHouseModalOpen(true); setHouseModalInput(''); }
+                            else if (activeTab === 'Define Committee') { setIsAddCommitteeModalOpen(true); setCommitteeModalInput({ committeeType: '', designation: '', staffStudent: '', staff: '', fromDate: '', toDate: '', activeStatus: false }); }
+                            else if (activeTab === 'Define Club') { setIsAddClubModalOpen(true); setClubModalInput(''); }
+                            else if (activeTab === 'Define Stream') { setIsAddStreamModalOpen(true); setStreamModalInput(''); }
+                            else if (activeTab === 'Define Optional Subject') { setIsAddOptionalSubjectModalOpen(true); setOptionalSubjectModalInput(''); }
+                            else if (activeTab === 'Parents Status') { setIsAddParentsStatusModalOpen(true); setParentsStatusModalInput(''); }
+                            else if (activeTab === 'Define Classification') { setIsAddClassificationModalOpen(true); setClassificationModalInput(''); }
+                            else if (activeTab === 'Define Reason') { setIsAddReasonModalOpen(true); setReasonModalInput(''); }
+                            else if (activeTab === 'Define Remark') { setIsAddRemarkModalOpen(true); setRemarkModalInput(''); }
+                            else if (activeTab === 'Session Transfer') { setIsAddSessionTransferModalOpen(true); setSessionTransferModalInput(''); }
+                            else if (activeTab === 'Define Language') { setIsAddLanguageModalOpen(true); setLanguageModalInput(''); }
+                            else if (activeTab === 'Define TC Caste') { setIsAddTcCasteModalOpen(true); setTcCasteModalInput(''); }
+                            else if (activeTab === 'Define Extra Activity') { setIsAddExtraActivityModalOpen(true); setExtraActivityModalInput(''); }
+                            else if (activeTab === 'Define Character') { setIsAddCharacterModalOpen(true); setCharacterModalInput(''); }
+                            else if (activeTab === 'Define Promotion Master') { setIsAddPromotionMasterModalOpen(true); setPromotionMasterModalInput(''); }
+                            else if (activeTab === 'Define Last Result') { setIsAddLastResultModalOpen(true); setLastResultModalInput(''); }
+                            else if (activeTab === 'Term Master') { setIsAddTermMasterModalOpen(true); setTermMasterModalInput(''); }
+                            else if (activeTab === 'Define Moral') { setIsAddMoralModalOpen(true); setMoralModalInput(''); }
+                            else if (activeTab === 'Define Mother Tongue') { setIsAddMotherTongueModalOpen(true); setMotherTongueModalInput(''); }
+                          }}
+                          className="bg-[#32a3d7] text-white px-4 py-1.5 rounded flex items-center gap-2 text-sm hover:bg-[#288ebf]"
+                        >
+                          <span className="font-bold">+</span> Add New {activeTab === 'Define Classification' ? 'Bank' : activeTab === 'Define Optional Subject' ? 'Subject' : activeTab.replace('Define ', '')}
+                        </button>
+                      )}
+                      {!['Meeting Details', 'Import Student', 'Country Setting', 'Global Search Option Settings', 'Change Academic Year', 'Admission Setting', 'Enquiry No Setting', 'Prospectus & Registration No Setting', 'User Permission', 'Update Address and Blood', 'Receipt Certificate Setting', 'Certificate Ref No. Setting', 'Admission Form Settings', 'Saral ID Setting', 'Stationary Details', 'TC Setting', 'Image Setting', 'Report Layout Setting', 'Define Document Type', 'Enquiry', 'Enquiry FollowUp', 'Prospectus Entry', 'Admission Form Registration', 'Possible Siblings', 'Manual List Generation', 'Student Registration', 'DOB Request', 'Download Photos', 'Update Student Details', 'Set Student Status', 'Change Active/Inactive Status', 'Assign Computer No. To Student', 'Assign Roll No. To Student', 'Upload Student Document', 'Student Bank Details', 'Student Last Exam Details', 'Student Class Promotion', 'Student Class Section Transfer', 'Upload Student Image', 'Delete Student', 'Upload Parent Image', 'Slot Creation', 'Define Merit Criteria', 'Slot Wise Point Entry', 'Merit List Generation', 'Re Slotting', 'Upload School Details Document', 'Requests for changes from Parent', 'Admission Fee Collection', 'Adm Entry AmtStructure', 'Challan Amount', 'Create ID Card', 'Generate Student Info Performa In Bulk', 'Print Student Label', 'Child Portrait', 'Prospectus Settlement Entry', 'Send SMS', 'Certificates', 'UP Board TC Form', 'TC Form', 'TC Form Class Wise', 'Generate TC', 'Generate TC In Bulk', 'TC Report', 'Assign Characteristics to student', 'Bonafide Form', 'Assign Visa details to student', 'CBSE registration Form', 'CBSE Exam Confirmation Form', 'Student Details', 'Student Details New', 'Student Data Capture Report', 'Enquiry Followup Details', 'Enquiry Details New', 'Enquiry Details', 'Prospectus Charges Report', 'Merit Generation List', 'Merit Criteria Print', 'Merit List Report', 'Admission Collection Report', 'Slot Report', 'Search and import online Registration', 'Sms Report', 'Sibling Report', 'Student HouseWise Strength Report', 'Student Document Details', 'Class Wise Admission report', 'Student Repeater list', 'Verification Admission Form', 'Admission Withdrawal Register', 'Challan Amount Collection Report', 'Total Collection Report Student Wise', 'Manual List Generation Report', 'Student Modification History Report', 'Certificates History', 'Student Strength', 'Class Wise Student Details', 'Class Section Transfer Report', 'Class Wise Sibling', 'Class Wise Mark List', 'Total Session Strength Wise Report', 'Date Wise Admission Report', 'Student House Wise Report', 'Student Register Date Wise Report', 'Student Health Entry Report', 'Gender/Religion Wise Student Report', 'Category Wise Student Report', 'Surname Wise Student Details', 'Active/Inactive Students Detail Report', 'Staff Ward List Report', 'Student Last Exam Report', 'Class Wise Student Strength', 'Student Strength Consolidated', 'Student Strength Ratio Wise Report', 'Religion / Gender Wise Student Strength', 'Nationality Wise Student Strength', 'Category / Gender Wise Student Strength', 'Route Wise Student Strength', 'Ews ClassWise Strength Report', 'Category / Gender / Religion Wise Student Strength', 'Category / Classification / Religion Wise Strength', 'Transport Student Strength Report'].includes(activeTab) && (
+                        <button className="bg-[#32a3d7] text-white px-4 py-1.5 rounded flex items-center gap-2 text-sm hover:bg-[#288ebf]">
+                          <FaFileAlt /> Export
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    {!['Meeting Details', 'Import Student', 'Country Setting', 'Global Search Option Settings', 'Change Academic Year', 'Admission Setting', 'Enquiry No Setting', 'Prospectus & Registration No Setting', 'User Permission', 'Update Address and Blood', 'Receipt Certificate Setting', 'Certificate Ref No. Setting', 'Admission Form Settings', 'Saral ID Setting', 'Stationary Details', 'TC Setting', 'Image Setting', 'Report Layout Setting', 'Define Document Type', 'Enquiry', 'Enquiry FollowUp', 'Prospectus Entry', 'Admission Form Registration', 'Possible Siblings', 'Manual List Generation', 'Student Registration', 'DOB Request', 'Download Photos', 'Update Student Details', 'Set Student Status', 'Change Active/Inactive Status', 'Assign Computer No. To Student', 'Assign Roll No. To Student', 'Upload Student Document', 'Student Bank Details', 'Student Last Exam Details', 'Student Class Promotion', 'Student Class Section Transfer', 'Upload Student Image', 'Delete Student', 'Upload Parent Image', 'Slot Creation', 'Define Merit Criteria', 'Slot Wise Point Entry', 'Merit List Generation', 'Re Slotting', 'Upload School Details Document', 'Requests for changes from Parent', 'Admission Fee Collection', 'Adm Entry AmtStructure', 'Challan Amount', 'Create ID Card', 'Generate Student Info Performa In Bulk', 'Print Student Label', 'Child Portrait', 'Prospectus Settlement Entry', 'Send SMS', 'Certificates', 'UP Board TC Form', 'TC Form', 'TC Form Class Wise', 'Generate TC', 'Generate TC In Bulk', 'TC Report', 'Assign Characteristics to student', 'Bonafide Form', 'Assign Visa details to student', 'CBSE registration Form', 'CBSE Exam Confirmation Form', 'Student Details', 'Student Details New', 'Student Data Capture Report', 'Enquiry Followup Details', 'Enquiry Details New', 'Enquiry Details', 'Prospectus Charges Report', 'Merit Generation List', 'Merit Criteria Print', 'Merit List Report', 'Admission Collection Report', 'Slot Report', 'Search and import online Registration', 'Sms Report', 'Sibling Report', 'Student HouseWise Strength Report', 'Student Document Details', 'Class Wise Admission report', 'Student Repeater list', 'Verification Admission Form', 'Admission Withdrawal Register', 'Challan Amount Collection Report', 'Total Collection Report Student Wise', 'Manual List Generation Report', 'Student Modification History Report', 'Certificates History', 'Student Strength', 'Class Wise Student Details', 'Class Section Transfer Report', 'Class Wise Sibling', 'Class Wise Mark List', 'Total Session Strength Wise Report', 'Date Wise Admission Report', 'Student House Wise Report', 'Student Register Date Wise Report', 'Student Health Entry Report', 'Gender/Religion Wise Student Report', 'Category Wise Student Report', 'Surname Wise Student Details', 'Active/Inactive Students Detail Report', 'Staff Ward List Report', 'Student Last Exam Report', 'Class Wise Student Strength', 'Student Strength Consolidated', 'Student Strength Ratio Wise Report', 'Religion / Gender Wise Student Strength', 'Nationality Wise Student Strength', 'Category / Gender Wise Student Strength', 'Route Wise Student Strength', 'Ews ClassWise Strength Report', 'Category / Gender / Religion Wise Student Strength', 'Category / Classification / Religion Wise Strength', 'Transport Student Strength Report'].includes(activeTab) && (
-                      <button 
-                        onClick={() => { 
-                          if (activeTab === 'Define Profession') { setIsAddModalOpen(true); setModalInput(''); }
-                          else if (activeTab === 'Define Academic Year') { setIsAddAcademicModalOpen(true); setAcademicModalInput(initialAcademicState); }
-                          else if (activeTab === 'Define Financial Year') { setIsAddFinancialModalOpen(true); setFinancialModalInput(initialAcademicState); }
-                          else if (activeTab === 'School Global Details') { setIsAddSchoolModalOpen(true); setSchoolModalInput(initialSchoolState); }
-                          else if (activeTab === 'School Global Details With FeeType') { setIsAddSchoolFeeTypeModalOpen(true); setSchoolFeeTypeModalInput(initialSchoolFeeTypeState); }
-                          else if (activeTab === 'Define Wing') { setIsAddWingModalOpen(true); setWingModalInput(''); }
-                          else if (activeTab === 'Define Class') { setIsAddClassModalOpen(true); setClassModalInput(initialClassState); }
-                          else if (activeTab === 'Define Section') { setIsAddSectionModalOpen(true); setSectionModalInput(initialSectionState); }
-                          else if (activeTab === 'Define Religion') { setIsAddReligionModalOpen(true); setReligionModalInput(''); }
-                          else if (activeTab === 'Define Caste') { setIsAddCasteModalOpen(true); setCasteModalInput(''); }
-                          else if (activeTab === 'Define Sub Caste') { setIsAddSubCasteModalOpen(true); setSubCasteModalInput({ casteName: '', subCasteName: '' }); }
-                          else if (activeTab === 'Define Category') { setIsAddCategoryModalOpen(true); setCategoryModalInput({ name: '', isDefault: false }); }
-                          else if (activeTab === 'Define Parish') { setIsAddParishModalOpen(true); setParishModalInput({ parish: '', religion: '' }); }
-                          else if (activeTab === 'Define House') { setIsAddHouseModalOpen(true); setHouseModalInput(''); }
-                          else if (activeTab === 'Define Committee') { setIsAddCommitteeModalOpen(true); setCommitteeModalInput({ committeeType: '', designation: '', staffStudent: '', staff: '', fromDate: '', toDate: '', activeStatus: false }); }
-                          else if (activeTab === 'Define Club') { setIsAddClubModalOpen(true); setClubModalInput(''); }
-                          else if (activeTab === 'Define Stream') { setIsAddStreamModalOpen(true); setStreamModalInput(''); }
-                          else if (activeTab === 'Define Optional Subject') { setIsAddOptionalSubjectModalOpen(true); setOptionalSubjectModalInput(''); }
-                          else if (activeTab === 'Parents Status') { setIsAddParentsStatusModalOpen(true); setParentsStatusModalInput(''); }
-                          else if (activeTab === 'Define Classification') { setIsAddClassificationModalOpen(true); setClassificationModalInput(''); }
-                          else if (activeTab === 'Define Reason') { setIsAddReasonModalOpen(true); setReasonModalInput(''); }
-                          else if (activeTab === 'Define Remark') { setIsAddRemarkModalOpen(true); setRemarkModalInput(''); }
-                          else if (activeTab === 'Session Transfer') { setIsAddSessionTransferModalOpen(true); setSessionTransferModalInput(''); }
-                          else if (activeTab === 'Define Language') { setIsAddLanguageModalOpen(true); setLanguageModalInput(''); }
-                          else if (activeTab === 'Define TC Caste') { setIsAddTcCasteModalOpen(true); setTcCasteModalInput(''); }
-                          else if (activeTab === 'Define Extra Activity') { setIsAddExtraActivityModalOpen(true); setExtraActivityModalInput(''); }
-                          else if (activeTab === 'Define Character') { setIsAddCharacterModalOpen(true); setCharacterModalInput(''); }
-                          else if (activeTab === 'Define Promotion Master') { setIsAddPromotionMasterModalOpen(true); setPromotionMasterModalInput(''); }
-                          else if (activeTab === 'Define Last Result') { setIsAddLastResultModalOpen(true); setLastResultModalInput(''); }
-                          else if (activeTab === 'Term Master') { setIsAddTermMasterModalOpen(true); setTermMasterModalInput(''); }
-                          else if (activeTab === 'Define Moral') { setIsAddMoralModalOpen(true); setMoralModalInput(''); }
-                          else if (activeTab === 'Define Mother Tongue') { setIsAddMotherTongueModalOpen(true); setMotherTongueModalInput(''); }
-                        }}
-                        className="bg-[#32a3d7] text-white px-4 py-1.5 rounded flex items-center gap-2 text-sm hover:bg-[#288ebf]"
-                      >
-                        <span className="font-bold">+</span> Add New {activeTab === 'Define Classification' ? 'Bank' : activeTab === 'Define Optional Subject' ? 'Subject' : activeTab.replace('Define ', '')}
-                      </button>
-                    )}
-                    {!['Meeting Details', 'Import Student', 'Country Setting', 'Global Search Option Settings', 'Change Academic Year', 'Admission Setting', 'Enquiry No Setting', 'Prospectus & Registration No Setting', 'User Permission', 'Update Address and Blood', 'Receipt Certificate Setting', 'Certificate Ref No. Setting', 'Admission Form Settings', 'Saral ID Setting', 'Stationary Details', 'TC Setting', 'Image Setting', 'Report Layout Setting', 'Define Document Type', 'Enquiry', 'Enquiry FollowUp', 'Prospectus Entry', 'Admission Form Registration', 'Possible Siblings', 'Manual List Generation', 'Student Registration', 'DOB Request', 'Download Photos', 'Update Student Details', 'Set Student Status', 'Change Active/Inactive Status', 'Assign Computer No. To Student', 'Assign Roll No. To Student', 'Upload Student Document', 'Student Bank Details', 'Student Last Exam Details', 'Student Class Promotion', 'Student Class Section Transfer', 'Upload Student Image', 'Delete Student', 'Upload Parent Image', 'Slot Creation', 'Define Merit Criteria', 'Slot Wise Point Entry', 'Merit List Generation', 'Re Slotting', 'Upload School Details Document', 'Requests for changes from Parent', 'Admission Fee Collection', 'Adm Entry AmtStructure', 'Challan Amount', 'Create ID Card', 'Generate Student Info Performa In Bulk', 'Print Student Label', 'Child Portrait', 'Prospectus Settlement Entry', 'Send SMS', 'Certificates', 'UP Board TC Form', 'TC Form', 'TC Form Class Wise', 'Generate TC', 'Generate TC In Bulk', 'TC Report', 'Assign Characteristics to student', 'Bonafide Form', 'Assign Visa details to student', 'CBSE registration Form', 'CBSE Exam Confirmation Form', 'Student Details', 'Student Details New', 'Student Data Capture Report', 'Enquiry Followup Details', 'Enquiry Details New', 'Enquiry Details', 'Prospectus Charges Report', 'Merit Generation List', 'Merit Criteria Print', 'Merit List Report', 'Admission Collection Report', 'Slot Report', 'Search and import online Registration', 'Sms Report', 'Sibling Report', 'Student HouseWise Strength Report', 'Student Document Details', 'Class Wise Admission report', 'Student Repeater list', 'Verification Admission Form', 'Admission Withdrawal Register', 'Challan Amount Collection Report', 'Total Collection Report Student Wise', 'Manual List Generation Report', 'Student Modification History Report', 'Certificates History', 'Student Strength', 'Class Wise Student Details', 'Class Section Transfer Report', 'Class Wise Sibling', 'Class Wise Mark List', 'Total Session Strength Wise Report', 'Date Wise Admission Report', 'Student House Wise Report', 'Student Register Date Wise Report', 'Student Health Entry Report', 'Gender/Religion Wise Student Report', 'Category Wise Student Report', 'Surname Wise Student Details', 'Active/Inactive Students Detail Report', 'Staff Ward List Report', 'Student Last Exam Report', 'Class Wise Student Strength', 'Student Strength Consolidated', 'Student Strength Ratio Wise Report', 'Religion / Gender Wise Student Strength', 'Nationality Wise Student Strength', 'Category / Gender Wise Student Strength', 'Route Wise Student Strength', 'Ews ClassWise Strength Report', 'Category / Gender / Religion Wise Student Strength', 'Category / Classification / Religion Wise Strength', 'Transport Student Strength Report'].includes(activeTab) && (
-                      <button className="bg-[#32a3d7] text-white px-4 py-1.5 rounded flex items-center gap-2 text-sm hover:bg-[#288ebf]">
-                        <FaFileAlt /> Export
-                      </button>
-                    )}
-                  </div>
-                </div>
+                )}
 
-                <div className="flex-1 overflow-auto">
+                <div className="flex-1 overflow-auto h-full flex flex-col min-h-full">
                   {['Meeting Details', 'Import Student', 'Country Setting', 'Global Search Option Settings', 'Change Academic Year', 'Admission Setting', 'Enquiry No Setting', 'Prospectus & Registration No Setting', 'User Permission', 'Update Address and Blood', 'Receipt Certificate Setting', 'Certificate Ref No. Setting', 'Admission Form Settings', 'Saral ID Setting', 'Stationary Details', 'TC Setting', 'Image Setting', 'Report Layout Setting', 'Define Document Type', 'Enquiry', 'Enquiry FollowUp', 'Prospectus Entry', 'Admission Form Registration', 'Possible Siblings', 'Manual List Generation', 'Student Registration', 'DOB Request', 'Download Photos', 'Update Student Details', 'Set Student Status', 'Change Active/Inactive Status', 'Assign Computer No. To Student', 'Assign Roll No. To Student', 'Upload Student Document', 'Student Bank Details', 'Student Last Exam Details', 'Student Class Promotion', 'Student Class Section Transfer', 'Upload Student Image', 'Delete Student', 'Upload Parent Image', 'Slot Creation', 'Define Merit Criteria', 'Slot Wise Point Entry', 'Merit List Generation', 'Re Slotting', 'Upload School Details Document', 'Requests for changes from Parent', 'Admission Fee Collection', 'Adm Entry AmtStructure', 'Challan Amount', 'Create ID Card', 'Generate Student Info Performa In Bulk', 'Print Student Label', 'Child Portrait', 'Prospectus Settlement Entry', 'Send SMS', 'Certificates', 'UP Board TC Form', 'TC Form', 'TC Form Class Wise', 'Generate TC', 'Generate TC In Bulk', 'TC Report', 'Assign Characteristics to student', 'Bonafide Form', 'Assign Visa details to student', 'CBSE registration Form', 'CBSE Exam Confirmation Form', 'Student Details', 'Student Details New', 'Student Data Capture Report', 'Enquiry Followup Details', 'Enquiry Details New', 'Enquiry Details', 'Prospectus Charges Report', 'Merit Generation List', 'Merit Criteria Print', 'Merit List Report', 'Admission Collection Report', 'Slot Report', 'Search and import online Registration', 'Sms Report', 'Sibling Report', 'Student HouseWise Strength Report', 'Student Document Details', 'Class Wise Admission report', 'Student Repeater list', 'Verification Admission Form', 'Admission Withdrawal Register', 'Challan Amount Collection Report', 'Total Collection Report Student Wise', 'Manual List Generation Report', 'Student Modification History Report', 'Certificates History', 'Student Strength', 'Class Wise Student Details', 'Class Section Transfer Report', 'Class Wise Sibling', 'Class Wise Mark List', 'Total Session Strength Wise Report', 'Date Wise Admission Report', 'Student House Wise Report', 'Student Register Date Wise Report', 'Student Health Entry Report', 'Gender/Religion Wise Student Report', 'Category Wise Student Report', 'Surname Wise Student Details', 'Active/Inactive Students Detail Report', 'Staff Ward List Report', 'Student Last Exam Report', 'Class Wise Student Strength', 'Student Strength Consolidated', 'Student Strength Ratio Wise Report', 'Religion / Gender Wise Student Strength', 'Nationality Wise Student Strength', 'Category / Gender Wise Student Strength', 'Route Wise Student Strength', 'Ews ClassWise Strength Report', 'Category / Gender / Religion Wise Student Strength', 'Category / Classification / Religion Wise Strength', 'Transport Student Strength Report'].includes(activeTab) ? (
                     activeTab === 'Meeting Details' ? (
                       <div className="max-w-4xl bg-white p-6 mt-4">
@@ -17005,7 +17042,7 @@ function AdmissionLayout() {
                         </div>
                       </div>
                     ) : activeTab === 'Class Wise Admission report' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {cwarNotification && (
                           <div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2">
                             <FaCheckCircle className="text-green-600" />
@@ -18246,13 +18283,9 @@ function AdmissionLayout() {
                       </div>
 
                     ) : activeTab === 'Class Wise Student Details' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {cwsdNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{cwsdNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${cwsdFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {cwsdFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setCwsdFilterOpen(!cwsdFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{cwsdFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${cwsdFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {cwsdFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
                               <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">School</label><select value={cwsdSchool} onChange={(e) => setCwsdSchool(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Schools</option><option>NAVALS NATIONAL ACADEMY</option></select></div>
@@ -18267,144 +18300,126 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
-                          {cwsdShow ? (
-                            <>
-                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
-                                <div className="flex items-center gap-2">
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
-                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 30</span></div>
-                                  <button className="px-2 py-1 bg-white border border-gray-300 rounded text-xs hover:bg-gray-100 cursor-pointer">&gt;</button>
-                                  <button className="px-2 py-1 bg-white border border-gray-300 rounded text-xs hover:bg-gray-100 cursor-pointer">&gt;&gt;|</button>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
-                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
-                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
-                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
-                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
-                                </div>
-                              </div>
-                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
-                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[950px] p-6 text-xs text-gray-900 font-sans">
-                                  <div className="flex items-center justify-center relative mb-4">
-                                    <div className="absolute left-0 border border-green-600 rounded-full p-1"><img src={schoolLogo} alt="School Logo" className="w-12 h-12 object-contain"/></div>
-                                    <div className="text-center">
-                                      <h1 className="text-lg font-bold tracking-wide">NAVALS NATIONAL ACADEMY</h1>
-                                      <p className="text-xs text-gray-600 font-semibold">DOHRIGHAT , MAU</p>
-                                    </div>
-                                  </div>
-                                  <div className="border-t-2 border-orange-200 pt-2 mb-3 flex items-center justify-between text-xs font-bold text-gray-800">
-                                    <span>Student List of Class : NUR A</span>
-                                    <span>Teacher's Name : </span>
-                                  </div>
-                                  <table className="w-full border-collapse border border-amber-400 text-[11px]">
-                                    <thead className="bg-[#fef9c3]">
-                                      <tr>
-                                        <th className="border border-amber-300 px-2 py-1 text-center w-10">SN</th>
-                                        <th className="border border-amber-300 px-2 py-1 text-center w-20">ADM. NO.</th>
-                                        <th className="border border-amber-300 px-2 py-1 text-left">NAME</th>
-                                        <th className="border border-amber-300 px-2 py-1 w-24"></th>
-                                        <th className="border border-amber-300 px-2 py-1 w-24"></th>
-                                        <th className="border border-amber-300 px-2 py-1 w-24"></th>
-                                        <th className="border border-amber-300 px-2 py-1 w-24"></th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {studentImageDatabase['NUR-A'].map((st) => (
-                                        <tr key={st.sr} className="hover:bg-amber-50/50">
-                                          <td className="border border-amber-200 px-2 py-1 text-center font-medium">{st.sr}</td>
-                                          <td className="border border-amber-200 px-2 py-1 text-center font-mono">{st.adm}</td>
-                                          <td className="border border-amber-200 px-2 py-1 font-bold text-gray-800">{st.name}</td>
-                                          <td className="border border-amber-200 px-2 py-1"></td>
-                                          <td className="border border-amber-200 px-2 py-1"></td>
-                                          <td className="border border-amber-200 px-2 py-1"></td>
-                                          <td className="border border-amber-200 px-2 py-1"></td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold border-t border-gray-300 pt-3 mt-4">
-                                    <span>Academic Year : 2026-2027</span>
-                                    <span>Student List as on 03-Sep-2026 at 10:08 PM</span>
-                                    <span>Page 1 of 30</span>
-                                  </div>
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setCwsdFilterOpen(!cwsdFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{cwsdFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 30</span></div>
+                              <button className="px-2 py-1 bg-white border border-gray-300 rounded text-xs hover:bg-gray-100 cursor-pointer">&gt;</button>
+                              <button className="px-2 py-1 bg-white border border-gray-300 rounded text-xs hover:bg-gray-100 cursor-pointer">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[950px] p-6 text-xs text-gray-900 font-sans">
+                              <div className="flex items-center justify-center relative mb-4">
+                                <div className="absolute left-0 border border-green-600 rounded-full p-1"><img src={schoolLogo} alt="School Logo" className="w-12 h-12 object-contain"/></div>
+                                <div className="text-center">
+                                  <h1 className="text-lg font-bold tracking-wide">NAVALS NATIONAL ACADEMY</h1>
+                                  <p className="text-xs text-gray-600 font-semibold">DOHRIGHAT , MAU</p>
                                 </div>
                               </div>
-                            </>
-                          ) : (
-                            <div className="flex-1 bg-[#e5e7eb]" />
-                          )}
+                              <div className="border-t-2 border-orange-200 pt-2 mb-3 flex items-center justify-between text-xs font-bold text-gray-800">
+                                <span>Student List of Class : NUR A</span>
+                                <span>Teacher's Name : </span>
+                              </div>
+                              <table className="w-full border-collapse border border-amber-400 text-[11px]">
+                                <thead className="bg-[#fef9c3]">
+                                  <tr>
+                                    <th className="border border-amber-300 px-2 py-1 text-center w-10">SN</th>
+                                    <th className="border border-amber-300 px-2 py-1 text-center w-20">ADM. NO.</th>
+                                    <th className="border border-amber-300 px-2 py-1 text-left">NAME</th>
+                                    <th className="border border-amber-300 px-2 py-1 w-24"></th>
+                                    <th className="border border-amber-300 px-2 py-1 w-24"></th>
+                                    <th className="border border-amber-300 px-2 py-1 w-24"></th>
+                                    <th className="border border-amber-300 px-2 py-1 w-24"></th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {studentImageDatabase['NUR-A'].map((st) => (
+                                    <tr key={st.sr} className="hover:bg-amber-50/50">
+                                      <td className="border border-amber-200 px-2 py-1 text-center font-medium">{st.sr}</td>
+                                      <td className="border border-amber-200 px-2 py-1 text-center font-mono">{st.adm}</td>
+                                      <td className="border border-amber-200 px-2 py-1 font-bold text-gray-800">{st.name}</td>
+                                      <td className="border border-amber-200 px-2 py-1"></td>
+                                      <td className="border border-amber-200 px-2 py-1"></td>
+                                      <td className="border border-amber-200 px-2 py-1"></td>
+                                      <td className="border border-amber-200 px-2 py-1"></td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold border-t border-gray-300 pt-3 mt-4">
+                                <span>Academic Year : 2026-2027</span>
+                                <span>Student List as on 03-Sep-2026 at 10:08 PM</span>
+                                <span>Page 1 of 30</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                     ) : activeTab === 'Class Section Transfer Report' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {cstrNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{cstrNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${cstrFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {cstrFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setCstrFilterOpen(!cstrFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{cstrFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${cstrFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {cstrFilterOpen && (
-                            <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Session</label><select value={cstrSession} onChange={(e) => setCstrSession(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>Select Session</option><option>2025-2026</option><option>2026-2027</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={cstrClass} onChange={(e) => setCstrClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Class</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={cstrSection} onChange={(e) => setCstrSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Section</option><option>A</option><option>B</option></select></div>
-                              <button onClick={() => { setCstrShow(true); setCstrNotification('Class Section Transfer Report loaded.'); setTimeout(() => setCstrNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
+                            <div className="flex flex-col gap-3 text-xs w-full">
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Select Class</label><select value={cstrClass} onChange={(e) => setCstrClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Select Section</label><select value={cstrSection} onChange={(e) => setCstrSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Sections</option><option>A</option><option>B</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Academic Year</label><select value={cstrSession} onChange={(e) => setCstrSession(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>Select Year</option><option>2025-2026</option><option>2026-2027</option></select></div>
+                              <button onClick={() => { setCstrShow(true); setCstrNotification('Class Section Transfer Report loaded.'); setTimeout(() => setCstrNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-4 py-1.5 rounded text-xs font-medium mt-2 cursor-pointer w-fit self-start"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
-                          {cstrShow ? (
-                            <>
-                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
-                                <div className="flex items-center gap-2">
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
-                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
-                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
-                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
-                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
-                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
-                                </div>
-                              </div>
-                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
-                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
-                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CLASS SECTION TRANSFER REPORT</div>
-                                  <table className="w-full border border-gray-300 text-[11px]">
-                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">FROM CLASS</th><th className="border border-gray-300 px-2 py-1">TO CLASS</th><th className="border border-gray-300 px-2 py-1">DATE</th></tr></thead>
-                                    <tbody>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">1770</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">NUR B</td><td className="border border-gray-300 px-2 py-1 text-center">15-Apr-2026</td></tr>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">1850</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">LKG A</td><td className="border border-gray-300 px-2 py-1 text-center">LKG B</td><td className="border border-gray-300 px-2 py-1 text-center">20-May-2026</td></tr>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">2203</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">UKG B</td><td className="border border-gray-300 px-2 py-1 text-center">UKG A</td><td className="border border-gray-300 px-2 py-1 text-center">10-Jul-2026</td></tr>
-                                    </tbody>
-                                  </table>
-                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Section Transfer Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
-                                </div>
-                              </div>
-                            </>
-                          ) : (
-                            <div className="flex-1 bg-[#e5e7eb]" />
-                          )}
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setCstrFilterOpen(!cstrFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{cstrFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                              <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                              <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CLASS SECTION TRANSFER REPORT</div>
+                              <table className="w-full border border-gray-300 text-[11px]">
+                                <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">FROM CLASS</th><th className="border border-gray-300 px-2 py-1">TO CLASS</th><th className="border border-gray-300 px-2 py-1">DATE</th></tr></thead>
+                                <tbody>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">1770</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">NUR B</td><td className="border border-gray-300 px-2 py-1 text-center">15-Apr-2026</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">1850</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">LKG A</td><td className="border border-gray-300 px-2 py-1 text-center">LKG B</td><td className="border border-gray-300 px-2 py-1 text-center">20-May-2026</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">2203</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">UKG B</td><td className="border border-gray-300 px-2 py-1 text-center">UKG A</td><td className="border border-gray-300 px-2 py-1 text-center">10-Jul-2026</td></tr>
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Section Transfer Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                     ) : activeTab === 'Class Wise Sibling' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {cwsibNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{cwsibNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${cwsibFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {cwsibFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setCwsibFilterOpen(!cwsibFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{cwsibFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${cwsibFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {cwsibFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
                               <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Session</label><select value={cwsibSession} onChange={(e) => setCwsibSession(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>Select Session</option><option>2025-2026</option><option>2026-2027</option></select></div>
@@ -18414,55 +18429,46 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
-                          {cwsibShow ? (
-                            <>
-                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
-                                <div className="flex items-center gap-2">
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
-                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
-                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
-                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
-                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
-                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
-                                </div>
-                              </div>
-                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
-                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
-                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CLASS WISE SIBLING REPORT</div>
-                                  <table className="w-full border border-gray-300 text-[11px]">
-                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">SIBLING NAME</th><th className="border border-gray-300 px-2 py-1">SIBLING CLASS</th><th className="border border-gray-300 px-2 py-1">FATHER NAME</th></tr></thead>
-                                    <tbody>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1">AADITYA GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">CLASS 4 A</td><td className="border border-gray-300 px-2 py-1">RAJESH GUPTA</td></tr>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">LKG A</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1">SHIVANI JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">CLASS 7 B</td><td className="border border-gray-300 px-2 py-1">MANOJ JAISWAL</td></tr>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">UKG A</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1">ANURAG MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">CLASS 9 A</td><td className="border border-gray-300 px-2 py-1">SUNIL MAURYA</td></tr>
-                                    </tbody>
-                                  </table>
-                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Wise Sibling printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
-                                </div>
-                              </div>
-                            </>
-                          ) : (
-                            <div className="flex-1 bg-[#e5e7eb]" />
-                          )}
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setCwsibFilterOpen(!cwsibFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{cwsibFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                              <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                              <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CLASS WISE SIBLING REPORT</div>
+                              <table className="w-full border border-gray-300 text-[11px]">
+                                <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">SIBLING NAME</th><th className="border border-gray-300 px-2 py-1">SIBLING CLASS</th><th className="border border-gray-300 px-2 py-1">FATHER NAME</th></tr></thead>
+                                <tbody>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1">AADITYA GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">CLASS 4 A</td><td className="border border-gray-300 px-2 py-1">RAJESH GUPTA</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">LKG A</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1">SHIVANI JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">CLASS 7 B</td><td className="border border-gray-300 px-2 py-1">MANOJ JAISWAL</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">UKG A</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1">ANURAG MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">CLASS 9 A</td><td className="border border-gray-300 px-2 py-1">SUNIL MAURYA</td></tr>
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Wise Sibling printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                     ) : activeTab === 'Class Wise Mark List' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {cwmlNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{cwmlNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${cwmlFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {cwmlFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setCwmlFilterOpen(!cwmlFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{cwmlFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${cwmlFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {cwmlFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
                               <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Session</label><select value={cwmlSession} onChange={(e) => setCwmlSession(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>Select Session</option><option>2025-2026</option><option>2026-2027</option></select></div>
@@ -18473,56 +18479,47 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
-                          {cwmlShow ? (
-                            <>
-                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
-                                <div className="flex items-center gap-2">
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
-                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
-                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
-                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
-                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
-                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
-                                </div>
-                              </div>
-                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
-                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
-                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CLASS WISE MARK LIST</div>
-                                  <table className="w-full border border-gray-300 text-[11px]">
-                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">MARKS</th><th className="border border-gray-300 px-2 py-1">GRADE</th></tr></thead>
-                                    <tbody>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">1770</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">94.5%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-700">A1</td></tr>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">1850</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">91.0%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-700">A1</td></tr>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">1858</td><td className="border border-gray-300 px-2 py-1 font-bold">KARTIK MADDHESIYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">88.5%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-blue-700">A2</td></tr>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center">2203</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">96.0%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-700">A1</td></tr>
-                                    </tbody>
-                                  </table>
-                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Wise Mark List printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
-                                </div>
-                              </div>
-                            </>
-                          ) : (
-                            <div className="flex-1 bg-[#e5e7eb]" />
-                          )}
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setCwmlFilterOpen(!cwmlFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{cwmlFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                              <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                              <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CLASS WISE MARK LIST</div>
+                              <table className="w-full border border-gray-300 text-[11px]">
+                                <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">MARKS</th><th className="border border-gray-300 px-2 py-1">GRADE</th></tr></thead>
+                                <tbody>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">1770</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">94.5%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-700">A1</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">1850</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">91.0%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-700">A1</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">1858</td><td className="border border-gray-300 px-2 py-1 font-bold">KARTIK MADDHESIYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">88.5%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-blue-700">A2</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center">2203</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">96.0%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-700">A1</td></tr>
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Wise Mark List printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                     ) : activeTab === 'Total Session Strength Wise Report' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {tssrNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{tssrNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${tssrFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {tssrFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setTssrFilterOpen(!tssrFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{tssrFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${tssrFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {tssrFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
                               <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Session</label><select value={tssrSession} onChange={(e) => setTssrSession(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>Select Session</option><option>2025-2026</option><option>2026-2027</option></select></div>
@@ -18531,68 +18528,66 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
-                          {tssrShow ? (
-                            <>
-                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
-                                <div className="flex items-center gap-2">
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
-                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
-                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
-                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
-                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
-                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
-                                </div>
-                              </div>
-                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
-                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
-                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">TOTAL SESSION STRENGTH WISE REPORT</div>
-                                  <table className="w-full border border-gray-300 text-[11px]">
-                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">SESSION</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                    <tbody>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">45</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">80</td></tr>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">50</td><td className="border border-gray-300 px-2 py-1 text-center">40</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">90</td></tr>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">48</td><td className="border border-gray-300 px-2 py-1 text-center">42</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">90</td></tr>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">1</td><td className="border border-gray-300 px-2 py-1 text-center">55</td><td className="border border-gray-300 px-2 py-1 text-center">45</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">100</td></tr>
-                                      <tr className="bg-gray-100 font-bold"><td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">198</td><td className="border border-gray-300 px-2 py-1 text-center">162</td><td className="border border-gray-300 px-2 py-1 text-center">360</td></tr>
-                                    </tbody>
-                                  </table>
-                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Total Session Strength Wise Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
-                                </div>
-                              </div>
-                            </>
-                          ) : (
-                            <div className="flex-1 bg-[#e5e7eb]" />
-                          )}
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setTssrFilterOpen(!tssrFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{tssrFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                              <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                              <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">TOTAL SESSION STRENGTH WISE REPORT</div>
+                              <table className="w-full border border-gray-300 text-[11px]">
+                                <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">SESSION</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
+                                <tbody>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">45</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">80</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">50</td><td className="border border-gray-300 px-2 py-1 text-center">40</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">90</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">48</td><td className="border border-gray-300 px-2 py-1 text-center">42</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">90</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">1</td><td className="border border-gray-300 px-2 py-1 text-center">55</td><td className="border border-gray-300 px-2 py-1 text-center">45</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">100</td></tr>
+                                  <tr className="bg-gray-100 font-bold"><td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">198</td><td className="border border-gray-300 px-2 py-1 text-center">162</td><td className="border border-gray-300 px-2 py-1 text-center">360</td></tr>
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Total Session Strength Wise Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                     ) : activeTab === 'Date Wise Admission Report' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
-                        {dwarNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{dwarNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${dwarFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {dwarFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setDwarFilterOpen(!dwarFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{dwarFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
+                        {dwarNotification && (<div className="absolute top-2 left-4 right-4 z-30 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{dwarNotification}</span></div>)}
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${dwarFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {dwarFilterOpen && (
-                            <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">From Date</label><input type="text" value={dwarFromDate} onChange={(e) => setDwarFromDate(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] w-full" /></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">To Date</label><input type="text" value={dwarToDate} onChange={(e) => setDwarToDate(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] w-full" /></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={dwarClass} onChange={(e) => setDwarClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Class</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Session</label><select value={dwarSession} onChange={(e) => setDwarSession(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>Select Session</option><option>2025-2026</option><option>2026-2027</option></select></div>
-                              <button onClick={() => { setDwarShow(true); setDwarNotification('Date Wise Admission Report loaded.'); setTimeout(() => setDwarNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
+                            <div className="flex flex-col gap-3 text-xs w-full">
+                              <div className="flex items-center gap-4 text-xs font-bold text-gray-700 pb-1">
+                                <label className="flex items-center gap-1.5 cursor-pointer"><input type="radio" name="dwarDateType" defaultChecked className="text-[#28aae1]" /> DOJ Wise</label>
+                                <label className="flex items-center gap-1.5 cursor-pointer"><input type="radio" name="dwarDateType" className="text-[#28aae1]" /> DOB Wise</label>
+                              </div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">From Date</label><input type="text" value={dwarFromDate || "03-Sep-2026"} onChange={(e) => setDwarFromDate(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] w-full bg-white" /></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">To Date</label><input type="text" value={dwarToDate || "03-Sep-2026"} onChange={(e) => setDwarToDate(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] w-full bg-white" /></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Class</label><select value={dwarClass} onChange={(e) => setDwarClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Section</label><select value={dwarSection} onChange={(e) => setDwarSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Sections</option><option>A</option><option>B</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Other Details</label><select className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All (2)</option><option>Day Scholar</option><option>Hosteler</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Order By</label><select className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>DOJ Wise</option><option>Name Wise</option><option>Roll No Wise</option></select></div>
+                              <button onClick={() => { setDwarShow(true); setDwarNotification('Date Wise Admission Report loaded.'); setTimeout(() => setDwarNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-4 py-1.5 rounded text-xs font-medium mt-2 cursor-pointer w-fit self-start"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setDwarFilterOpen(!dwarFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{dwarFilterOpen ? '◀' : '▶'}</button>
                           {dwarShow ? (
                             <>
                               <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
@@ -18635,23 +18630,28 @@ function AdmissionLayout() {
                       </div>
 
                     ) : activeTab === 'Student House Wise Report' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {shwrNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{shwrNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${shwrFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {shwrFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setShwrFilterOpen(!shwrFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{shwrFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${shwrFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {shwrFilterOpen && (
-                            <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={shwrClass} onChange={(e) => setShwrClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Class</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={shwrSection} onChange={(e) => setShwrSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Section</option><option>A</option><option>B</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">House</label><select value={shwrHouse} onChange={(e) => setShwrHouse(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All House</option><option>Red House</option><option>Blue House</option><option>Green House</option><option>Yellow House</option></select></div>
-                              <button onClick={() => { setShwrShow(true); setShwrNotification('Student House Wise Report loaded.'); setTimeout(() => setShwrNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
+                            <div className="flex flex-col gap-3 text-xs w-full">
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Select Class</label><select value={shwrClass} onChange={(e) => setShwrClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
+                              <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 cursor-pointer"><input type="checkbox" checked={shwrSectionWise} onChange={(e) => setShwrSectionWise(e.target.checked)} className="rounded text-[#28aae1]" /> Click For Section Wise</label>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">House</label><select value={shwrHouse} onChange={(e) => setShwrHouse(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Houses</option><option>Red House</option><option>Blue House</option><option>Green House</option><option>Yellow House</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Club</label><select value={shwrClub} onChange={(e) => setShwrClub(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Club</option><option>Sports Club</option><option>Music Club</option><option>Art Club</option></select></div>
+                              <div className="flex items-center gap-3 text-xs font-semibold text-gray-700">
+                                <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="shwrStatus" checked={shwrStatus==='All'} onChange={()=>setShwrStatus('All')} className="text-[#28aae1]"/> All</label>
+                                <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="shwrStatus" checked={shwrStatus==='Active'} onChange={()=>setShwrStatus('Active')} className="text-[#28aae1]"/> Active</label>
+                                <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="shwrStatus" checked={shwrStatus==='Inactive'} onChange={()=>setShwrStatus('Inactive')} className="text-[#28aae1]"/> Inactive</label>
+                              </div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Range Type</label><select value={shwrRangeType} onChange={(e) => setShwrRangeType(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>Select Range</option><option>3-5 Years</option><option>6-10 Years</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">From Age</label><input type="text" value={shwrFromAge} onChange={(e) => setShwrFromAge(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] w-full bg-white" /></div>
+                              <button onClick={() => { setShwrShow(true); setShwrNotification('Student House Wise Report loaded.'); setTimeout(() => setShwrNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-4 py-1.5 rounded text-xs font-medium mt-2 cursor-pointer w-fit self-start"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setShwrFilterOpen(!shwrFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{shwrFilterOpen ? '◀' : '▶'}</button>
                           {shwrShow ? (
                             <>
                               <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
@@ -18694,23 +18694,21 @@ function AdmissionLayout() {
                       </div>
 
                     ) : activeTab === 'Student Register Date Wise Report' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {srdwrNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{srdwrNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${srdwrFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {srdwrFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setSrdwrFilterOpen(!srdwrFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{srdwrFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${srdwrFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {srdwrFilterOpen && (
-                            <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">From Date</label><input type="text" value={srdwrFromDate} onChange={(e) => setSrdwrFromDate(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] w-full" /></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">To Date</label><input type="text" value={srdwrToDate} onChange={(e) => setSrdwrToDate(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] w-full" /></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={srdwrClass} onChange={(e) => setSrdwrClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Class</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <button onClick={() => { setSrdwrShow(true); setSrdwrNotification('Student Register Date Wise Report loaded.'); setTimeout(() => setSrdwrNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
+                            <div className="flex flex-col gap-3 text-xs w-full">
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">From Date</label><input type="text" value={srdwrFromDate} onChange={(e) => setSrdwrFromDate(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] w-full bg-white" /></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">To Date</label><input type="text" value={srdwrToDate} onChange={(e) => setSrdwrToDate(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] w-full bg-white" /></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Class</label><select value={srdwrClass} onChange={(e) => setSrdwrClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Section</label><select value={srdwrSection} onChange={(e) => setSrdwrSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Sections</option><option>A</option><option>B</option></select></div>
+                              <button onClick={() => { setSrdwrShow(true); setSrdwrNotification('Student Register Date Wise Report loaded.'); setTimeout(() => setSrdwrNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-4 py-1.5 rounded text-xs font-medium mt-2 cursor-pointer w-fit self-start"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setSrdwrFilterOpen(!srdwrFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{srdwrFilterOpen ? '◀' : '▶'}</button>
                           {srdwrShow ? (
                             <>
                               <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
@@ -18752,22 +18750,18 @@ function AdmissionLayout() {
                       </div>
 
                     ) : activeTab === 'Student Health Entry Report' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {sherNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{sherNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${sherFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {sherFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setSherFilterOpen(!sherFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{sherFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${sherFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {sherFilterOpen && (
-                            <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={sherClass} onChange={(e) => setSherClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Class</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={sherSection} onChange={(e) => setSherSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Section</option><option>A</option><option>B</option></select></div>
-                              <button onClick={() => { setSherShow(true); setSherNotification('Student Health Entry Report loaded.'); setTimeout(() => setSherNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
+                            <div className="flex flex-col gap-3 text-xs w-full">
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Class</label><select value={sherClass} onChange={(e) => setSherClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All (51)</option>{['NUR A','NUR B','LKG A','LKG B','UKG A','1 A','2 A'].map(c=><option key={c}>{c}</option>)}</select></div>
+                              <button onClick={() => { setSherShow(true); setSherNotification('Student Health Entry Report loaded.'); setTimeout(() => setSherNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-4 py-1.5 rounded text-xs font-medium mt-2 cursor-pointer w-fit self-start"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setSherFilterOpen(!sherFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{sherFilterOpen ? '◀' : '▶'}</button>
                           {sherShow ? (
                             <>
                               <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
@@ -18810,23 +18804,21 @@ function AdmissionLayout() {
                       </div>
 
                     ) : activeTab === 'Gender/Religion Wise Student Report' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {grwsrNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{grwsrNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${grwsrFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {grwsrFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setGrwsrFilterOpen(!grwsrFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{grwsrFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${grwsrFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {grwsrFilterOpen && (
-                            <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Session</label><select value={grwsrSession} onChange={(e) => setGrwsrSession(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>Select Session</option><option>2025-2026</option><option>2026-2027</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={grwsrClass} onChange={(e) => setGrwsrClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Class</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={grwsrSection} onChange={(e) => setGrwsrSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Section</option><option>A</option><option>B</option></select></div>
-                              <button onClick={() => { setGrwsrShow(true); setGrwsrNotification('Gender/Religion Wise Student Report loaded.'); setTimeout(() => setGrwsrNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
+                            <div className="flex flex-col gap-3 text-xs w-full">
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Religion</label><select value={grwsrReligion} onChange={(e) => setGrwsrReligion(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Religions</option><option>Hindu</option><option>Muslim</option><option>Sikh</option><option>Christian</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Class</label><select value={grwsrClass} onChange={(e) => setGrwsrClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Section</label><select value={grwsrSection} onChange={(e) => setGrwsrSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Sections</option><option>A</option><option>B</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Gender</label><select value={grwsrGender} onChange={(e) => setGrwsrGender(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Genders</option><option>Male</option><option>Female</option></select></div>
+                              <button onClick={() => { setGrwsrShow(true); setGrwsrNotification('Gender/Religion Wise Student Report loaded.'); setTimeout(() => setGrwsrNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-4 py-1.5 rounded text-xs font-medium mt-2 cursor-pointer w-fit self-start"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setGrwsrFilterOpen(!grwsrFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{grwsrFilterOpen ? '◀' : '▶'}</button>
                           {grwsrShow ? (
                             <>
                               <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
@@ -18868,23 +18860,21 @@ function AdmissionLayout() {
                       </div>
 
                     ) : activeTab === 'Category Wise Student Report' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {cwsrNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{cwsrNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${cwsrFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {cwsrFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setCwsrFilterOpen(!cwsrFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{cwsrFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${cwsrFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {cwsrFilterOpen && (
-                            <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Session</label><select value={cwsrSession} onChange={(e) => setCwsrSession(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>Select Session</option><option>2025-2026</option><option>2026-2027</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={cwsrClass} onChange={(e) => setCwsrClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Class</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={cwsrSection} onChange={(e) => setCwsrSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Section</option><option>A</option><option>B</option></select></div>
-                              <button onClick={() => { setCwsrShow(true); setCwsrNotification('Category Wise Student Report loaded.'); setTimeout(() => setCwsrNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
+                            <div className="flex flex-col gap-3 text-xs w-full">
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Category</label><select value={cwsrCategory} onChange={(e) => setCwsrCategory(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Categories</option><option>General</option><option>OBC</option><option>SC</option><option>ST</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Class</label><select value={cwsrClass} onChange={(e) => setCwsrClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Section</label><select value={cwsrSection} onChange={(e) => setCwsrSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Sections</option><option>A</option><option>B</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Father Profession</label><select value={cwsrFatherProf} onChange={(e) => setCwsrFatherProf(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Professions</option><option>Business</option><option>Service</option><option>Farmer</option><option>Doctor</option></select></div>
+                              <button onClick={() => { setCwsrShow(true); setCwsrNotification('Category Wise Student Report loaded.'); setTimeout(() => setCwsrNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-4 py-1.5 rounded text-xs font-medium mt-2 cursor-pointer w-fit self-start"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setCwsrFilterOpen(!cwsrFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{cwsrFilterOpen ? '◀' : '▶'}</button>
                           {cwsrShow ? (
                             <>
                               <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
@@ -18927,23 +18917,20 @@ function AdmissionLayout() {
                       </div>
 
                     ) : activeTab === 'Surname Wise Student Details' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {swsdNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{swsdNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${swsdFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {swsdFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setSwsdFilterOpen(!swsdFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{swsdFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${swsdFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {swsdFilterOpen && (
-                            <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={swsdClass} onChange={(e) => setSwsdClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Class</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={swsdSection} onChange={(e) => setSwsdSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Section</option><option>A</option><option>B</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Surname</label><input type="text" value={swsdSurname} onChange={(e) => setSwsdSurname(e.target.value)} placeholder="Enter surname..." className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] w-full" /></div>
-                              <button onClick={() => { setSwsdShow(true); setSwsdNotification('Surname Wise Student Details loaded.'); setTimeout(() => setSwsdNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
+                            <div className="flex flex-col gap-3 text-xs w-full">
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Class</label><select value={swsdClass} onChange={(e) => setSwsdClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>Select Class</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Section</label><select value={swsdSection} onChange={(e) => setSwsdSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>Select Section</option><option>A</option><option>B</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Student Details</label><select value={swsdStudentDetails} onChange={(e) => setSwsdStudentDetails(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All (128)</option><option>Active Only</option><option>Inactive Only</option></select></div>
+                              <button onClick={() => { setSwsdShow(true); setSwsdNotification('Surname Wise Student Details loaded.'); setTimeout(() => setSwsdNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-4 py-1.5 rounded text-xs font-medium mt-2 cursor-pointer w-fit self-start"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setSwsdFilterOpen(!swsdFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{swsdFilterOpen ? '◀' : '▶'}</button>
                           {swsdShow ? (
                             <>
                               <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
@@ -18986,23 +18973,26 @@ function AdmissionLayout() {
                       </div>
 
                     ) : activeTab === 'Active/Inactive Students Detail Report' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {aisdrNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{aisdrNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${aisdrFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {aisdrFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setAisdrFilterOpen(!aisdrFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{aisdrFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${aisdrFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {aisdrFilterOpen && (
-                            <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={aisdrClass} onChange={(e) => setAisdrClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Class</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={aisdrSection} onChange={(e) => setAisdrSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Section</option><option>A</option><option>B</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Status</label><select value={aisdrStatus} onChange={(e) => setAisdrStatus(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>Active</option><option>Inactive</option><option>Both</option></select></div>
-                              <button onClick={() => { setAisdrShow(true); setAisdrNotification('Active/Inactive Students Detail Report loaded.'); setTimeout(() => setAisdrNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
+                            <div className="flex flex-col gap-3 text-xs w-full">
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Class</label><select value={aisdrClass} onChange={(e) => setAisdrClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Section</label><select value={aisdrSection} onChange={(e) => setAisdrSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Sections</option><option>A</option><option>B</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">User</label><select value={aisdrUser} onChange={(e) => setAisdrUser(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Users</option><option>Admin</option><option>Operator</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">From Date</label><input type="text" value={aisdrFromDate} onChange={(e) => setAisdrFromDate(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] w-full bg-white" /></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Till Date</label><input type="text" value={aisdrTillDate} onChange={(e) => setAisdrTillDate(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] w-full bg-white" /></div>
+                              <div className="flex items-center gap-4 text-xs font-semibold text-gray-700">
+                                <label className="flex items-center gap-1.5 cursor-pointer"><input type="radio" name="aisdrStatus" checked={aisdrStatus==='Active'} onChange={()=>setAisdrStatus('Active')} className="text-[#28aae1]"/> Active</label>
+                                <label className="flex items-center gap-1.5 cursor-pointer"><input type="radio" name="aisdrStatus" checked={aisdrStatus==='Inactive'} onChange={()=>setAisdrStatus('Inactive')} className="text-[#28aae1]"/> Inactive</label>
+                              </div>
+                              <button onClick={() => { setAisdrShow(true); setAisdrNotification('Active/Inactive Students Detail Report loaded.'); setTimeout(() => setAisdrNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-4 py-1.5 rounded text-xs font-medium mt-2 cursor-pointer w-fit self-start"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setAisdrFilterOpen(!aisdrFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{aisdrFilterOpen ? '◀' : '▶'}</button>
                           {aisdrShow ? (
                             <>
                               <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
@@ -19045,22 +19035,21 @@ function AdmissionLayout() {
                       </div>
 
                     ) : activeTab === 'Staff Ward List Report' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {swlrNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{swlrNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${swlrFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {swlrFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setSwlrFilterOpen(!swlrFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{swlrFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${swlrFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {swlrFilterOpen && (
-                            <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={swlrClass} onChange={(e) => setSwlrClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Class</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={swlrSection} onChange={(e) => setSwlrSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Section</option><option>A</option><option>B</option></select></div>
-                              <button onClick={() => { setSwlrShow(true); setSwlrNotification('Staff Ward List Report loaded.'); setTimeout(() => setSwlrNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
+                            <div className="flex flex-col gap-3 text-xs w-full">
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Class</label><select value={swlrClass} onChange={(e) => setSwlrClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Section</label><select value={swlrSection} onChange={(e) => setSwlrSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Sections</option><option>A</option><option>B</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Staff Type</label><select value={swlrStaffType} onChange={(e) => setSwlrStaffType(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Types</option><option>Teaching</option><option>Non-Teaching</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Staff Name</label><select value={swlrStaffName} onChange={(e) => setSwlrStaffName(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Staffs</option><option>PREETI GUPTA</option><option>SUNIL MAURYA</option></select></div>
+                              <button onClick={() => { setSwlrShow(true); setSwlrNotification('Staff Ward List Report loaded.'); setTimeout(() => setSwlrNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-4 py-1.5 rounded text-xs font-medium mt-2 cursor-pointer w-fit self-start"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setSwlrFilterOpen(!swlrFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{swlrFilterOpen ? '◀' : '▶'}</button>
                           {swlrShow ? (
                             <>
                               <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
@@ -19101,23 +19090,19 @@ function AdmissionLayout() {
                       </div>
 
                     ) : activeTab === 'Student Last Exam Report' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {slerNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{slerNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${slerFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {slerFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setSlerFilterOpen(!slerFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{slerFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${slerFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {slerFilterOpen && (
-                            <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={slerClass} onChange={(e) => setSlerClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Class</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={slerSection} onChange={(e) => setSlerSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Section</option><option>A</option><option>B</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Exam Year</label><input type="text" value={slerExamYear} onChange={(e) => setSlerExamYear(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] w-full" /></div>
-                              <button onClick={() => { setSlerShow(true); setSlerNotification('Student Last Exam Report loaded.'); setTimeout(() => setSlerNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
+                            <div className="flex flex-col gap-3 text-xs w-full">
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Select Class</label><select value={slerClass} onChange={(e) => setSlerClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-700">Select Section</label><select value={slerSection} onChange={(e) => setSlerSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Sections</option><option>A</option><option>B</option></select></div>
+                              <button onClick={() => { setSlerShow(true); setSlerNotification('Student Last Exam Report loaded.'); setTimeout(() => setSlerNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-4 py-1.5 rounded text-xs font-medium mt-2 cursor-pointer w-fit self-start"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setSlerFilterOpen(!slerFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{slerFilterOpen ? '◀' : '▶'}</button>
                           {slerShow ? (
                             <>
                               <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
@@ -19160,13 +19145,9 @@ function AdmissionLayout() {
                       </div>
 
                     ) : activeTab === 'Class Wise Student Strength' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {cwssNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{cwssNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${cwssFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {cwssFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setCwssFilterOpen(!cwssFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{cwssFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${cwssFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {cwssFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
                               <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="checkbox" checked={cwssDateWise} onChange={(e) => setCwssDateWise(e.target.checked)} className="rounded" /> Date Wise</label>
@@ -19187,39 +19168,49 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {cwssShow && (
-                            <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CLASS WISE STUDENT STRENGTH</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                  <tbody>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">45</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">55</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">28</td><td className="border border-gray-300 px-2 py-1 text-center">22</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">50</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-medium">I</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">65</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">5</td><td className="border border-gray-300 px-2 py-1 font-medium">II</td><td className="border border-gray-300 px-2 py-1 text-center">40</td><td className="border border-gray-300 px-2 py-1 text-center">32</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">72</td></tr>
-                                    <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">158</td><td className="border border-gray-300 px-2 py-1 text-center">129</td><td className="border border-gray-300 px-2 py-1 text-center">287</td></tr>
-                                  </tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
-                              </div>
-                            </>
-                          )}
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setCwssFilterOpen(!cwssFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{cwssFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                              <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                              <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CLASS WISE STUDENT STRENGTH</div>
+                              <table className="w-full border border-gray-300 text-[11px]">
+                                <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
+                                <tbody>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">45</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">55</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">28</td><td className="border border-gray-300 px-2 py-1 text-center">22</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">50</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-medium">I</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">65</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">5</td><td className="border border-gray-300 px-2 py-1 font-medium">II</td><td className="border border-gray-300 px-2 py-1 text-center">40</td><td className="border border-gray-300 px-2 py-1 text-center">32</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">72</td></tr>
+                                  <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">158</td><td className="border border-gray-300 px-2 py-1 text-center">129</td><td className="border border-gray-300 px-2 py-1 text-center">287</td></tr>
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                     ) : activeTab === 'Student Strength Consolidated' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {sscNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{sscNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${sscFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {sscFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setSscFilterOpen(!sscFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{sscFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${sscFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {sscFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
                               <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">School</label><select value={sscSchool} onChange={(e) => setSscSchool(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Schools</option><option>NAVALS NATIONAL ACADEMY</option></select></div>
@@ -19231,38 +19222,48 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {sscShow && (
-                            <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">STUDENT STRENGTH CONSOLIDATED</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">SECTION</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                  <tbody>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">45</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">55</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">28</td><td className="border border-gray-300 px-2 py-1 text-center">22</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">50</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-medium">I</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">65</td></tr>
-                                    <tr className="bg-gray-100 font-bold"><td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">118</td><td className="border border-gray-300 px-2 py-1 text-center">97</td><td className="border border-gray-300 px-2 py-1 text-center">215</td></tr>
-                                  </tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Student Strength Consolidated printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
-                              </div>
-                            </>
-                          )}
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setSscFilterOpen(!sscFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{sscFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                              <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                              <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">STUDENT STRENGTH CONSOLIDATED</div>
+                              <table className="w-full border border-gray-300 text-[11px]">
+                                <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">SECTION</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
+                                <tbody>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">45</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">55</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">28</td><td className="border border-gray-300 px-2 py-1 text-center">22</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">50</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-medium">I</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">65</td></tr>
+                                  <tr className="bg-gray-100 font-bold"><td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">118</td><td className="border border-gray-300 px-2 py-1 text-center">97</td><td className="border border-gray-300 px-2 py-1 text-center">215</td></tr>
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Student Strength Consolidated printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                     ) : activeTab === 'Student Strength Ratio Wise Report' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {ssrwNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{ssrwNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${ssrwFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {ssrwFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setSsrwFilterOpen(!ssrwFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{ssrwFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${ssrwFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {ssrwFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
                               <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">School</label><select value={ssrwSchool} onChange={(e) => setSsrwSchool(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Schools</option><option>NAVALS NATIONAL ACADEMY</option></select></div>
@@ -19275,37 +19276,47 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {ssrwShow && (
-                            <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">STUDENT STRENGTH RATIO WISE REPORT</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">RATIO (B:G)</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                  <tbody>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center">1.25 : 1</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">45</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center">1.20 : 1</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">55</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">28</td><td className="border border-gray-300 px-2 py-1 text-center">22</td><td className="border border-gray-300 px-2 py-1 text-center">1.27 : 1</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">50</td></tr>
-                                    <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">83</td><td className="border border-gray-300 px-2 py-1 text-center">67</td><td className="border border-gray-300 px-2 py-1 text-center">1.24 : 1</td><td className="border border-gray-300 px-2 py-1 text-center">150</td></tr>
-                                  </tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Student Strength Ratio Wise Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
-                              </div>
-                            </>
-                          )}
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setSsrwFilterOpen(!ssrwFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{ssrwFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                              <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                              <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">STUDENT STRENGTH RATIO WISE REPORT</div>
+                              <table className="w-full border border-gray-300 text-[11px]">
+                                <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">RATIO (B:G)</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
+                                <tbody>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center">1.25 : 1</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">45</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center">1.20 : 1</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">55</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">28</td><td className="border border-gray-300 px-2 py-1 text-center">22</td><td className="border border-gray-300 px-2 py-1 text-center">1.27 : 1</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">50</td></tr>
+                                  <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">83</td><td className="border border-gray-300 px-2 py-1 text-center">67</td><td className="border border-gray-300 px-2 py-1 text-center">1.24 : 1</td><td className="border border-gray-300 px-2 py-1 text-center">150</td></tr>
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Student Strength Ratio Wise Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                     ) : activeTab === 'Religion / Gender Wise Student Strength' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {rgssNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{rgssNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${rgssFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {rgssFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setRgssFilterOpen(!rgssFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{rgssFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${rgssFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {rgssFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
                               <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">School</label><select value={rgssSchool} onChange={(e) => setRgssSchool(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Schools</option><option>NAVALS NATIONAL ACADEMY</option></select></div>
@@ -19322,38 +19333,48 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {rgssShow && (
-                            <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">RELIGION / GENDER WISE STUDENT STRENGTH</div>
-                                 <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">TYPE</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                  <tbody>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center">450</td><td className="border border-gray-300 px-2 py-1 text-center">380</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">830</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">Muslim</td><td className="border border-gray-300 px-2 py-1 text-center">45</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">80</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">Christian</td><td className="border border-gray-300 px-2 py-1 text-center">12</td><td className="border border-gray-300 px-2 py-1 text-center">8</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">20</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-medium">Sikh</td><td className="border border-gray-300 px-2 py-1 text-center">5</td><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">8</td></tr>
-                                    <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">512</td><td className="border border-gray-300 px-2 py-1 text-center">426</td><td className="border border-gray-300 px-2 py-1 text-center">938</td></tr>
-                                  </tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Religion / Gender Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
-                              </div>
-                            </>
-                          )}
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setRgssFilterOpen(!rgssFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{rgssFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                              <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                              <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">RELIGION / GENDER WISE STUDENT STRENGTH</div>
+                              <table className="w-full border border-gray-300 text-[11px]">
+                                <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">TYPE</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
+                                <tbody>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center">450</td><td className="border border-gray-300 px-2 py-1 text-center">380</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">830</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">Muslim</td><td className="border border-gray-300 px-2 py-1 text-center">45</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">80</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">Christian</td><td className="border border-gray-300 px-2 py-1 text-center">12</td><td className="border border-gray-300 px-2 py-1 text-center">8</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">20</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-medium">Sikh</td><td className="border border-gray-300 px-2 py-1 text-center">5</td><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">8</td></tr>
+                                  <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">512</td><td className="border border-gray-300 px-2 py-1 text-center">426</td><td className="border border-gray-300 px-2 py-1 text-center">938</td></tr>
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Religion / Gender Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                     ) : activeTab === 'Nationality Wise Student Strength' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {nwssNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{nwssNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${nwssFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {nwssFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setNwssFilterOpen(!nwssFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{nwssFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${nwssFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {nwssFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
                               <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={nwssClass} onChange={(e) => setNwssClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
@@ -19364,36 +19385,46 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {nwssShow && (
-                            <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">NATIONALITY WISE STUDENT STRENGTH</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">NATIONALITY</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                  <tbody>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">Indian</td><td className="border border-gray-300 px-2 py-1 text-center">512</td><td className="border border-gray-300 px-2 py-1 text-center">426</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">938</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">Others</td><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">5</td></tr>
-                                    <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">515</td><td className="border border-gray-300 px-2 py-1 text-center">428</td><td className="border border-gray-300 px-2 py-1 text-center">943</td></tr>
-                                  </tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Nationality Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
-                              </div>
-                            </>
-                          )}
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setNwssFilterOpen(!nwssFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{nwssFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                              <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                              <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">NATIONALITY WISE STUDENT STRENGTH</div>
+                              <table className="w-full border border-gray-300 text-[11px]">
+                                <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">NATIONALITY</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
+                                <tbody>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">Indian</td><td className="border border-gray-300 px-2 py-1 text-center">512</td><td className="border border-gray-300 px-2 py-1 text-center">426</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">938</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">Others</td><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">5</td></tr>
+                                  <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">515</td><td className="border border-gray-300 px-2 py-1 text-center">428</td><td className="border border-gray-300 px-2 py-1 text-center">943</td></tr>
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Nationality Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                     ) : activeTab === 'Category / Gender Wise Student Strength' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {cgssNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{cgssNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${cgssFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {cgssFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setCgssFilterOpen(!cgssFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{cgssFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${cgssFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {cgssFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
                               <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="checkbox" checked={cgssDateWise} onChange={(e) => setCgssDateWise(e.target.checked)} className="rounded" /> Date Wise</label>
@@ -19407,270 +19438,293 @@ function AdmissionLayout() {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {cgssShow && (
-                            <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CATEGORY / GENDER WISE STUDENT STRENGTH</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CATEGORY</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                  <tbody>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1 text-center">220</td><td className="border border-gray-300 px-2 py-1 text-center">180</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">400</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1 text-center">210</td><td className="border border-gray-300 px-2 py-1 text-center">175</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">385</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">SC</td><td className="border border-gray-300 px-2 py-1 text-center">65</td><td className="border border-gray-300 px-2 py-1 text-center">55</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">120</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-medium">ST</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center">18</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">38</td></tr>
-                                    <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">515</td><td className="border border-gray-300 px-2 py-1 text-center">428</td><td className="border border-gray-300 px-2 py-1 text-center">943</td></tr>
-                                  </tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Category / Gender Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
-                              </div>
-                            </>
-                          )}
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setCgssFilterOpen(!cgssFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{cgssFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                              <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                              <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CATEGORY / GENDER WISE STUDENT STRENGTH</div>
+                              <table className="w-full border border-gray-300 text-[11px]">
+                                <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CATEGORY</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
+                                <tbody>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1 text-center">210</td><td className="border border-gray-300 px-2 py-1 text-center">180</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">390</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1 text-center">230</td><td className="border border-gray-300 px-2 py-1 text-center">195</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">425</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">SC / ST</td><td className="border border-gray-300 px-2 py-1 text-center">72</td><td className="border border-gray-300 px-2 py-1 text-center">51</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">123</td></tr>
+                                  <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">512</td><td className="border border-gray-300 px-2 py-1 text-center">426</td><td className="border border-gray-300 px-2 py-1 text-center">938</td></tr>
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Category / Gender Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                     ) : activeTab === 'Route Wise Student Strength' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {rwssNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{rwssNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${rwssFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {rwssFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setRwssFilterOpen(!rwssFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{rwssFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${rwssFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {rwssFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Select School</label><select value={rwssSchool} onChange={(e) => setRwssSchool(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Schools</option><option>NAVALS NATIONAL ACADEMY</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Route</label><select value={rwssRoute} onChange={(e) => setRwssRoute(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All (20)</option><option>Route 1 - Betiahata</option><option>Route 2 - Mohaddipur</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Bus Stop</label><select value={rwssBusStop} onChange={(e) => setRwssBusStop(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All (96)</option><option>Stop 1</option><option>Stop 2</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={rwssClass} onChange={(e) => setRwssClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All (15)</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Installment</label><select value={rwssInstallment} onChange={(e) => setRwssInstallment(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All (11)</option><option>Inst 1</option><option>Inst 2</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Month</label><select value={rwssMonth} onChange={(e) => setRwssMonth(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All</option><option>April</option><option>May</option><option>June</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">School</label><select value={rwssSchool} onChange={(e) => setRwssSchool(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Schools</option><option>NAVALS NATIONAL ACADEMY</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Wing</label><select value={rwssWing} onChange={(e) => setRwssWing(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Wings</option><option>Senior Wing</option><option>Junior Wing</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={rwssClass} onChange={(e) => setRwssClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
+                              <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="checkbox" checked={rwssClickSectionWise} onChange={(e) => setRwssClickSectionWise(e.target.checked)} className="rounded" /> Click For Section Wise</label>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={rwssSection} onChange={(e) => setRwssSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Sections</option><option>A</option><option>B</option></select></div>
                               <button onClick={() => { setRwssShow(true); setRwssNotification('Route Wise Student Strength loaded.'); setTimeout(() => setRwssNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {rwssShow && (
-                            <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">ROUTE WISE STUDENT STRENGTH</div>
-                                 <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ROUTE</th><th className="border border-gray-300 px-2 py-1">BUS STOP</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                  <tbody>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 1 - Betiahata</td><td className="border border-gray-300 px-2 py-1">Betiahata Chowk</td><td className="border border-gray-300 px-2 py-1 text-center">Class I</td><td className="border border-gray-300 px-2 py-1 text-center">18</td><td className="border border-gray-300 px-2 py-1 text-center">14</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">32</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 2 - Mohaddipur</td><td className="border border-gray-300 px-2 py-1">Mohaddipur Chauraha</td><td className="border border-gray-300 px-2 py-1 text-center">Class II</td><td className="border border-gray-300 px-2 py-1 text-center">22</td><td className="border border-gray-300 px-2 py-1 text-center">16</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">38</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 3 - Golghar</td><td className="border border-gray-300 px-2 py-1">Golghar Mall</td><td className="border border-gray-300 px-2 py-1 text-center">Class III</td><td className="border border-gray-300 px-2 py-1 text-center">15</td><td className="border border-gray-300 px-2 py-1 text-center">12</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">27</td></tr>
-                                    <tr className="bg-gray-100 font-bold"><td colSpan="4" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">55</td><td className="border border-gray-300 px-2 py-1 text-center">42</td><td className="border border-gray-300 px-2 py-1 text-center">97</td></tr>
-                                  </tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Route Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
-                              </div>
-                            </>
-                          )}
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setRwssFilterOpen(!rwssFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{rwssFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                              <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                              <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">ROUTE WISE STUDENT STRENGTH</div>
+                              <table className="w-full border border-gray-300 text-[11px]">
+                                <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ROUTE NAME</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
+                                <tbody>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 1 - Dohrighat Market</td><td className="border border-gray-300 px-2 py-1 text-center">120</td><td className="border border-gray-300 px-2 py-1 text-center">95</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">215</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 2 - Ghosi Highway</td><td className="border border-gray-300 px-2 py-1 text-center">150</td><td className="border border-gray-300 px-2 py-1 text-center">130</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">280</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 3 - Indara Station</td><td className="border border-gray-300 px-2 py-1 text-center">90</td><td className="border border-gray-300 px-2 py-1 text-center">80</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">170</td></tr>
+                                  <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">360</td><td className="border border-gray-300 px-2 py-1 text-center">305</td><td className="border border-gray-300 px-2 py-1 text-center">665</td></tr>
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Route Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                     ) : activeTab === 'Ews ClassWise Strength Report' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {ewsNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{ewsNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${ewsFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {ewsFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setEwsFilterOpen(!ewsFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{ewsFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${ewsFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {ewsFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="checkbox" checked={ewsInactiveDateWise} onChange={(e) => setEwsInactiveDateWise(e.target.checked)} className="rounded" /> Inactive Date Wise</label>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">School</label><select value={ewsSchool} onChange={(e) => setEwsSchool(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Schools</option><option>NAVALS NATIONAL ACADEMY</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Wing</label><select value={ewsWing} onChange={(e) => setEwsWing(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Wings</option><option>Senior Wing</option><option>Junior Wing</option></select></div>
                               <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={ewsClass} onChange={(e) => setEwsClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={ewsSection} onChange={(e) => setEwsSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Sections</option><option>A</option><option>B</option></select></div>
-                              <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="checkbox" checked={ewsStaffWardWise} onChange={(e) => setEwsStaffWardWise(e.target.checked)} className="rounded" /> EWS and Staff Ward Wise</label>
                               <button onClick={() => { setEwsShow(true); setEwsNotification('Ews ClassWise Strength Report loaded.'); setTimeout(() => setEwsNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {ewsShow && (
-                            <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">EWS CLASSWISE STRENGTH REPORT</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">SECTION</th><th className="border border-gray-300 px-2 py-1">EWS BOYS</th><th className="border border-gray-300 px-2 py-1">EWS GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL EWS</th></tr></thead>
-                                  <tbody>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">5</td><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">9</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">6</td><td className="border border-gray-300 px-2 py-1 text-center">5</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">11</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">8</td></tr>
-                                    <tr className="bg-gray-100 font-bold"><td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">15</td><td className="border border-gray-300 px-2 py-1 text-center">13</td><td className="border border-gray-300 px-2 py-1 text-center">28</td></tr>
-                                  </tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Ews ClassWise Strength Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
-                              </div>
-                            </>
-                          )}
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setEwsFilterOpen(!ewsFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{ewsFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                              <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                              <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">EWS CLASSWISE STRENGTH REPORT</div>
+                              <table className="w-full border border-gray-300 text-[11px]">
+                                <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">EWS BOYS</th><th className="border border-gray-300 px-2 py-1">EWS GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL EWS STRENGTH</th></tr></thead>
+                                <tbody>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">6</td><td className="border border-gray-300 px-2 py-1 text-center">5</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">11</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">8</td><td className="border border-gray-300 px-2 py-1 text-center">6</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">14</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">7</td><td className="border border-gray-300 px-2 py-1 text-center">5</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">12</td></tr>
+                                  <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">21</td><td className="border border-gray-300 px-2 py-1 text-center">16</td><td className="border border-gray-300 px-2 py-1 text-center">37</td></tr>
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Ews ClassWise Strength Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                     ) : activeTab === 'Category / Gender / Religion Wise Student Strength' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {cgrssNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{cgrssNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${cgrssFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {cgrssFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setCgrssFilterOpen(!cgrssFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{cgrssFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${cgrssFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {cgrssFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
                               <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">School</label><select value={cgrssSchool} onChange={(e) => setCgrssSchool(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Schools</option><option>NAVALS NATIONAL ACADEMY</option></select></div>
                               <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Wing</label><select value={cgrssWing} onChange={(e) => setCgrssWing(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Wings</option><option>Senior Wing</option><option>Junior Wing</option></select></div>
                               <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={cgrssClass} onChange={(e) => setCgrssClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={cgrssSection} onChange={(e) => setCgrssSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Sections</option><option>A</option><option>B</option></select></div>
                               <button onClick={() => { setCgrssShow(true); setCgrssNotification('Category / Gender / Religion Wise Student Strength loaded.'); setTimeout(() => setCgrssNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 overflow-auto bg-gray-100 p-4">
-                          {cgrssShow && (
-                            <>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1"><div className="flex items-center gap-2"><FaChevronLeft className="cursor-pointer" /><span>1</span><FaChevronRight className="cursor-pointer" /></div><div className="flex gap-2"><FaPrint className="cursor-pointer" /></div></div>
-                              <div className="bg-white shadow rounded p-6 text-xs">
-                                <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CATEGORY / GENDER / RELIGION WISE STUDENT STRENGTH</div>
-                                <table className="w-full border border-gray-300 text-[11px]">
-                                  <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CATEGORY</th><th className="border border-gray-300 px-2 py-1">RELIGION</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                  <tbody>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center">190</td><td className="border border-gray-300 px-2 py-1 text-center">160</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">350</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center">180</td><td className="border border-gray-300 px-2 py-1 text-center">150</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">330</td></tr>
-                                    <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Muslim</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">50</td></tr>
-                                    <tr className="bg-gray-100 font-bold"><td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">400</td><td className="border border-gray-300 px-2 py-1 text-center">330</td><td className="border border-gray-300 px-2 py-1 text-center">730</td></tr>
-                                  </tbody>
-                                </table>
-                                <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Category / Gender / Religion Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
-                              </div>
-                            </>
-                          )}
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setCgrssFilterOpen(!cgrssFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{cgrssFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                              <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                              <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CATEGORY / GENDER / RELIGION WISE STUDENT STRENGTH</div>
+                              <table className="w-full border border-gray-300 text-[11px]">
+                                <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CATEGORY</th><th className="border border-gray-300 px-2 py-1">RELIGION</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
+                                <tbody>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center">190</td><td className="border border-gray-300 px-2 py-1 text-center">160</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">350</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Muslim</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">40</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center">210</td><td className="border border-gray-300 px-2 py-1 text-center">180</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">390</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1">Muslim</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center">15</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">35</td></tr>
+                                  <tr className="bg-gray-100 font-bold"><td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">440</td><td className="border border-gray-300 px-2 py-1 text-center">375</td><td className="border border-gray-300 px-2 py-1 text-center">815</td></tr>
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Category / Gender / Religion Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                     ) : activeTab === 'Category / Classification / Religion Wise Strength' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {ccrssNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{ccrssNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${ccrssFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {ccrssFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setCcrssFilterOpen(!ccrssFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{ccrssFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${ccrssFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {ccrssFilterOpen && (
-                            <div className="flex flex-col gap-3 text-xs w-full">
-                              <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="radio" name="ccrssMode" defaultChecked className="text-[#28aae1]" /> Religion Wise</label>
-                              <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="radio" name="ccrssMode" className="text-[#28aae1]" /> Category Wise</label>
-                              <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="radio" name="ccrssMode" className="text-[#28aae1]" /> Classification Wise</label>
-                              <button onClick={() => { setCcrssShow(true); setCcrssNotification('Category / Classification / Religion Wise Strength loaded.'); setTimeout(() => setCcrssNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-4 py-2 rounded text-xs font-medium mt-3 cursor-pointer w-24"><FaEye className="text-[11px]" /> Show</button>
+                            <div className="flex flex-col gap-3.5 text-xs w-full">
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">School</label><select value={ccrssSchool} onChange={(e) => setCcrssSchool(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Schools</option><option>NAVALS NATIONAL ACADEMY</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Wing</label><select value={ccrssWing} onChange={(e) => setCcrssWing(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Wings</option><option>Senior Wing</option><option>Junior Wing</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={ccrssClass} onChange={(e) => setCcrssClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
+                              <button onClick={() => { setCcrssShow(true); setCcrssNotification('Category / Classification / Religion Wise Strength loaded.'); setTimeout(() => setCcrssNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
-                          {ccrssShow ? (
-                            <>
-                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
-                                <div className="flex items-center gap-2">
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
-                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
-                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
-                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
-                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
-                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
-                                </div>
-                              </div>
-                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
-                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
-                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CATEGORY / CLASSIFICATION / RELIGION WISE STRENGTH</div>
-                                  <table className="w-full border border-gray-300 text-[11px]">
-                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CATEGORY</th><th className="border border-gray-300 px-2 py-1">CLASSIFICATION</th><th className="border border-gray-300 px-2 py-1">RELIGION</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                    <tbody>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Day Scholar</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">320</td></tr>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Hostel</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">30</td></tr>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1">Day Scholar</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">310</td></tr>
-                                      <tr className="bg-gray-100 font-bold"><td colSpan="4" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">660</td></tr>
-                                    </tbody>
-                                  </table>
-                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Category / Classification / Religion Wise Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
-                                </div>
-                              </div>
-                            </>
-                          ) : (
-                            <div className="flex-1 bg-[#e5e7eb]" />
-                          )}
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setCcrssFilterOpen(!ccrssFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{ccrssFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                              <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                              <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">CATEGORY / CLASSIFICATION / RELIGION WISE STRENGTH</div>
+                              <table className="w-full border border-gray-300 text-[11px]">
+                                <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CATEGORY</th><th className="border border-gray-300 px-2 py-1">CLASSIFICATION</th><th className="border border-gray-300 px-2 py-1">RELIGION</th><th className="border border-gray-300 px-2 py-1">TOTAL STRENGTH</th></tr></thead>
+                                <tbody>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Day Scholar</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">320</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Hosteller</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">30</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1">Day Scholar</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">360</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1">Hosteller</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">30</td></tr>
+                                  <tr className="bg-gray-100 font-bold"><td colSpan="4" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">740</td></tr>
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Category / Classification / Religion Wise Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                     ) : activeTab === 'Transport Student Strength Report' ? (
-                      <div className="flex flex-col md:flex-row h-full bg-white relative">
+                      <div className="flex flex-col md:flex-row h-full min-h-[650px] bg-[#e5e7eb] relative overflow-hidden flex-1">
                         {tssrTransNotification && (<div className="absolute top-2 left-4 right-4 z-20 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs rounded font-medium flex items-center gap-2"><FaCheckCircle className="text-green-600" /><span>{tssrTransNotification}</span></div>)}
-                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col ${tssrTransFilterOpen ? 'w-64 p-4' : 'w-10 p-2 items-center'}`}>
-                          <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3 w-full">
-                            {tssrTransFilterOpen && <span className="font-bold text-xs text-gray-800">FILTERS</span>}
-                            <button onClick={() => setTssrTransFilterOpen(!tssrTransFilterOpen)} className="text-gray-500 hover:text-gray-800 text-xs p-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer">{tssrTransFilterOpen ? '◀' : '▶'}</button>
-                          </div>
+                        <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col relative shrink-0 min-h-[650px] ${tssrTransFilterOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
                           {tssrTransFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={tssrTransClass} onChange={(e) => setTssrTransClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Classes</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={tssrTransSection} onChange={(e) => setTssrTransSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Sections</option><option>A</option><option>B</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Route</label><select value={tssrTransRoute} onChange={(e) => setTssrTransRoute(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Routes</option><option>Route 1 - Betiahata</option><option>Route 2 - Mohaddipur</option></select></div>
-                              <button onClick={() => { setTssrTransShow(true); setTssrTransNotification('Transport Student Strength Report loaded.'); setTimeout(() => setTssrTransNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-4 py-2 rounded text-xs font-medium mt-1 cursor-pointer w-24"><FaEye className="text-[11px]" /> Show</button>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={tssrTransClass} onChange={(e) => setTssrTransClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Class</option>{['NUR','LKG','UKG','1','2','3','4','5','6','7','8','9','10','11','12'].map(c=><option key={c}>{c}</option>)}</select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Section</label><select value={tssrTransSection} onChange={(e) => setTssrTransSection(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Section</option><option>A</option><option>B</option></select></div>
+                              <button onClick={() => { setTssrTransShow(true); setTssrTransNotification('Transport Student Strength Report loaded.'); setTimeout(() => setTssrTransNotification(''), 3000); }} className="flex items-center justify-center gap-1.5 bg-[#28aae1] hover:bg-[#1e90c0] text-white px-3 py-1.5 rounded text-xs font-medium mt-1 cursor-pointer"><FaEye className="text-[11px]" /> Show</button>
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 bg-[#e5e7eb] overflow-auto flex flex-col">
-                          {tssrTransShow ? (
-                            <>
-                              <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
-                                <div className="flex items-center gap-2">
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
-                                  <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
-                                  <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
-                                  <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
-                                  <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
-                                  <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
-                                  <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
-                                </div>
-                              </div>
-                              <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
-                                <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
-                                  <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
-                                  <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">TRANSPORT STUDENT STRENGTH REPORT</div>
-                                  <table className="w-full border border-gray-300 text-[11px]">
-                                    <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ROUTE</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
-                                    <tbody>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 1 - Betiahata</td><td className="border border-gray-300 px-2 py-1 text-center">45</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">80</td></tr>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 2 - Mohaddipur</td><td className="border border-gray-300 px-2 py-1 text-center">50</td><td className="border border-gray-300 px-2 py-1 text-center">40</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">90</td></tr>
-                                      <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 3 - Golghar</td><td className="border border-gray-300 px-2 py-1 text-center">38</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">68</td></tr>
-                                      <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">133</td><td className="border border-gray-300 px-2 py-1 text-center">105</td><td className="border border-gray-300 px-2 py-1 text-center">238</td></tr>
-                                    </tbody>
-                                  </table>
-                                  <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Transport Student Strength Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
-                                </div>
-                              </div>
-                            </>
-                          ) : (
-                            <div className="flex-1 bg-[#e5e7eb]" />
-                          )}
+                        <div className="relative flex-1 bg-[#e5e7eb] min-h-[650px] overflow-auto flex flex-col h-full">
+                          <button onClick={() => setTssrTransFilterOpen(!tssrTransFilterOpen)} className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border border-gray-300 text-gray-700 text-xs w-4 h-8 flex items-center justify-center rounded-r shadow-xs cursor-pointer z-20 hover:bg-gray-100">{tssrTransFilterOpen ? '◀' : '▶'}</button>
+                          <div className="bg-[#f8fafc] border-b border-gray-300 px-4 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">|&lt;&lt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&lt;</button>
+                              <div className="flex items-center gap-1 text-xs"><input readOnly value="1" className="w-8 border border-gray-300 rounded px-1 text-center bg-white text-xs font-bold"/><span className="text-gray-600">of 1</span></div>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;</button>
+                              <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
+                              <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
+                              <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
+                              <button onClick={() => window.print()} className="text-gray-700 p-1 text-sm cursor-pointer" title="Print">🖨️</button>
+                            </div>
+                          </div>
+                          <div className="p-4 md:p-8 flex justify-center flex-1 overflow-auto">
+                            <div className="bg-white shadow-xl border border-gray-300 w-full max-w-[900px] p-6 text-xs text-gray-900">
+                              <div className="text-center mb-4"><div className="font-bold text-base">NAVALS NATIONAL ACADEMY</div><div className="text-gray-600">DOHRIGHAT , MAU</div></div>
+                              <div className="font-bold text-center mb-3 border border-gray-400 py-1 bg-yellow-50">TRANSPORT STUDENT STRENGTH REPORT</div>
+                              <table className="w-full border border-gray-300 text-[11px]">
+                                <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">SECTION</th><th className="border border-gray-300 px-2 py-1">TRANSPORT USERS</th><th className="border border-gray-300 px-2 py-1">NON-TRANSPORT</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
+                                <tbody>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center">10</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">45</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">42</td><td className="border border-gray-300 px-2 py-1 text-center">13</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">55</td></tr>
+                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">38</td><td className="border border-gray-300 px-2 py-1 text-center">12</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">50</td></tr>
+                                  <tr className="bg-gray-100 font-bold"><td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">115</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center">150</td></tr>
+                                </tbody>
+                              </table>
+                              <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Transport Student Strength Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
