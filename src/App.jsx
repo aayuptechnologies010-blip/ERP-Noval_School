@@ -162,6 +162,12 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
 
+        {/* Timetable Module Routes */}
+        <Route path="/timetable" element={<TimeTable />} />
+        <Route path="/timetable/:tab" element={<TimeTable />} />
+        <Route path="/timetable/:tab/:subtab" element={<TimeTable />} />
+        <Route path="/timetable-manager" element={<Navigate to="/timetable" replace />} />
+
         {/* Marks Manager Module Routes */}
         <Route path="/marks" element={<MarksManager />} />
         <Route path="/marks/:tab" element={<MarksManager />} />
