@@ -1,12 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaEye, FaTimes, FaFileAlt, FaFileExcel } from 'react-icons/fa';
-
-const dummyPapers = [
-  { id: 1, title: 'Mid-Term Math Exam 2023', subject: 'Mathematics', class: 'Class 10', teacher: 'Mr. Rajesh Kumar', totalMarks: 100, duration: '3 Hours', date: '2023-10-20', status: 'Published' },
-  { id: 2, title: 'Science Unit Test', subject: 'Science', class: 'Class 7', teacher: 'Miss Priya Sharma', totalMarks: 50, duration: '1.5 Hours', date: '2023-10-22', status: 'Draft' },
-  { id: 3, title: 'English Grammar Test', subject: 'English', class: 'Class 8', teacher: 'Mrs. Kavita Singh', totalMarks: 40, duration: '1 Hour', date: '2023-10-25', status: 'Published' },
-  { id: 4, title: 'History Final Paper', subject: 'History', class: 'Class 9', teacher: 'Mr. Anil Mehta', totalMarks: 80, duration: '2.5 Hours', date: '2023-10-28', status: 'Draft' },
-];
+import { toast } from 'react-toastify';
 
 const statusColors = {
   Published: { bg: '#dcfce7', color: '#16a34a' },
@@ -14,29 +8,59 @@ const statusColors = {
 };
 
 const emptyForm = { title: '', subject: '', class: 'Class 6', teacher: '', totalMarks: '', duration: '', date: '', status: 'Draft' };
+const API = `${import.meta.env.VITE_API_BASE_URL}/api`;
+const authHeader = () => ({ 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' });
 
 function QuestionPaperReport() {
-  const [papers, setPapers] = useState(dummyPapers);
+  const [papers, setPapers] = useState([]);
+  const [summary, setSummary] = useState({ total: 0, published: 0, drafts: 0 });
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [viewItem, setViewItem] = useState(null);
   const [form, setForm] = useState(emptyForm);
 
-  const handleFormChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-  const openAdd = () => { setEditItem(null); setForm(emptyForm); setShowModal(true); };
-  const openEdit = (p) => { setEditItem(p); setForm({ ...p }); setShowModal(true); };
+  useEffect(() => { fetchPapers(); }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (editItem) {
-      setPapers(papers.map(p => p.id === editItem.id ? { ...form, id: editItem.id } : p));
-    } else {
-      setPapers([{ ...form, id: Date.now() }, ...papers]);
-    }
-    setShowModal(false);
+  const fetchPapers = async () => {
+    try {
+      const res = await fetch(`${API}/reports/question-papers`, { headers: authHeader() });
+      if (res.ok) {
+        const data = await res.json();
+        setPapers(data.records || []);
+        if (data.summary) setSummary(data.summary);
+      }
+    } catch (err) { console.error(err); }
   };
 
-  const handleDelete = (id) => { if (window.confirm('Delete this question paper?')) setPapers(papers.filter(p => p.id !== id)); };
+  const handleFormChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const openAdd = () => { setEditItem(null); setForm(emptyForm); setShowModal(true); };
+  const openEdit = (p) => { setEditItem(p); setForm({ ...p, date: p.date ? p.date.substring(0, 10) : '' }); setShowModal(true); };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const url = editItem ? `${API}/question-papers/${editItem.id}` : `${API}/question-papers`;
+      const method = editItem ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: authHeader(), body: JSON.stringify(form) });
+      if (res.ok) {
+        toast.success(editItem ? 'Paper updated!' : 'Paper created!');
+        setShowModal(false);
+        fetchPapers();
+      } else {
+        const d = await res.json();
+        toast.error(d.message || 'Failed to save.');
+      }
+    } catch (err) { toast.error('Server error.'); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this question paper?')) return;
+    try {
+      const res = await fetch(`${API}/question-papers/${id}`, { method: 'DELETE', headers: authHeader() });
+      if (res.ok) { toast.success('Deleted!'); fetchPapers(); }
+      else toast.error('Failed to delete.');
+    } catch (err) { toast.error('Server error.'); }
+  };
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -55,9 +79,9 @@ function QuestionPaperReport() {
         {/* Stats */}
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           {[
-            { label: 'Total Papers', val: papers.length, color: '#3b82f6', bg: '#eff6ff' },
-            { label: 'Published', val: papers.filter(p => p.status === 'Published').length, color: '#16a34a', bg: '#dcfce7' },
-            { label: 'Draft', val: papers.filter(p => p.status === 'Draft').length, color: '#ca8a04', bg: '#fef9c3' },
+            { label: 'Total Papers', val: summary.total, color: '#3b82f6', bg: '#eff6ff' },
+            { label: 'Published', val: summary.published, color: '#16a34a', bg: '#dcfce7' },
+            { label: 'Draft', val: summary.drafts, color: '#ca8a04', bg: '#fef9c3' },
           ].map((s, i) => (
             <div key={i} style={{ flex: '1 1 180px', background: '#fff', borderRadius: 8, padding: '20px 24px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', gap: 14 }}>
               <div style={{ width: 46, height: 46, borderRadius: 10, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: s.color }}>{s.val}</div>

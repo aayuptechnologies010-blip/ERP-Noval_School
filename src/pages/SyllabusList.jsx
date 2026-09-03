@@ -1,20 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaPlus, FaSearch, FaEye, FaEdit, FaTrash, FaDownload } from 'react-icons/fa';
 
-const dummySyllabus = [
-  { id: 1, title: 'Term 1 Syllabus', class: 'Class 10', subject: 'Mathematics', uploadedBy: 'R. Sharma', date: '01-Apr-2026' },
-  { id: 2, title: 'Annual Syllabus', class: 'Class 9', subject: 'Science', uploadedBy: 'S. Verma', date: '10-Apr-2026' },
-  { id: 3, title: 'Mid-Term Grammar', class: 'Class 8', subject: 'English', uploadedBy: 'K. Patel', date: '15-May-2026' },
-];
-
 function SyllabusList() {
   const navigate = useNavigate();
-  const [syllabusList, setSyllabusList] = useState(dummySyllabus);
+  const [syllabusList, setSyllabusList] = useState([]);
 
-  const handleDelete = (id) => {
+  useEffect(() => {
+    fetchSyllabus();
+  }, []);
+
+  const fetchSyllabus = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/syllabus`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSyllabusList(data.map(d => ({ ...d, id: d._id })));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this syllabus?")) {
-      setSyllabusList(syllabusList.filter(s => s.id !== id));
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/syllabus/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          setSyllabusList(syllabusList.filter(s => s.id !== id));
+        }
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 

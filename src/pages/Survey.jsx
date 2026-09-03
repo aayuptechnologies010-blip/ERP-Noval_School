@@ -4,18 +4,33 @@ import { FaClipboardList, FaCheckCircle, FaClock, FaChevronRight, FaStar, FaTrop
 function Survey() {
   const [activeTab, setActiveTab] = useState('Available');
 
-  const availableSurveys = [
-    { id: 1, title: 'Transport Facility Feedback', description: 'Share your experience regarding the school transport system.', time: '5 mins', points: 50 },
-    { id: 2, title: 'Canteen Food Quality', description: 'Help us improve the canteen food menu and quality.', time: '3 mins', points: 30 },
-    { id: 5, title: 'Library Usage Survey', description: 'Tell us how often you visit the library and what books you prefer.', time: '4 mins', points: 40 },
-  ];
+  const [availableSurveys, setAvailableSurveys] = useState([]);
+  const [completedSurveys, setCompletedSurveys] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const completedSurveys = [
-    { id: 3, title: 'Annual Day Planning', description: 'Feedback on the Annual Day 2025 event planning.', completedDate: '2026-07-25', pointsEarned: 100 },
-    { id: 4, title: 'Sports Facilities', description: 'Survey regarding school sports facilities and timing.', completedDate: '2026-06-15', pointsEarned: 50 },
-  ];
+  React.useEffect(() => {
+    fetchSurveys();
+  }, []);
 
-  const totalPoints = completedSurveys.reduce((acc, curr) => acc + curr.pointsEarned, 0);
+  const fetchSurveys = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/surveys`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        // Since we don't have a completions table yet, let's just show active ones in available
+        setAvailableSurveys(data.filter(s => s.isActive));
+      }
+    } catch (error) {
+      console.error("Error fetching surveys:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const totalPoints = completedSurveys.reduce((acc, curr) => acc + (curr.pointsEarned || 0), 0);
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', padding: '32px', minHeight: '100vh', boxSizing: 'border-box' }}>
@@ -70,8 +85,12 @@ function Survey() {
       {/* Content */}
       {activeTab === 'Available' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 24 }}>
-          {availableSurveys.map(survey => (
-            <div key={survey.id} style={{ background: '#fff', borderRadius: 20, padding: 28, boxShadow: '0 10px 30px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          {loading ? (
+            <p>Loading surveys...</p>
+          ) : availableSurveys.length === 0 ? (
+            <p>No available surveys found.</p>
+          ) : availableSurveys.map(survey => (
+            <div key={survey._id} style={{ background: '#fff', borderRadius: 20, padding: 28, boxShadow: '0 10px 30px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
               <div style={{ width: 5, position: 'absolute', left: 0, top: 0, bottom: 0, background: '#3b82f6' }} />
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
@@ -108,10 +127,13 @@ function Survey() {
         </div>
       )}
 
+      {/* Completed Tab Content */}
       {activeTab === 'Completed' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 24 }}>
-          {completedSurveys.map(survey => (
-            <div key={survey.id} style={{ background: '#fff', borderRadius: 20, padding: 28, boxShadow: '0 10px 30px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          {completedSurveys.length === 0 ? (
+            <p>No completed surveys found.</p>
+          ) : completedSurveys.map(survey => (
+            <div key={survey._id || survey.id} style={{ background: '#fff', borderRadius: 20, padding: 28, boxShadow: '0 10px 30px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
               <div style={{ width: 5, position: 'absolute', left: 0, top: 0, bottom: 0, background: '#10b981' }} />
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>

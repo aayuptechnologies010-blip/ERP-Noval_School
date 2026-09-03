@@ -1,24 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPoll, FaPlus, FaEye, FaTrash, FaCheckCircle, FaRegClock } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { toast } from 'react-toastify';
 
-const dummySurveys = [
-  { id: 1, title: 'Parent Satisfaction Survey 2026', audience: 'Parents', responses: 450, target: 500, status: 'Active', date: '01 Aug 2026' },
-  { id: 2, title: 'School Bus Route Feedback', audience: 'Parents & Students', responses: 320, target: 350, status: 'Active', date: '28 Jul 2026' },
-  { id: 3, title: 'Annual Sports Meet Feedback', audience: 'Students', responses: 850, target: 850, status: 'Completed', date: '15 Jul 2026' },
-  { id: 4, title: 'Teacher Training Workshop Eval', audience: 'Staff', responses: 85, target: 90, status: 'Completed', date: '10 Jun 2026' },
-];
-
-const chartData = [
-  { name: 'Satisfied', count: 65, color: '#10b981' },
-  { name: 'Neutral', count: 20, color: '#f59e0b' },
-  { name: 'Dissatisfied', count: 15, color: '#ef4444' },
-];
+// Dummy data removed
 
 function SurveyReport() {
   const [filter, setFilter] = useState('All');
+  const [surveys, setSurveys] = useState([]);
+  const [summary, setSummary] = useState({ total: 0, active: 0, completed: 0 });
+  const [chartData, setChartData] = useState([]);
 
-  const filtered = dummySurveys.filter(s => filter === 'All' || s.status === filter);
+  useEffect(() => { fetchSurveys(); }, []);
+
+  const fetchSurveys = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams({ status: filter });
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/surveys?${params}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSurveys(data.records || []);
+        if (data.summary) setSummary(data.summary);
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this survey?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/surveys/${id}`, {
+        method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) { toast.success('Survey deleted!'); fetchSurveys(); }
+      else toast.error('Failed to delete.');
+    } catch (err) { toast.error('Server error.'); }
+  };
+
+  const filtered = surveys.filter(s => filter === 'All' || s.status === filter);
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', padding: '24px', minHeight: '100vh', boxSizing: 'border-box' }}>
@@ -38,7 +60,7 @@ function SurveyReport() {
             <FaPoll size={24} />
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: 24, color: '#1e293b', fontWeight: 800 }}>12</h3>
+        <h3 style={{ margin: 0, fontSize: 24, color: '#1e293b', fontWeight: 800 }}>{summary.total}</h3>
             <p style={{ margin: 0, fontSize: 13, color: '#64748b', fontWeight: 500 }}>Total Surveys</p>
           </div>
         </div>
@@ -47,7 +69,7 @@ function SurveyReport() {
             <FaRegClock size={24} />
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: 24, color: '#1e293b', fontWeight: 800 }}>2</h3>
+        <h3 style={{ margin: 0, fontSize: 24, color: '#1e293b', fontWeight: 800 }}>{summary.active}</h3>
             <p style={{ margin: 0, fontSize: 13, color: '#64748b', fontWeight: 500 }}>Active Surveys</p>
           </div>
         </div>
@@ -56,7 +78,7 @@ function SurveyReport() {
             <FaCheckCircle size={24} />
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: 24, color: '#1e293b', fontWeight: 800 }}>10</h3>
+        <h3 style={{ margin: 0, fontSize: 24, color: '#1e293b', fontWeight: 800 }}>{summary.completed}</h3>
             <p style={{ margin: 0, fontSize: 13, color: '#64748b', fontWeight: 500 }}>Completed</p>
           </div>
         </div>
@@ -108,7 +130,7 @@ function SurveyReport() {
                   <td style={tdStyle}>
                     <div style={{ display: 'flex', gap: 12 }}>
                       <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }} title="View Results"><FaEye size={16} /></button>
-                      <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }} title="Delete"><FaTrash size={16} /></button>
+                      <button onClick={() => handleDelete(s.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }} title="Delete"><FaTrash size={16} /></button>
                     </div>
                   </td>
                 </tr>

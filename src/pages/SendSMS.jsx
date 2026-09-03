@@ -20,6 +20,44 @@ function SendSMS() {
     }
   };
 
+  const handleSendSms = async () => {
+    if (!smsText.trim() || sendTo === 'Select' || smsSubject === 'Select') {
+      alert("Please select Subject, Send To, and enter the SMS text.");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        subject: smsSubject,
+        language: language,
+        message: smsText,
+        sendCopy: copyToSender,
+        sendTo: sendTo
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/sms`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        alert('SMS sent successfully!');
+        setSmsText('');
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to send SMS: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error("Error sending SMS:", error);
+      alert('An error occurred while sending the SMS.');
+    }
+  };
+
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       
@@ -145,6 +183,18 @@ function SendSMS() {
                   <option value="Staff">Staff</option>
                 </select>
               </div>
+            </div>
+
+            {/* Send Button */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+              <button 
+                onClick={handleSendSms}
+                style={{ background: '#5cb85c', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: 4, fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }}
+                onMouseOver={(e) => e.target.style.background = '#4cae4c'}
+                onMouseOut={(e) => e.target.style.background = '#5cb85c'}
+              >
+                Send SMS
+              </button>
             </div>
 
           </div>

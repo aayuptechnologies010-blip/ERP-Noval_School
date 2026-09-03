@@ -1,13 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPhotoVideo, FaFilePdf, FaFileWord, FaFileImage, FaDownload, FaFolderOpen, FaChevronRight } from 'react-icons/fa';
-
-const mediaFiles = [
-  { id: 1, name: 'School Prospectus 2026-27', type: 'PDF', size: '2.4 MB', date: '10 Aug 2026', icon: FaFilePdf, color: '#ef4444' },
-  { id: 2, name: 'Annual Syllabus - Class X', type: 'DOCX', size: '1.1 MB', date: '05 Aug 2026', icon: FaFileWord, color: '#3b82f6' },
-  { id: 3, name: 'Campus Map & Guidelines', type: 'JPG', size: '4.5 MB', date: '20 Jul 2026', icon: FaFileImage, color: '#10b981' },
-  { id: 4, name: 'Transport Fee Structure 2026', type: 'PDF', size: '1.8 MB', date: '15 Jun 2026', icon: FaFilePdf, color: '#ef4444' },
-  { id: 5, name: 'Academic Holiday Calendar', type: 'DOCX', size: '800 KB', date: '01 Jan 2026', icon: FaFileWord, color: '#3b82f6' },
-];
 
 const folders = [
   { name: 'Documents & Forms', count: 12, color: '#f59e0b' },
@@ -16,7 +8,42 @@ const folders = [
   { name: 'Gallery & Media', count: 45, color: '#8b5cf6' },
 ];
 
+const getTypeIcon = (type) => {
+  if (!type) return FaFileImage;
+  if (type === 'document') return FaFilePdf;
+  if (type === 'video') return FaPhotoVideo;
+  return FaFileImage;
+};
+
+const getTypeColor = (type) => {
+  if (type === 'document') return '#ef4444';
+  if (type === 'video') return '#3b82f6';
+  return '#10b981';
+};
+
 function MediaGallery() {
+  const [mediaFiles, setMediaFiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMedia = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/media`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setMediaFiles(data);
+        }
+      } catch (error) {
+        console.error('Error fetching media:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMedia();
+  }, []);
   return (
     <div style={{ flex: 1, background: '#f8f9fc', padding: '32px', minHeight: '100vh', boxSizing: 'border-box' }}>
       
@@ -84,43 +111,52 @@ function MediaGallery() {
               </tr>
             </thead>
             <tbody>
-              {mediaFiles.map((file, i) => (
-                <tr 
-                  key={i} 
-                  style={{ borderBottom: i < mediaFiles.length - 1 ? '1px solid #f1f5f9' : 'none', transition: 'background 0.2s' }} 
-                  onMouseOver={e => e.currentTarget.style.background = '#f8fafc'} 
-                  onMouseOut={e => e.currentTarget.style.background = 'transparent'}
-                >
-                  <td style={{ padding: '20px 32px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                      <div style={{ width: 44, height: 44, borderRadius: '10px', background: `${file.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: file.color }}>
-                        <file.icon size={20} />
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 15, marginBottom: 4 }}>{file.name}</div>
-                        <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600, background: '#f1f5f9', display: 'inline-block', padding: '2px 8px', borderRadius: '4px' }}>
-                          {file.type}
+              {loading ? (
+                <tr><td colSpan="4" style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading media files...</td></tr>
+              ) : mediaFiles.length === 0 ? (
+                <tr><td colSpan="4" style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>No media files uploaded yet.</td></tr>
+              ) : mediaFiles.map((file, i) => {
+                const IconComp = getTypeIcon(file.type);
+                const iconColor = getTypeColor(file.type);
+                return (
+                  <tr 
+                    key={file._id || i} 
+                    style={{ borderBottom: i < mediaFiles.length - 1 ? '1px solid #f1f5f9' : 'none', transition: 'background 0.2s' }} 
+                    onMouseOver={e => e.currentTarget.style.background = '#f8fafc'} 
+                    onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <td style={{ padding: '20px 32px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                        <div style={{ width: 44, height: 44, borderRadius: '10px', background: `${iconColor}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: iconColor }}>
+                          <IconComp size={20} />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 15, marginBottom: 4 }}>{file.title}</div>
+                          <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600, background: '#f1f5f9', display: 'inline-block', padding: '2px 8px', borderRadius: '4px' }}>
+                            {file.type ? file.type.toUpperCase() : 'MEDIA'}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td style={{ padding: '20px 32px', fontSize: 14, color: '#64748b', fontWeight: 500 }}>{file.size}</td>
-                  <td style={{ padding: '20px 32px', fontSize: 14, color: '#64748b', fontWeight: 500 }}>{file.date}</td>
-                  <td style={{ padding: '20px 32px', textAlign: 'right' }}>
-                    <button 
-                      style={{ 
-                        background: '#f1f5f9', color: '#475569', border: 'none', padding: '10px 20px', 
-                        borderRadius: '8px', fontSize: 13, fontWeight: 700, cursor: 'pointer', 
-                        display: 'inline-flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' 
-                      }} 
-                      onMouseOver={e => {e.currentTarget.style.background = '#e2e8f0'; e.currentTarget.style.color = '#1e293b'}} 
-                      onMouseOut={e => {e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#475569'}}
-                    >
-                      <FaDownload /> Download
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td style={{ padding: '20px 32px', fontSize: 14, color: '#64748b', fontWeight: 500 }}>—</td>
+                    <td style={{ padding: '20px 32px', fontSize: 14, color: '#64748b', fontWeight: 500 }}>{file.createdAt ? new Date(file.createdAt).toLocaleDateString() : ''}</td>
+                    <td style={{ padding: '20px 32px', textAlign: 'right' }}>
+                      <a 
+                        href={file.fileUrl ? `${import.meta.env.VITE_API_BASE_URL}${file.fileUrl}` : '#'}
+                        target="_blank" rel="noreferrer"
+                        style={{ 
+                          background: '#f1f5f9', color: '#475569', border: 'none', padding: '10px 20px', 
+                          borderRadius: '8px', fontSize: 13, fontWeight: 700, cursor: 'pointer', 
+                          display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none',
+                          transition: 'all 0.2s' 
+                        }} 
+                      >
+                        <FaDownload /> Download
+                      </a>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

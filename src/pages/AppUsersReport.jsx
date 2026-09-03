@@ -1,29 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { FaPrint, FaArrowLeft } from 'react-icons/fa';
 
-const donutData = [
-  { name: 'Android', value: 349, color: '#10b981', percent: '13.95%' },
-  { name: 'IOS', value: 3, color: '#8b5cf6', percent: '0.12%' },
-  { name: 'Both', value: 4, color: '#fcd34d', percent: '0.16%' },
-  { name: 'Remaining', value: 2146, color: '#fb7185', percent: '85.77%' },
-];
-
-const totalUsers = 2502;
-
-const androidUsers = [
-  { id: 1, name: 'SHASHANK RAI', father: 'Mr. PRABHAKAR RAI', gender: 'Male', admissionNo: '200', className: '7-A', mobile: '9415846993' },
-  { id: 2, name: 'ATHARV KUMAR GUPT', father: 'Mr. KRISHNA MOHAN NIGAM', gender: 'Male', admissionNo: '1242', className: '8-B', mobile: '9450599254' },
-];
-
-const remainingUsers = [
-  { id: 1, name: 'AMAN KUMAR', father: 'Mr. RAMESH KUMAR', gender: 'Male', admissionNo: '102', className: '6-A', mobile: '9876543210' },
-  { id: 2, name: 'SNEHA SINGH', father: 'Mr. VIJAY SINGH', gender: 'Female', admissionNo: '304', className: '9-C', mobile: '8765432109' },
-];
+// Dummy data removed
 
 function AppUsersReport() {
   const [activeTab, setActiveTab] = useState('Overall');
   const [showReport, setShowReport] = useState(false);
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/app-users`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          setData(json);
+        }
+      } catch (err) { console.error(err); }
+    };
+    fetchData();
+  }, []);
+
+  const donutData = data?.donutData || [];
+  const totalUsers = data?.summary?.total || 0;
+  const androidUsers = data?.androidUsers || [];
+  const remainingUsers = data?.remainingUsers || [];
 
   if (showReport) {
     return (

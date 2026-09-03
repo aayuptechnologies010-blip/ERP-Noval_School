@@ -56,10 +56,20 @@ function ViewAssignment() {
 
           <div style={{ marginTop: 24 }}>
             <label style={{ fontSize: 13, color: '#64748b', fontWeight: 600 }}>Assignment Description / Details</label>
-            <div style={{ marginTop: 8, padding: 16, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', minHeight: 100, fontSize: 14, color: '#334155' }}>
-              No detailed description provided for this dummy assignment.
+            <div style={{ marginTop: 8, padding: 16, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', minHeight: 100, fontSize: 14, color: '#334155', whiteSpace: 'pre-wrap' }}>
+              {viewData.description || 'No description provided.'}
             </div>
           </div>
+          {viewData.attachmentUrl && (
+            <div style={{ marginTop: 16 }}>
+              <label style={{ fontSize: 13, color: '#64748b', fontWeight: 600 }}>Attachment</label>
+              <div style={{ marginTop: 8 }}>
+                <a href={viewData.attachmentUrl} target="_blank" rel="noreferrer" style={{ color: '#3b82f6', fontWeight: 600, fontSize: 14 }}>
+                  📎 Download Attachment
+                </a>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>

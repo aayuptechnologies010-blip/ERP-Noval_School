@@ -1,12 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEye, FaEdit, FaTrash, FaTimes, FaCalendarAlt, FaUser, FaClock } from 'react-icons/fa';
-
-const dummyAppointments = [
-  { id: 1, title: 'Parent-Teacher Meeting', person: 'Mr. Rajesh Kumar', type: 'Parent', date: '2023-10-10', time: '10:00 AM', status: 'Confirmed', notes: 'Regarding academic performance of child.' },
-  { id: 2, title: 'Staff Interview', person: 'Ms. Priya Sharma', type: 'Staff', date: '2023-10-12', time: '11:30 AM', status: 'Pending', notes: 'New science teacher interview.' },
-  { id: 3, title: 'Admission Counseling', person: 'Mrs. Suman Verma', type: 'Parent', date: '2023-10-14', time: '02:00 PM', status: 'Confirmed', notes: 'Class 6 admission inquiry.' },
-  { id: 4, title: 'Doctor Visit', person: 'Dr. Anil Mehta', type: 'Medical', date: '2023-10-15', time: '09:00 AM', status: 'Cancelled', notes: 'Monthly health checkup.' },
-];
 
 const statusColors = {
   Confirmed: { bg: '#dcfce7', color: '#16a34a' },
@@ -15,7 +8,8 @@ const statusColors = {
 };
 
 function Appointment() {
-  const [appointments, setAppointments] = useState(dummyAppointments);
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [viewItem, setViewItem] = useState(null);
   const [editItem, setEditItem] = useState(null);
@@ -26,6 +20,27 @@ function Appointment() {
 
   const handleFormChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
+
+  const fetchAppointments = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/appointments`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAppointments(Array.isArray(data) ? data : (data.appointments || []));
+      }
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const openAddModal = () => {
     setEditItem(null);
     setForm({ title: '', person: '', type: 'Parent', date: '', time: '', status: 'Pending', notes: '' });
@@ -34,30 +49,82 @@ function Appointment() {
 
   const openEditModal = (appt) => {
     setEditItem(appt);
-    setForm({ ...appt });
+    setForm({ 
+      title: appt.title || '', 
+      person: appt.personName || appt.person || '', 
+      type: appt.type || 'Parent', 
+      date: appt.date || '', 
+      time: appt.time || '', 
+      status: appt.status || 'Pending', 
+      notes: appt.notes || '' 
+    });
     setShowModal(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title || !form.person || !form.date || !form.time) return alert('Please fill all required fields.');
 
-    if (editItem) {
-      setAppointments(appointments.map(a => a.id === editItem.id ? { ...form, id: editItem.id } : a));
-    } else {
-      setAppointments([{ ...form, id: Date.now() }, ...appointments]);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editItem ? 'PUT' : 'POST';
+      const url = editItem 
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/appointments/${editItem._id || editItem.id}` 
+        : `${import.meta.env.VITE_API_BASE_URL}/api/appointments`;
+
+      const payload = { ...form, personName: form.person };
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (response.ok) {
+        fetchAppointments();
+        setShowModal(false);
+      } else {
+        alert('Failed to save appointment.');
+      }
+    } catch (error) {
+      console.error('Error saving appointment:', error);
+      alert('An error occurred.');
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Delete this appointment?')) {
-      setAppointments(appointments.filter(a => a.id !== id));
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/appointments/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) fetchAppointments();
+      } catch (error) {
+        console.error('Error deleting appointment:', error);
+      }
     }
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    setAppointments(appointments.map(a => a.id === id ? { ...a, status: newStatus } : a));
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/appointments/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (response.ok) {
+        fetchAppointments();
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
   };
 
   const filtered = appointments.filter(a => filterStatus === 'All' || a.status === filterStatus);
@@ -97,8 +164,12 @@ function Appointment() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(appt => (
-                <tr key={appt.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+              {loading ? (
+                <tr><td colSpan="6" style={{ textAlign: 'center', padding: '32px', color: '#64748b' }}>Loading appointments...</td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan="6" style={{ textAlign: 'center', padding: '32px', color: '#64748b' }}>No appointments found.</td></tr>
+              ) : filtered.map(appt => (
+                <tr key={appt._id || appt.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={tdStyle}>
                     <span style={{ fontWeight: 600, color: '#1e293b' }}>{appt.title}</span>
                     {appt.notes && <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94a3b8' }}>{appt.notes.slice(0, 40)}...</p>}
@@ -108,7 +179,7 @@ function Appointment() {
                       <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#e0e7ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <FaUser size={12} color="#4f46e5" />
                       </div>
-                      {appt.person}
+                      {appt.personName || appt.person}
                     </div>
                   </td>
                   <td style={tdStyle}>
@@ -116,7 +187,7 @@ function Appointment() {
                   </td>
                   <td style={tdStyle}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <FaCalendarAlt size={12} color="#94a3b8" /> {appt.date}
+                      <FaCalendarAlt size={12} color="#94a3b8" /> {appt.date ? new Date(appt.date).toLocaleDateString() : ''}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
                       <FaClock size={12} color="#94a3b8" /> {appt.time}
@@ -125,7 +196,7 @@ function Appointment() {
                   <td style={tdStyle}>
                     <select
                       value={appt.status}
-                      onChange={e => handleStatusChange(appt.id, e.target.value)}
+                      onChange={e => handleStatusChange(appt._id || appt.id, e.target.value)}
                       style={{
                         padding: '4px 8px', borderRadius: 20, fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer', outline: 'none',
                         background: statusColors[appt.status]?.bg || '#f1f5f9',
@@ -141,7 +212,7 @@ function Appointment() {
                     <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
                       <button onClick={() => setViewItem(appt)} style={iconBtn} title="View"><FaEye size={14} color="#3b82f6" /></button>
                       <button onClick={() => openEditModal(appt)} style={iconBtn} title="Edit"><FaEdit size={14} color="#eab308" /></button>
-                      <button onClick={() => handleDelete(appt.id)} style={iconBtn} title="Delete"><FaTrash size={14} color="#ef4444" /></button>
+                      <button onClick={() => handleDelete(appt._id || appt.id)} style={iconBtn} title="Delete"><FaTrash size={14} color="#ef4444" /></button>
                     </div>
                   </td>
                 </tr>

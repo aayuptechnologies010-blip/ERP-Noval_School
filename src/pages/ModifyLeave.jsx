@@ -1,22 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaCheck, FaTimes, FaVideo } from 'react-icons/fa';
 
-const dummyLeaveRequests = [
-  { id: 1, name: 'ARNAV GUPTA', class: 'NUR A', fromDate: '01-Aug-2026', toDate: '02-Aug-2026', reason: 'Fever', status: 'Pending' },
-  { id: 2, name: 'ANVI MAURYA', class: 'NUR A', fromDate: '03-Aug-2026', toDate: '05-Aug-2026', reason: 'Family Function', status: 'Approved' },
-  { id: 3, name: 'SHANVI YADAV', class: 'NUR A', fromDate: '10-Aug-2026', toDate: '10-Aug-2026', reason: 'Sick', status: 'Rejected' },
-  { id: 4, name: 'DIVYA', class: 'NUR A', fromDate: '12-Aug-2026', toDate: '14-Aug-2026', reason: 'Out of station', status: 'Pending' },
-];
+// Dummy data removed
 
 function ModifyLeave() {
   const navigate = useNavigate();
-  const [requests, setRequests] = useState(dummyLeaveRequests);
+  const [requests, setRequests] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [selectedClass, setSelectedClass] = useState('');
 
-  const handleUpdateStatus = (id, newStatus) => {
-    setRequests(requests.map(req => 
-      req.id === id ? { ...req, status: newStatus } : req
-    ));
+  useEffect(() => {
+    fetchRequests();
+    fetchClasses();
+  }, []);
+
+  const fetchClasses = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/school-classes`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setClasses(data.classes || []);
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const fetchRequests = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/leave-requests`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.leaveRequests || []);
+        const formattedList = list.map(req => ({
+          id: req._id,
+          name: req.studentId ? `${req.studentId.firstName || ''} ${req.studentId.lastName || ''}`.trim() : 'Unknown',
+          class: req.studentId && req.studentId.class ? req.studentId.class.className : 'N/A',
+          fromDate: req.fromDate ? req.fromDate.substring(0,10) : '',
+          toDate: req.toDate ? req.toDate.substring(0,10) : '',
+          reason: req.reason || '',
+          status: req.status || 'Pending'
+        }));
+        setRequests(formattedList);
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const handleUpdateStatus = async (id, newStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/leave-requests/${id}/status`, {
+        method: 'PATCH',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) {
+        setRequests(requests.map(req => 
+          req.id === id ? { ...req, status: newStatus } : req
+        ));
+      } else {
+        console.error('Failed to update status');
+      }
+    } catch (err) { console.error(err); }
   };
 
   const getStatusColor = (status) => {
@@ -51,10 +104,11 @@ function ModifyLeave() {
         <div style={{ background: '#fff', borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', padding: '20px 24px', display: 'flex', alignItems: 'flex-end', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 150 }}>
             <label style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>Class</label>
-            <select style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '9px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#fff' }}>
-              <option>Select Class</option>
-              <option>NUR A</option>
-              <option>NUR B</option>
+            <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '9px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#fff' }}>
+              <option value="">Select Class</option>
+              {classes.map(c => (
+                <option key={c._id} value={c.className}>{c.className}</option>
+              ))}
             </select>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 150 }}>

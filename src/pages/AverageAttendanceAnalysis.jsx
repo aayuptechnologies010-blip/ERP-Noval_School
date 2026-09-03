@@ -1,34 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaFileExcel, FaPrint } from 'react-icons/fa';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 
-const monthlyData = [
-  { month: 'Apr', Class6: 92, Class7: 88, Class8: 94, Class9: 90, Class10: 96 },
-  { month: 'May', Class6: 89, Class7: 91, Class8: 90, Class9: 87, Class10: 93 },
-  { month: 'Jun', Class6: 94, Class7: 90, Class8: 92, Class9: 89, Class10: 95 },
-  { month: 'Jul', Class6: 91, Class7: 93, Class8: 88, Class9: 92, Class10: 97 },
-  { month: 'Aug', Class6: 95, Class7: 92, Class8: 94, Class9: 91, Class10: 96 },
-];
-
-const radarData = [
-  { subject: 'Class 6', A: 92 },
-  { subject: 'Class 7', A: 91 },
-  { subject: 'Class 8', A: 93 },
-  { subject: 'Class 9', A: 90 },
-  { subject: 'Class 10', A: 95 },
-];
-
-const classStats = [
-  { class: 'Class 6', total: 60, avg: '92.4%', highest: '98%', lowest: '75%', color: '#3b82f6' },
-  { class: 'Class 7', total: 58, avg: '91.0%', highest: '97%', lowest: '72%', color: '#10b981' },
-  { class: 'Class 8', total: 62, avg: '92.8%', highest: '99%', lowest: '74%', color: '#f59e0b' },
-  { class: 'Class 9', total: 55, avg: '89.8%', highest: '96%', lowest: '68%', color: '#ef4444' },
-  { class: 'Class 10', total: 65, avg: '95.4%', highest: '100%', lowest: '80%', color: '#8b5cf6' },
-];
+// Dummy data removed
 
 function AverageAttendanceAnalysis() {
   const [fromMonth, setFromMonth] = useState('2026-04');
   const [toMonth, setToMonth] = useState('2026-08');
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [radarData, setRadarData] = useState([]);
+  const [classStats, setClassStats] = useState([]);
+
+  useEffect(() => { fetchData(); }, []);
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams({ fromMonth, toMonth });
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/average-attendance?${params}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6366f1', '#ec4899', '#14b8a6'];
+        
+        if (data.trendChart) setMonthlyData(data.trendChart);
+        
+        if (data.radarChart) {
+          setRadarData(data.radarChart.map(r => ({ subject: r.className, A: r.avgPercentage })));
+        }
+        
+        if (data.classSummary) {
+          setClassStats(data.classSummary.map((c, i) => ({
+            class: c.className,
+            total: c.studentsCount,
+            avg: `${c.avgPercentage}%`,
+            highest: `${c.highest}%`,
+            lowest: `${c.lowest}%`,
+            color: colors[i % colors.length]
+          })));
+        }
+      }
+    } catch (err) { console.error(err); }
+  };
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -54,7 +68,7 @@ function AverageAttendanceAnalysis() {
             <label style={lbl}>To Month</label>
             <input type="month" value={toMonth} onChange={e => setToMonth(e.target.value)} style={inp} />
           </div>
-          <button style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Analyze</button>
+          <button onClick={fetchData} style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Analyze</button>
         </div>
 
         {/* Line Chart */}
@@ -68,11 +82,9 @@ function AverageAttendanceAnalysis() {
                 <YAxis domain={[60, 100]} />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="Class6" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
-                <Line type="monotone" dataKey="Class7" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
-                <Line type="monotone" dataKey="Class8" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
-                <Line type="monotone" dataKey="Class9" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
-                <Line type="monotone" dataKey="Class10" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} />
+                {classStats.map(stat => (
+                  <Line key={stat.class} type="monotone" dataKey={stat.class} stroke={stat.color} strokeWidth={2} dot={{ r: 4 }} />
+                ))}
               </LineChart>
             </ResponsiveContainer>
           </div>

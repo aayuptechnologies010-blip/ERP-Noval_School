@@ -1,18 +1,29 @@
 import React, { useState } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaTimes, FaGavel } from 'react-icons/fa';
 
-const dummyConsequences = [
-  { id: 1, title: 'Verbal Warning', infractionType: 'Late Coming', action: 'Warning', description: 'Formal verbal warning given to student/staff.', notifyParent: true },
-  { id: 2, title: 'Written Warning', infractionType: 'Uniform Violation', action: 'Warning', description: 'Written notice issued and recorded in file.', notifyParent: true },
-  { id: 3, title: 'Suspension - 1 Day', infractionType: 'Cheating in Exam', action: 'Suspension', description: 'Student suspended from school for 1 day.', notifyParent: true },
-  { id: 4, title: 'Parent Meeting', infractionType: 'Bullying', action: 'Meeting', description: 'Mandatory parent-teacher meeting to be arranged.', notifyParent: true },
-  { id: 5, title: 'Community Service', infractionType: 'Vandalism', action: 'Service', description: '2 hours of community service within school premises.', notifyParent: false },
-];
-
 const emptyForm = { title: '', infractionType: 'Late Coming', action: 'Warning', description: '', notifyParent: false };
 
 function InfractionConsequences() {
-  const [consequences, setConsequences] = useState(dummyConsequences);
+  const [consequences, setConsequences] = useState([]);
+
+  React.useEffect(() => {
+    fetchConsequences();
+  }, []);
+
+  const fetchConsequences = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/consequences`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setConsequences(data.map(item => ({ ...item, id: item._id })));
+      }
+    } catch (err) {
+      console.error('Failed to fetch consequences:', err);
+    }
+  };
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -24,19 +35,55 @@ function InfractionConsequences() {
   const openAdd = () => { setEditItem(null); setForm(emptyForm); setShowModal(true); };
   const openEdit = (item) => { setEditItem(item); setForm({ ...item }); setShowModal(true); };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title || !form.description) return alert('Please fill all required fields.');
-    if (editItem) {
-      setConsequences(consequences.map(c => c.id === editItem.id ? { ...form, id: editItem.id } : c));
-    } else {
-      setConsequences([...consequences, { ...form, id: Date.now() }]);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const url = editItem 
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/consequences/${editItem.id}`
+        : `${import.meta.env.VITE_API_BASE_URL}/api/consequences`;
+        
+      const res = await fetch(url, {
+        method: editItem ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(form)
+      });
+      
+      if (res.ok) {
+        fetchConsequences();
+        setShowModal(false);
+      } else {
+        alert('Failed to save consequence.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error saving consequence.');
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this consequence?')) setConsequences(consequences.filter(c => c.id !== id));
+  const handleDelete = async (id) => {
+    if (window.confirm('Delete this consequence?')) {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/consequences/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          fetchConsequences();
+        } else {
+          alert('Failed to delete consequence.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error deleting consequence.');
+      }
+    }
   };
 
   const actionColors = { Warning: { bg: '#fef9c3', color: '#ca8a04' }, Suspension: { bg: '#fee2e2', color: '#ef4444' }, Meeting: { bg: '#e0e7ff', color: '#4f46e5' }, Service: { bg: '#dcfce7', color: '#16a34a' } };

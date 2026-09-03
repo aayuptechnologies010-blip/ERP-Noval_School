@@ -1,13 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaFileExcel, FaPrint, FaSearch } from 'react-icons/fa';
-
-const dummyLessons = [
-  { id: 1, topic: 'Introduction to Photosynthesis', subject: 'Science', class: 'Class 7', teacher: 'Miss Priya Sharma', date: '2023-10-10', duration: '2 Hours', status: 'Completed' },
-  { id: 2, topic: 'Quadratic Equations Part 1', subject: 'Mathematics', class: 'Class 10', teacher: 'Mr. Rajesh Kumar', date: '2023-10-12', duration: '1.5 Hours', status: 'Pending' },
-  { id: 3, topic: 'Rise of Nationalism in Europe', subject: 'History', class: 'Class 9', teacher: 'Mrs. Kavita Singh', date: '2023-10-15', duration: '3 Hours', status: 'In Progress' },
-  { id: 4, topic: 'Tenses and Voices', subject: 'English', class: 'Class 8', teacher: 'Mrs. Kavita Singh', date: '2023-10-11', duration: '1 Hour', status: 'Completed' },
-  { id: 5, topic: 'The French Revolution', subject: 'History', class: 'Class 9', teacher: 'Mr. Anil Mehta', date: '2023-10-13', duration: '2 Hours', status: 'Completed' },
-];
 
 const statusColors = {
   Completed: { bg: '#dcfce7', color: '#16a34a' },
@@ -19,17 +11,37 @@ function LessonPlanReport() {
   const [search, setSearch] = useState('');
   const [filterClass, setFilterClass] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
+  const [lessons, setLessons] = useState([]);
 
-  const filtered = dummyLessons.filter(l => {
+  useEffect(() => { fetchLessons(); }, []);
+
+  const fetchLessons = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/lesson-plans`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.records) {
+          setLessons(data.records);
+        } else {
+          setLessons(data);
+        }
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const filtered = lessons.filter(l => {
     const matchClass = filterClass === 'All' || l.class === filterClass;
     const matchStatus = filterStatus === 'All' || l.status === filterStatus;
-    const matchSearch = l.topic.toLowerCase().includes(search.toLowerCase()) || l.teacher.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = (l.topic || '').toLowerCase().includes(search.toLowerCase()) || (l.teacher || '').toLowerCase().includes(search.toLowerCase());
     return matchClass && matchStatus && matchSearch;
   });
 
-  const completedCount = dummyLessons.filter(l => l.status === 'Completed').length;
-  const pendingCount = dummyLessons.filter(l => l.status === 'Pending').length;
-  const inProgressCount = dummyLessons.filter(l => l.status === 'In Progress').length;
+  const completedCount = lessons.filter(l => l.status === 'Completed').length;
+  const pendingCount = lessons.filter(l => l.status === 'Pending').length;
+  const inProgressCount = lessons.filter(l => l.status === 'In Progress').length;
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -49,7 +61,7 @@ function LessonPlanReport() {
         {/* Stats */}
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           {[
-            { label: 'Total Plans', val: dummyLessons.length, color: '#3b82f6', bg: '#eff6ff' },
+            { label: 'Total Plans', val: lessons.length, color: '#3b82f6', bg: '#eff6ff' },
             { label: 'Completed', val: completedCount, color: '#16a34a', bg: '#dcfce7' },
             { label: 'In Progress', val: inProgressCount, color: '#4f46e5', bg: '#e0e7ff' },
             { label: 'Pending', val: pendingCount, color: '#ca8a04', bg: '#fef9c3' },
@@ -92,8 +104,8 @@ function LessonPlanReport() {
                   <td style={tdStyle}>{l.subject}</td>
                   <td style={tdStyle}>{l.teacher}</td>
                   <td style={tdStyle}>{l.class}</td>
-                  <td style={tdStyle}>{l.duration}</td>
-                  <td style={tdStyle}>{l.date}</td>
+                  <td style={tdStyle}>{l.duration || 'N/A'}</td>
+                  <td style={tdStyle}>{new Date(l.date).toLocaleDateString()}</td>
                   <td style={tdStyle}>
                     <span style={{ padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: statusColors[l.status]?.bg, color: statusColors[l.status]?.color }}>{l.status}</span>
                   </td>

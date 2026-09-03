@@ -1,18 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaVideo, FaPaperPlane } from 'react-icons/fa';
 
-const dummyAbsentStudents = [
-  { id: 1, name: 'ARNAV GUPTA', class: 'NUR A', phone: '8957244533', sent: false },
-  { id: 2, name: 'ANVI MAURYA', class: 'NUR A', phone: '9795383676', sent: true },
-  { id: 3, name: 'SHANVI YADAV', class: 'NUR A', phone: '9935510508', sent: false },
-  { id: 4, name: 'DIVYA', class: 'NUR A', phone: '6388242775', sent: false },
-];
+// Dummy data removed
 
 function AbsenteeSMS() {
   const navigate = useNavigate();
-  const [students, setStudents] = useState(dummyAbsentStudents);
+  const [students, setStudents] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [selectedClass, setSelectedClass] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+
+  useEffect(() => {
+    fetchClasses();
+  }, []);
+
+  const fetchClasses = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/school-classes`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setClasses(data.classes || []);
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const handleFetchAbsent = async () => {
+    if (!selectedClass) {
+      alert('Please select a class');
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      // For now, fetch students in the class. A true absentee system would query attendance records.
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/students?class=${selectedClass}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.students || []);
+        const formatted = list.map(s => ({
+          id: s._id,
+          name: `${s.firstName || ''} ${s.lastName || ''}`.trim(),
+          class: s.class ? s.class.className : 'N/A',
+          phone: s.mobileNo || s.fatherMobileNo || '-',
+          sent: false
+        }));
+        setStudents(formatted);
+        setSelectedIds([]);
+      }
+    } catch (err) { console.error(err); }
+  };
 
   const toggleSelectAll = () => {
     if (selectedIds.length === students.length) {
@@ -30,11 +72,37 @@ function AbsenteeSMS() {
     }
   };
 
-  const handleSendSMS = () => {
-    setStudents(students.map(s => 
-      selectedIds.includes(s.id) ? { ...s, sent: true } : s
-    ));
-    setSelectedIds([]);
+  const handleSendSMS = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        subject: 'Attendance',
+        content: `Dear Parent, your ward is absent today (${date}) without prior information. Regards, Principal.`,
+        recipientTypes: ['Specified'],
+        recipients: selectedIds.map(id => {
+          const s = students.find(x => x.id === id);
+          return { recipientName: s.name, mobileNo: s.phone };
+        })
+      };
+
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/messages`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        setStudents(students.map(s => 
+          selectedIds.includes(s.id) ? { ...s, sent: true } : s
+        ));
+        setSelectedIds([]);
+        alert('Absentee SMS sent successfully!');
+      } else {
+        alert('Failed to send SMS');
+      }
+    } catch (err) { console.error(err); }
   };
 
   return (
@@ -63,18 +131,20 @@ function AbsenteeSMS() {
           <div style={{ display: 'flex', flex: 1, gap: 16, alignItems: 'flex-start' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 150 }}>
               <label style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>Date</label>
-              <input type="date" defaultValue="2026-08-03" style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '9px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#f8fafc' }} />
+              <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '9px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#f8fafc' }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 150 }}>
               <label style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>Class</label>
-              <select style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '9px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#fff' }}>
-                <option>NUR A</option>
-                <option>NUR B</option>
+              <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '9px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#fff' }}>
+                <option value="">Select Class</option>
+                {classes.map(c => (
+                  <option key={c._id} value={c._id}>{c.className}</option>
+                ))}
               </select>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, justifyContent: 'flex-end', height: '100%' }}>
               <label style={{ fontSize: 12, color: 'transparent' }}>&nbsp;</label>
-              <button style={{ background: '#65c466', color: '#fff', border: 'none', borderRadius: 6, padding: '9px 22px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+              <button onClick={handleFetchAbsent} style={{ background: '#65c466', color: '#fff', border: 'none', borderRadius: 6, padding: '9px 22px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
                 GO
               </button>
             </div>

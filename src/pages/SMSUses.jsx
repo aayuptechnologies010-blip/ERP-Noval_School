@@ -1,16 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSms, FaMobileAlt, FaEnvelopeOpenText, FaInfoCircle } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
-const usageData = [
-  { module: 'Attendance SMS', count: 1450, color: '#ef4444' },
-  { module: 'Fee Reminders', count: 850, color: '#f59e0b' },
-  { module: 'Exam Results', count: 1200, color: '#10b981' },
-  { module: 'Announcements', count: 430, color: '#3b82f6' },
-  { module: 'OTP/Auth', count: 120, color: '#8b5cf6' },
-];
+// Dummy data removed
 
 function SMSUses() {
+  const [usageData, setUsageData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/sms/uses`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUsageData((data.records || []).map(d => ({ module: d.module, count: d.count, color: d.color })));
+        }
+      } catch (err) { console.error(err); }
+    };
+    fetchData();
+  }, []);
+
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div style={{ padding: '24px 32px 8px 32px' }}>

@@ -2,19 +2,48 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaPlus, FaSearch, FaEye, FaEdit, FaTrash, FaTimes } from 'react-icons/fa';
 
-const initialDummyAssignments = [
-  { id: 1, title: 'Algebra Equations Practice', subject: 'Mathematics', class: 'Class 9', type: 'Class Wise', assignedOn: '03-Aug-2026', submissionDate: '10-Aug-2026', status: 'Active' },
-  { id: 2, title: 'Photosynthesis Essay', subject: 'Science', class: 'Class 10', type: 'Class Wise', assignedOn: '01-Aug-2026', submissionDate: '08-Aug-2026', status: 'Active' },
-  { id: 3, title: 'Grammar Worksheet', subject: 'English', class: 'Class 8', type: 'Student Wise', assignedOn: '25-Jul-2026', submissionDate: '30-Jul-2026', status: 'Inactive' },
-];
-
 function AssignmentList() {
   const navigate = useNavigate();
-  const [assignments, setAssignments] = useState(initialDummyAssignments);
+  const [assignments, setAssignments] = useState([]);
+
+  React.useEffect(() => {
+    fetchAssignments();
+  }, []);
+
+  const fetchAssignments = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/assignments`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Map backend fields to frontend table fields
+        const formatted = data.map(d => ({
+          ...d,
+          id: d._id,
+        }));
+        setAssignments(formatted);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
   
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this assignment?")) {
-      setAssignments(assignments.filter(a => a.id !== id));
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/assignments/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          setAssignments(assignments.filter(a => a.id !== id));
+        }
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 

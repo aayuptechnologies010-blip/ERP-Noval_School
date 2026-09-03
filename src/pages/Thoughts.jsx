@@ -1,39 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaQuoteLeft, FaPlus, FaTrash, FaTimes } from 'react-icons/fa';
 
-const dummyData = [
-  { id: 1, author: 'Mahatma Gandhi', content: 'Be the change that you wish to see in the world.', date: '2023-10-01' },
-  { id: 2, author: 'Dr. A.P.J. Abdul Kalam', content: 'Dream, dream, dream. Dreams transform into thoughts and thoughts result in action.', date: '2023-10-02' },
-  { id: 3, author: 'Albert Einstein', content: 'Imagination is more important than knowledge.', date: '2023-10-03' },
-];
-
 function Thoughts() {
-  const [thoughts, setThoughts] = useState(dummyData);
+  const [thoughts, setThoughts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [newAuthor, setNewAuthor] = useState('');
   const [newContent, setNewContent] = useState('');
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this thought?')) {
-      setThoughts(thoughts.filter(t => t.id !== id));
+  useEffect(() => {
+    fetchThoughts();
+  }, []);
+
+  const fetchThoughts = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/thoughts`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setThoughts(Array.isArray(data) ? data : (data.thoughts || []));
+      }
+    } catch (error) {
+      console.error('Error fetching thoughts:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCreateNew = (e) => {
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this thought?')) {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/thoughts/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) fetchThoughts();
+      } catch (error) {
+        console.error('Error deleting thought:', error);
+      }
+    }
+  };
+
+  const handleCreateNew = async (e) => {
     e.preventDefault();
     if (!newAuthor.trim() || !newContent.trim()) return alert('Please enter both author and thought content');
-    
-    const newThought = {
-      id: Date.now(),
-      author: newAuthor,
-      content: newContent,
-      date: new Date().toISOString().split('T')[0],
-    };
-    
-    setThoughts([newThought, ...thoughts]);
-    setShowModal(false);
-    setNewAuthor('');
-    setNewContent('');
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/thoughts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ author: newAuthor, thought: newContent, date: new Date().toISOString() })
+      });
+      if (response.ok) {
+        fetchThoughts();
+        setShowModal(false);
+        setNewAuthor('');
+        setNewContent('');
+      } else {
+        alert('Failed to add thought.');
+      }
+    } catch (error) {
+      console.error('Error creating thought:', error);
+      alert('An error occurred.');
+    }
   };
 
   return (
@@ -54,10 +89,10 @@ function Thoughts() {
       <div style={{ padding: '0 32px 32px 32px', flex: 1, overflow: 'auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
           {thoughts.map((t) => (
-            <div key={t.id} style={{ background: '#fff', borderRadius: 8, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', position: 'relative' }}>
+            <div key={t._id || t.id} style={{ background: '#fff', borderRadius: 8, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', position: 'relative' }}>
               <div style={{ position: 'absolute', top: 16, right: 16 }}>
                 <button 
-                  onClick={() => handleDelete(t.id)} 
+                  onClick={() => handleDelete(t._id || t.id)} 
                   style={{ background: '#fee2e2', border: 'none', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#ef4444' }}
                   title="Delete"
                 >
@@ -65,10 +100,10 @@ function Thoughts() {
                 </button>
               </div>
               <FaQuoteLeft size={24} color="#e2e8f0" style={{ marginBottom: 16 }} />
-              <p style={{ margin: '0 0 16px 0', fontSize: 15, color: '#334155', fontStyle: 'italic', lineHeight: 1.6 }}>"{t.content}"</p>
+              <p style={{ margin: '0 0 16px 0', fontSize: 15, color: '#334155', fontStyle: 'italic', lineHeight: 1.6 }}>"{ t.content}"</p>
               <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontWeight: 600, color: '#1e293b', fontSize: 14 }}>- {t.author}</span>
-                <span style={{ fontSize: 12, color: '#94a3b8' }}>{t.date}</span>
+                <span style={{ fontSize: 12, color: '#94a3b8' }}>{t.createdAt ? new Date(t.createdAt).toLocaleDateString() : t.date}</span>
               </div>
             </div>
           ))}

@@ -1,17 +1,29 @@
 import React, { useState } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaTimes, FaGift } from 'react-icons/fa';
 
-const dummyRewards = [
-  { id: 1, title: 'Gold Medal', category: 'Academic', description: 'Awarded for top academic performance.', value: '500' },
-  { id: 2, title: 'Certificate of Excellence', category: 'Cultural', description: 'Given for outstanding cultural performance.', value: '0' },
-  { id: 3, title: 'Sports Trophy', category: 'Sports', description: 'Awarded to sports champions.', value: '1000' },
-  { id: 4, title: 'Book Voucher', category: 'Academic', description: 'Issued to encourage reading habits.', value: '200' },
-];
-
 const emptyForm = { title: '', category: 'Academic', description: '', value: '' };
 
 function AppreciationRewards() {
-  const [rewards, setRewards] = useState(dummyRewards);
+  const [rewards, setRewards] = useState([]);
+
+  React.useEffect(() => {
+    fetchRewards();
+  }, []);
+
+  const fetchRewards = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/rewards`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRewards(data.map(item => ({ ...item, id: item._id })));
+      }
+    } catch (err) {
+      console.error('Failed to fetch rewards:', err);
+    }
+  };
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -20,19 +32,54 @@ function AppreciationRewards() {
   const openAdd = () => { setEditItem(null); setForm(emptyForm); setShowModal(true); };
   const openEdit = (item) => { setEditItem(item); setForm({ ...item }); setShowModal(true); };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title) return alert('Please fill all required fields.');
-    if (editItem) {
-      setRewards(rewards.map(r => r.id === editItem.id ? { ...form, id: editItem.id } : r));
-    } else {
-      setRewards([...rewards, { ...form, id: Date.now() }]);
+    try {
+      const token = localStorage.getItem('token');
+      const url = editItem 
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/rewards/${editItem.id}`
+        : `${import.meta.env.VITE_API_BASE_URL}/api/rewards`;
+        
+      const res = await fetch(url, {
+        method: editItem ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ ...form, value: Number(form.value) || 0 })
+      });
+      
+      if (res.ok) {
+        fetchRewards();
+        setShowModal(false);
+      } else {
+        alert('Failed to save reward.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error saving reward.');
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this reward?')) setRewards(rewards.filter(r => r.id !== id));
+  const handleDelete = async (id) => {
+    if (window.confirm('Delete this reward?')) {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/rewards/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          fetchRewards();
+        } else {
+          alert('Failed to delete reward.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error deleting reward.');
+      }
+    }
   };
 
   return (

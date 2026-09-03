@@ -55,17 +55,13 @@ function BirthdayReport() {
     const matchType = filterType === 'All' || b.type === filterType;
     const matchSearch = b.name.toLowerCase().includes(search.toLowerCase());
     
-    // Check if dob matches selectedMonth (format: YYYY-MM)
+    // Check if dob month matches selectedMonth (format: YYYY-MM)
     const dobDate = new Date(b.dateOfBirth);
-    const bMonth = `${dobDate.getFullYear()}-${String(dobDate.getMonth() + 1).padStart(2, '0')}`;
-    const matchMonth = !selectedMonth || bMonth === selectedMonth || bMonth.endsWith(selectedMonth.split('-')[1]); // Match only month, or ignore if clear
+    const dobMonthStr = String(dobDate.getMonth() + 1).padStart(2, '0');
+    const selectedMonthStr = selectedMonth ? selectedMonth.split('-')[1] : null; 
+    const matchMonth = selectedMonthStr ? dobMonthStr === selectedMonthStr : true;
     
-    // Actually, usually birthdays are celebrated by Month regardless of Year. 
-    // If selectedMonth is "2026-08", maybe we just want to match the "08" month.
-    const selectedM = selectedMonth ? selectedMonth.split('-')[1] : null;
-    const isSameMonth = selectedM ? String(dobDate.getMonth() + 1).padStart(2, '0') === selectedM : true;
-
-    return matchType && matchSearch && isSameMonth;
+    return matchType && matchSearch && matchMonth;
   });
 
   const thStyle = { textAlign: 'left', padding: '14px 24px', fontSize: 13, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' };

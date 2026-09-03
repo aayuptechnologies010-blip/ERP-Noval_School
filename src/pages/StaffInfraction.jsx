@@ -33,9 +33,9 @@ function StaffInfraction() {
         fetch(`${baseUrl}/api/infractions`, { headers }).then(r => r.json()),
       ]);
 
-      setRecords(Array.isArray(infractionsRes.data) ? infractionsRes.data : []);
-      setStaffList(Array.isArray(staffRes) ? staffRes : []);
-      setInfractionList(Array.isArray(masterInfractionsRes) ? masterInfractionsRes : []);
+      setRecords(Array.isArray(infractionsRes) ? infractionsRes : (infractionsRes.data || []));
+      setStaffList(Array.isArray(staffRes) ? staffRes : (staffRes.data || []));
+      setInfractionList(Array.isArray(masterInfractionsRes) ? masterInfractionsRes : (masterInfractionsRes.data || []));
     } catch (error) {
       console.error("Error fetching data", error);
       toast.error("Failed to load data");
@@ -48,6 +48,24 @@ function StaffInfraction() {
     e.preventDefault();
     if (!form.staffId || !form.infractionId || !form.date) return toast.error('Please fill all required fields.');
     
+    const selectedStaff = staffList.find(s => s._id === form.staffId);
+    const selectedInfraction = infractionList.find(i => i._id === form.infractionId);
+    
+    if (!selectedStaff || !selectedInfraction) {
+      return toast.error('Invalid staff or infraction selected.');
+    }
+
+    const payload = {
+      staffName: `${selectedStaff.firstName} ${selectedStaff.lastName}`.trim(),
+      designation: selectedStaff.designation || (selectedStaff.role ? selectedStaff.role.roleName : 'Staff'),
+      department: selectedStaff.department || 'N/A',
+      date: form.date,
+      infractionType: selectedInfraction.title || selectedInfraction.type,
+      severity: selectedInfraction.severity || 'Minor',
+      consequence: selectedInfraction.consequence || 'Warning',
+      notes: form.description
+    };
+
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff-infractions`, {
@@ -56,7 +74,7 @@ function StaffInfraction() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(form)
+        body: JSON.stringify(payload)
       });
       
       if (response.ok) {
@@ -96,9 +114,11 @@ function StaffInfraction() {
   };
 
   const filtered = records.filter(r => {
-    const staffName = r.staffId ? `${r.staffId.firstName} ${r.staffId.lastName}`.toLowerCase() : '';
-    const dept = r.staffId && r.staffId.designation ? r.staffId.designation.toLowerCase() : '';
-    return staffName.includes(search.toLowerCase()) || dept.includes(search.toLowerCase());
+    const staffNameStr = r.staffName ? r.staffName.toLowerCase() : '';
+    const deptStr = r.department ? r.department.toLowerCase() : '';
+    const searchLower = search.toLowerCase();
+    
+    return staffNameStr.includes(searchLower) || deptStr.includes(searchLower);
   });
 
   return (
@@ -131,36 +151,32 @@ function StaffInfraction() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(r => (
-                <tr key={r._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+              {filtered.map(item => (
+                <tr key={item._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                  <td style={tdStyle}>{item.staffName || 'Unknown'}</td>
+                  <td style={tdStyle}>{item.designation || 'N/A'}</td>
+                  <td style={tdStyle}>{item.infractionType || 'N/A'}</td>
                   <td style={tdStyle}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#dc2626', fontSize: 14 }}>
-                        {r.staffId?.firstName?.charAt(0) || '?'}
-                      </div>
-                      <span style={{ fontWeight: 600, color: '#1e293b' }}>
-                        {r.staffId ? `${r.staffId.firstName} ${r.staffId.lastName}` : 'Unknown'}
-                      </span>
-                    </div>
-                  </td>
-                  <td style={tdStyle}>{r.staffId?.designation || 'N/A'}</td>
-                  <td style={tdStyle}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <FaExclamationTriangle size={12} color="#dc2626" /> {r.infractionId?.title || 'Unknown'}
+                    <span style={{ 
+                      display: 'inline-flex', alignItems: 'center', gap: 4, 
+                      background: item.severity === 'Severe' ? '#fee2e2' : item.severity === 'Moderate' ? '#fef3c7' : '#f1f5f9', 
+                      color: item.severity === 'Severe' ? '#ef4444' : item.severity === 'Moderate' ? '#d97706' : '#64748b', 
+                      padding: '4px 8px', borderRadius: 12, fontSize: 12, fontWeight: 600 
+                    }}>
+                      {item.severity || 'Unknown'}
                     </span>
                   </td>
-                  <td style={tdStyle}><span style={{ fontWeight: 700, color: '#ef4444' }}>-{r.infractionId?.points || 0}</span></td>
-                  <td style={tdStyle}>{new Date(r.date).toLocaleDateString()}</td>
+                  <td style={tdStyle}>{new Date(item.date).toLocaleDateString()}</td>
                   <td style={{ ...tdStyle, textAlign: 'center' }}>
                     <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
-                      <button onClick={() => setViewItem(r)} style={iconBtn} title="View"><FaEye size={14} color="#3b82f6" /></button>
-                      <button onClick={() => handleDelete(r._id)} style={iconBtn} title="Remove"><FaTimes size={14} color="#ef4444" /></button>
+                      <button onClick={() => setViewItem(item)} style={iconBtn} title="View"><FaEye size={14} color="#3b82f6" /></button>
+                      <button onClick={() => handleDelete(item._id)} style={iconBtn} title="Remove"><FaTimes size={14} color="#ef4444" /></button>
                     </div>
                   </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan="6" style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>No staff infraction records found.</td></tr>
+                <tr><td colSpan="6" style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>No records found.</td></tr>
               )}
             </tbody>
           </table>
@@ -219,31 +235,35 @@ function StaffInfraction() {
           <div style={{ ...modal, maxWidth: 500 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
               <div>
-                <h2 style={{ margin: '0 0 4px', fontSize: 20, color: '#1e293b' }}>{viewItem.staffId?.firstName} {viewItem.staffId?.lastName}</h2>
-                <p style={{ margin: 0, color: '#64748b', fontSize: 14 }}>{viewItem.staffId?.designation}</p>
+                <h2 style={{ margin: '0 0 4px', fontSize: 20, color: '#1e293b' }}>Infraction Details</h2>
+                <p style={{ margin: 0, color: '#334155', fontWeight: 500 }}>{viewItem.staffName}</p>
               </div>
               <button onClick={() => setViewItem(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><FaTimes size={18} /></button>
             </div>
-            
-            <div style={{ background: '#fef2f2', padding: 16, borderRadius: 8, marginBottom: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <FaExclamationTriangle color="#dc2626" size={18} />
-                <span style={{ fontSize: 16, fontWeight: 600, color: '#dc2626' }}>{viewItem.infractionId?.title}</span>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>Designation</span>
+                <p style={{ margin: 0, color: '#334155', fontWeight: 500 }}>{viewItem.designation}</p>
               </div>
-              <p style={{ margin: '0 0 12px', fontSize: 14, color: '#475569' }}>
-                Logged on {new Date(viewItem.date).toLocaleDateString()}
-              </p>
-              <div style={{ display: 'inline-block', background: '#fee2e2', color: '#b91c1c', padding: '4px 12px', borderRadius: 20, fontSize: 13, fontWeight: 700 }}>
-                -{viewItem.infractionId?.points || 0} Points
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>Infraction Type</span>
+                <p style={{ margin: 0, color: '#334155', fontWeight: 500 }}>{viewItem.infractionType}</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>Severity</span>
+                <p style={{ margin: 0, color: '#334155', fontWeight: 500 }}>{viewItem.severity}</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>Consequence</span>
+                <p style={{ margin: 0, color: '#334155', fontWeight: 500 }}>{viewItem.consequence}</p>
               </div>
             </div>
             
-            {viewItem.description && (
-              <div>
-                <h4 style={{ margin: '0 0 8px', fontSize: 14, color: '#334155' }}>Remarks</h4>
-                <p style={{ margin: 0, fontSize: 14, color: '#64748b', lineHeight: 1.5 }}>{viewItem.description}</p>
-              </div>
-            )}
+            <div style={{ marginTop: 20 }}>
+              <h4 style={{ margin: '0 0 8px', fontSize: 14, color: '#334155' }}>Notes</h4>
+              <p style={{ margin: 0, fontSize: 14, color: '#64748b', lineHeight: 1.5 }}>{viewItem.notes || 'N/A'}</p>
+            </div>
           </div>
         </div>
       )}

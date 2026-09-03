@@ -1,13 +1,92 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
-function ActivityCalendarWidget() {
-  const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+function ActivityCalendarWidget({ data }) {
+  const [currentDate, setCurrentDate] = useState(new Date());
   
-  // Dummy data for July 2026 based on screenshot
-  // 28, 29, 30 are from June
-  // 31 has 'Today'
+  const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  
+  // Format MM/YYYY
+  const monthName = currentDate.toLocaleString('default', { month: 'long' });
+  
+  const handlePrevMonth = () => {
+    setCurrentDate(new Date(year, month - 1, 1));
+  };
+  
+  const handleNextMonth = () => {
+    setCurrentDate(new Date(year, month + 1, 1));
+  };
+
+  const getDaysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
+  const getFirstDayOfMonth = (y, m) => new Date(y, m, 1).getDay();
+  
+  const daysInMonth = getDaysInMonth(year, month);
+  const firstDay = getFirstDayOfMonth(year, month);
+  const daysInPrevMonth = getDaysInMonth(year, month - 1);
+  
+  const activities = data || [];
+  
+  const hasActivity = (day, m, y) => {
+    return activities.some(act => {
+      if (!act.date) return false;
+      const d = new Date(act.date);
+      return d.getDate() === day && d.getMonth() === m && d.getFullYear() === y;
+    });
+  };
+
+  const today = new Date();
+  const isToday = (day, m, y) => {
+    return today.getDate() === day && today.getMonth() === m && today.getFullYear() === y;
+  };
+
+  const gridCells = [];
+  
+  // Previous month cells
+  for (let i = 0; i < firstDay; i++) {
+    const day = daysInPrevMonth - firstDay + i + 1;
+    const isAct = hasActivity(day, month - 1, year);
+    gridCells.push(
+      <div key={`prev-${i}`} className={`flex items-center justify-center border-r border-b border-gray-200 p-2 text-sm ${isAct ? 'text-red-500 font-medium' : 'text-gray-300'}`}>
+        {day}
+      </div>
+    );
+  }
+  
+  // Current month cells
+  for (let day = 1; day <= daysInMonth; day++) {
+    const isAct = hasActivity(day, month, year);
+    const todayFlag = isToday(day, month, year);
+    
+    if (todayFlag) {
+      gridCells.push(
+        <div key={`curr-${day}`} className="flex flex-col items-center justify-center text-green-500 font-medium bg-green-50 border-r border-b border-gray-200 p-1">
+          <span className="text-[9px] text-green-600 mb-0.5">Today</span>
+          <span className="text-sm">{day}</span>
+        </div>
+      );
+    } else {
+      gridCells.push(
+        <div key={`curr-${day}`} className={`flex items-center justify-center border-r border-b border-gray-200 p-2 text-sm ${isAct ? 'text-red-500 font-bold' : 'text-gray-600 hover:bg-gray-50'}`}>
+          {day}
+        </div>
+      );
+    }
+  }
+  
+  // Next month cells to complete the grid (6 rows of 7 days = 42 cells)
+  const remainingCells = 42 - gridCells.length;
+  for (let i = 1; i <= remainingCells; i++) {
+    const isAct = hasActivity(i, month + 1, year);
+    gridCells.push(
+      <div key={`next-${i}`} className={`flex items-center justify-center border-r border-b border-gray-200 p-2 text-sm ${isAct ? 'text-red-300 font-medium' : 'text-gray-300'}`}>
+        {i}
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 flex-1 flex flex-col h-full min-h-[350px]">
       
@@ -16,12 +95,12 @@ function ActivityCalendarWidget() {
       </div>
 
       <div className="flex items-center justify-between mb-4">
-        <div className="font-bold text-gray-800 uppercase text-sm tracking-wide">July 2026</div>
+        <div className="font-bold text-gray-800 uppercase text-sm tracking-wide">{monthName} {year}</div>
         <div className="flex items-center gap-1">
-          <button className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded text-gray-600 transition">
+          <button onClick={handlePrevMonth} className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded text-gray-600 transition">
             <FaChevronLeft className="text-xs" />
           </button>
-          <button className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded text-gray-600 transition">
+          <button onClick={handleNextMonth} className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded text-gray-600 transition">
             <FaChevronRight className="text-xs" />
           </button>
         </div>
@@ -30,7 +109,7 @@ function ActivityCalendarWidget() {
       <div className="border border-gray-200 rounded-lg overflow-hidden flex-1 flex flex-col">
         {/* Header */}
         <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
-          {days.map(day => (
+          {daysOfWeek.map(day => (
             <div key={day} className="py-2 text-center text-xs font-bold text-gray-700 border-r border-gray-200 last:border-0">
               {day}
             </div>
@@ -39,53 +118,7 @@ function ActivityCalendarWidget() {
         
         {/* Grid */}
         <div className="grid grid-cols-7 flex-1">
-          {/* Row 1 */}
-          <div className="flex items-center justify-center text-red-200 border-r border-b border-gray-200 p-2 text-sm">28</div>
-          <div className="flex items-center justify-center text-green-200 border-r border-b border-gray-200 p-2 text-sm">29</div>
-          <div className="flex items-center justify-center text-green-200 border-r border-b border-gray-200 p-2 text-sm">30</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">1</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">2</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">3</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-b border-gray-200 p-2 text-sm">4</div>
-
-          {/* Row 2 */}
-          <div className="flex items-center justify-center text-red-500 font-medium border-r border-b border-gray-200 p-2 text-sm">5</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">6</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">7</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">8</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">9</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">10</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-b border-gray-200 p-2 text-sm">11</div>
-
-          {/* Row 3 */}
-          <div className="flex items-center justify-center text-red-500 font-medium border-r border-b border-gray-200 p-2 text-sm">12</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">13</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">14</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">15</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">16</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">17</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-b border-gray-200 p-2 text-sm">18</div>
-
-          {/* Row 4 */}
-          <div className="flex items-center justify-center text-red-500 font-medium border-r border-b border-gray-200 p-2 text-sm">19</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">20</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">21</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">22</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">23</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-b border-gray-200 p-2 text-sm">24</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-b border-gray-200 p-2 text-sm">25</div>
-
-          {/* Row 5 */}
-          <div className="flex items-center justify-center text-red-500 font-medium border-r border-gray-200 p-2 text-sm">26</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-gray-200 p-2 text-sm">27</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-gray-200 p-2 text-sm">28</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-gray-200 p-2 text-sm">29</div>
-          <div className="flex items-center justify-center text-green-500 font-medium border-r border-gray-200 p-2 text-sm">30</div>
-          <div className="flex flex-col items-center justify-center text-green-500 font-medium bg-green-50 border-r border-gray-200 p-1">
-            <span className="text-[9px] text-green-600 mb-0.5">Today</span>
-            <span className="text-sm">31</span>
-          </div>
-          <div className="flex items-center justify-center text-green-200 border-gray-200 p-2 text-sm">1</div>
+          {gridCells}
         </div>
       </div>
       

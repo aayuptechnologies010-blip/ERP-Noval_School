@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function Activities() {
   const [title, setTitle] = useState('');
@@ -9,9 +9,54 @@ function Activities() {
   const [assignTo, setAssignTo] = useState('Select Assign to');
   const [isActive, setIsActive] = useState(false);
   const [showOnWebsite, setShowOnWebsite] = useState(false);
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const handleCreate = () => {
-    alert('Activity Created Successfully!');
+  useEffect(() => {
+    fetchActivities();
+  }, []);
+
+  const fetchActivities = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/activities`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setActivities(Array.isArray(data) ? data : (data.records || data.activities || []));
+      }
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!title.trim()) return alert('Please enter a title.');
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/activities`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ title, dayType, duration, fromDate, toDate, assignTo, isActive, showOnWebsite })
+      });
+      if (response.ok) {
+        alert('Activity Created Successfully!');
+        setTitle('');
+        fetchActivities();
+      } else {
+        alert('Failed to create activity.');
+      }
+    } catch (error) {
+      console.error('Error creating activity:', error);
+      alert('An error occurred.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

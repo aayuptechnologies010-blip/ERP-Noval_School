@@ -1,26 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaEye, FaUserCircle, FaTimes } from 'react-icons/fa';
 
-const dummyTeachers = [
-  { id: 1, name: 'Miss. AARADHYA VERMA', designation: 'Teacher', mobile: '8127535725', qualification: 'B.ED', email: 'aaradhya@example.com' },
-  { id: 2, name: 'Mr. AKASH RAI', designation: 'Accountant', mobile: '8400900772', qualification: 'B.COM', email: 'akash@example.com' },
-  { id: 3, name: 'Mr. AKHILESH MISHRA', designation: 'Teacher', mobile: '8896218542', qualification: 'B.ED', email: 'akhilesh@example.com' },
-  { id: 4, name: 'Mr. AMIT DUBEY', designation: 'Teacher', mobile: '6393449933', qualification: 'M.SC', email: 'amit@example.com' },
-  { id: 5, name: 'Mrs. ANSHIKA', designation: 'Teacher', mobile: '9305953530', qualification: 'B.ED', email: 'anshika@example.com' },
-  { id: 6, name: 'Miss. ARCHANA YADAV', designation: 'Teacher', mobile: '7497961668', qualification: 'MA', email: 'archana@example.com' },
-  { id: 7, name: 'Mrs. ARPANA UPADHYAY', designation: 'Teacher', mobile: '9492801781', qualification: 'B.A', email: 'arpana@example.com' },
-  { id: 8, name: 'Mr. ASHISH KUMAR', designation: 'Teacher', mobile: '7860565888', qualification: 'B.SC D.EL.ED', email: 'ashish@example.com' },
-  { id: 9, name: 'Miss. DEEPA GUPTA', designation: 'Teacher', mobile: '7522833511', qualification: 'M.COM', email: 'deepa@example.com' },
-];
-
 function TeacherObservation() {
+  const [teachers, setTeachers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filterBy, setFilterBy] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   
   // Modal State
   const [selectedTeacher, setSelectedTeacher] = useState(null);
 
-  const filteredTeachers = dummyTeachers.filter(teacher => {
+  useEffect(() => {
+    fetchTeachers();
+  }, []);
+
+  const fetchTeachers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staffs`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        // Assuming staffs endpoint returns all staff, format them
+        const formatted = Array.isArray(data) ? data.map(t => ({
+          id: t._id,
+          name: `${t.firstName || ''} ${t.lastName || ''}`.trim() || 'Unknown',
+          designation: t.designation || (t.role ? t.role.roleName : 'Teacher'),
+          mobile: t.phone || t.mobile || 'N/A',
+          qualification: t.qualification || 'N/A',
+          email: t.email || 'N/A'
+        })) : [];
+        setTeachers(formatted);
+      }
+    } catch (error) {
+      console.error('Error fetching teachers:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredTeachers = teachers.filter(teacher => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     
@@ -95,7 +115,11 @@ function TeacherObservation() {
               </tr>
             </thead>
             <tbody>
-              {filteredTeachers.map((teacher, index) => (
+              {loading ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', padding: '32px', color: '#64748b' }}>Loading teachers...</td>
+                </tr>
+              ) : filteredTeachers.map((teacher, index) => (
                 <tr key={teacher.id} style={{ borderTop: index !== 0 ? '1px solid #e2e8f0' : 'none' }}>
                   <td style={tdStyle}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -118,7 +142,7 @@ function TeacherObservation() {
                 </tr>
               ))}
               
-              {filteredTeachers.length === 0 && (
+              {!loading && filteredTeachers.length === 0 && (
                 <tr>
                   <td colSpan="5" style={{ textAlign: 'center', padding: '32px', color: '#94a3b8' }}>
                     No records found.

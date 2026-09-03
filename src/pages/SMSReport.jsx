@@ -1,27 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaFileExcel, FaPrint, FaSearch, FaSms, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-const dummyData = [
-  { id: 1, date: '2026-08-01', type: 'Transactional', sentTo: 'Parents (Class 10)', message: 'Dear parents, please note...', count: 120, status: 'Delivered' },
-  { id: 2, date: '2026-08-02', type: 'Promotional', sentTo: 'All Students', message: 'Join our new club...', count: 450, status: 'Delivered' },
-  { id: 3, date: '2026-08-03', type: 'Transactional', sentTo: 'Staff', message: 'Meeting at 3 PM...', count: 45, status: 'Failed' },
-  { id: 4, date: '2026-08-04', type: 'OTP', sentTo: 'Student (Aarav)', message: 'Your login OTP is 4561...', count: 1, status: 'Delivered' },
-];
-
-const pieData = [
-  { name: 'Delivered', value: 85, color: '#10b981' },
-  { name: 'Failed', value: 10, color: '#ef4444' },
-  { name: 'Pending', value: 5, color: '#f59e0b' },
-];
+// Dummy data removed
 
 function SMSReport() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('All');
+  const [allData, setAllData] = useState([]);
+  const [pieData, setPieData] = useState([]);
+  const [summary, setSummary] = useState({ totalSent: 0, delivered: 0, failed: 0 });
 
-  const filtered = dummyData.filter(d => {
+  useEffect(() => { fetchData(); }, []);
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams({ type: typeFilter });
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/sms/report?${params}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAllData(data.records || []);
+        if (data.statusBreakdown) setPieData(data.statusBreakdown);
+        if (data.summary) setSummary(data.summary);
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const filtered = allData.filter(d => {
     const matchType = typeFilter === 'All' || d.type === typeFilter;
-    const matchSearch = d.sentTo.toLowerCase().includes(search.toLowerCase()) || d.message.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = (d.sentTo || '').toLowerCase().includes(search.toLowerCase()) || (d.message || '').toLowerCase().includes(search.toLowerCase());
     return matchType && matchSearch;
   });
 
@@ -43,9 +53,9 @@ function SMSReport() {
         {/* Stats */}
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           {[
-            { label: 'Total SMS Sent', val: 616, icon: FaSms, color: '#3b82f6', bg: '#eff6ff' },
-            { label: 'Delivered', val: 571, icon: FaCheckCircle, color: '#16a34a', bg: '#dcfce7' },
-            { label: 'Failed', val: 45, icon: FaExclamationCircle, color: '#ef4444', bg: '#fef2f2' },
+            { label: 'Total SMS Sent', val: summary.totalSent, icon: FaSms, color: '#3b82f6', bg: '#eff6ff' },
+            { label: 'Delivered', val: summary.delivered, icon: FaCheckCircle, color: '#16a34a', bg: '#dcfce7' },
+            { label: 'Failed', val: summary.failed, icon: FaExclamationCircle, color: '#ef4444', bg: '#fef2f2' },
           ].map((s, i) => (
             <div key={i} style={{ flex: '1 1 200px', background: '#fff', borderRadius: 8, padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', gap: 16 }}>
               <div style={{ width: 50, height: 50, borderRadius: '50%', background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

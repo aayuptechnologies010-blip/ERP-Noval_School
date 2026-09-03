@@ -16,6 +16,10 @@ function CreateAssignment() {
   const [assignedOn, setAssignedOn] = useState(editData?.assignedOn || '');
   const [submissionDate, setSubmissionDate] = useState(editData?.submissionDate || '');
   const [title, setTitle] = useState(editData?.title || '');
+  const [description, setDescription] = useState(editData?.description || '');
+  const [attachment, setAttachment] = useState(null);
+  const [allowMultipleSubmission, setAllowMultipleSubmission] = useState(editData?.allowMultipleSubmission || false);
+  const [allowLateSubmission, setAllowLateSubmission] = useState(editData?.allowLateSubmission || false);
   const [statusActive, setStatusActive] = useState(editData ? editData.status === 'Active' : false);
   
   const isEdit = !!editData;
@@ -107,7 +111,7 @@ function CreateAssignment() {
             {/* Assignment Textarea */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <label style={{ fontSize: 13, color: '#475569', fontWeight: 600 }}>Assignment</label>
-              <textarea rows="5" style={{ ...inputStyle, resize: 'vertical' }}></textarea>
+              <textarea rows="5" value={description} onChange={e => setDescription(e.target.value)} style={{ ...inputStyle, resize: 'vertical' }}></textarea>
             </div>
 
             {/* File Upload and Options Row */}
@@ -119,9 +123,9 @@ function CreateAssignment() {
                 <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #cbd5e1', borderRadius: 4, overflow: 'hidden' }}>
                   <label style={{ background: '#f1f5f9', padding: '10px 16px', borderRight: '1px solid #cbd5e1', cursor: 'pointer', fontSize: 13, color: '#475569', fontWeight: 600, margin: 0 }}>
                     Choose Files
-                    <input type="file" style={{ display: 'none' }} />
+                    <input type="file" onChange={e => setAttachment(e.target.files[0])} style={{ display: 'none' }} />
                   </label>
-                  <span style={{ padding: '10px 16px', fontSize: 13, color: '#64748b' }}>No file chosen</span>
+                  <span style={{ padding: '10px 16px', fontSize: 13, color: '#64748b' }}>{attachment ? attachment.name : 'No file chosen'}</span>
                 </div>
                 <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>
                   <p style={{ margin: '0 0 2px 0', color: '#0f172a', fontWeight: 500 }}>File must be less then <span style={{ fontWeight: 700 }}>5MB</span></p>
@@ -132,11 +136,11 @@ function CreateAssignment() {
               {/* Options */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 28 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#475569', cursor: 'pointer' }}>
-                  <input type="checkbox" style={{ accentColor: '#3b82f6', width: 14, height: 14 }} />
+                  <input type="checkbox" checked={allowMultipleSubmission} onChange={e => setAllowMultipleSubmission(e.target.checked)} style={{ accentColor: '#3b82f6', width: 14, height: 14 }} />
                   Allow student for multiple submission
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#475569', cursor: 'pointer' }}>
-                  <input type="checkbox" style={{ accentColor: '#3b82f6', width: 14, height: 14 }} />
+                  <input type="checkbox" checked={allowLateSubmission} onChange={e => setAllowLateSubmission(e.target.checked)} style={{ accentColor: '#3b82f6', width: 14, height: 14 }} />
                   Allow student for late submission
                 </label>
               </div>
@@ -144,7 +148,7 @@ function CreateAssignment() {
               {/* Active */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 28 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#475569', cursor: 'pointer' }}>
-                  <input type="checkbox" style={{ accentColor: '#3b82f6', width: 14, height: 14 }} />
+                  <input type="checkbox" checked={statusActive} onChange={e => setStatusActive(e.target.checked)} style={{ accentColor: '#3b82f6', width: 14, height: 14 }} />
                   Active
                 </label>
               </div>
@@ -155,9 +159,45 @@ function CreateAssignment() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
               <button 
                 type="button"
-                onClick={() => {
-                  alert("Assignment Posted Successfully!");
-                  navigate('/dashboard/assignment');
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem('token');
+                    const formData = new FormData();
+                    formData.append('type', assignmentType);
+                    formData.append('subject', subject);
+                    formData.append('class', className);
+                    formData.append('assignedOn', assignedOn);
+                    formData.append('submissionDate', submissionDate);
+                    formData.append('title', title);
+                    formData.append('description', description);
+                    formData.append('allowMultipleSubmission', allowMultipleSubmission);
+                    formData.append('allowLateSubmission', allowLateSubmission);
+                    formData.append('status', statusActive ? 'Active' : 'Inactive');
+                    if (attachment) {
+                      formData.append('attachment', attachment);
+                    }
+                    
+                    const url = isEdit ? `${import.meta.env.VITE_API_BASE_URL}/api/assignments/${editData._id}` : `${import.meta.env.VITE_API_BASE_URL}/api/assignments`;
+                    const method = isEdit ? 'PUT' : 'POST';
+
+                    const res = await fetch(url, {
+                      method,
+                      headers: {
+                        'Authorization': `Bearer ${token}`
+                      },
+                      body: formData
+                    });
+
+                    if (res.ok) {
+                      alert("Assignment Posted Successfully!");
+                      navigate('/dashboard/assignment');
+                    } else {
+                      alert("Failed to post assignment");
+                    }
+                  } catch (err) {
+                    console.error(err);
+                    alert("Error posting assignment");
+                  }
                 }}
                 style={{
                   background: '#5cb85c',

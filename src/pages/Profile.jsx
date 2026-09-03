@@ -382,9 +382,9 @@ function Profile() {
                       <div><span className="font-bold mr-1">Rejoin Date:</span></div>
                       <div><span className="font-bold mr-1">Staff Type:</span> ADMIN DEPT</div>
                       
-                      <div><span className="font-bold mr-1">Department:</span> ADMINITRATION DEPT.</div>
-                      <div><span className="font-bold mr-1">Designation:</span> Manager</div>
-                      <div><span className="font-bold mr-1">Short Name:</span> A KUMAR</div>
+                      <div><span className="font-bold mr-1">Department:</span> {profileData?.department || 'N/A'}</div>
+                      <div><span className="font-bold mr-1">Designation:</span> {profileData?.designation || 'N/A'}</div>
+                      <div><span className="font-bold mr-1">Short Name:</span> {profileData?.firstName ? profileData.firstName.substring(0, 1) + ' ' + profileData.lastName : 'N/A'}</div>
                       
                       <div><span className="font-bold mr-1">Probation Date:</span></div>
                       <div><span className="font-bold mr-1">Confirmation Date:</span></div>
@@ -406,7 +406,7 @@ function Profile() {
                       <h4 className="font-bold text-gray-800 text-sm">Family</h4>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-y-4 gap-x-6 text-[13px] px-2 text-gray-800">
-                      <div><span className="font-bold mr-1">Marital Status:</span> Unmarried</div>
+                      <div><span className="font-bold mr-1">Marital Status:</span> {profileData?.maritalStatus || 'N/A'}</div>
                       <div><span className="font-bold mr-1">Emergency Contact Name:</span></div>
                       <div><span className="font-bold mr-1">Emergency Contact Mobile:</span></div>
                       <div><span className="font-bold mr-1">Emergency Contact Relation:</span></div>
@@ -635,7 +635,7 @@ function Profile() {
                           <td className="py-3 px-4 border-r border-gray-200">1</td>
                           <td className="py-3 px-4 border-r border-gray-200">
                             <div className="text-gray-800">Mr. ANKIT KUMAR</div>
-                            <div>Manager</div>
+                            <div>{profileData?.designation || 'N/A'}</div>
                           </td>
                           <td className="py-3 px-4 border-r border-gray-200">
                             <div>01-Aug-2026</div>

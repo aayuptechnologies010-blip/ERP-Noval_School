@@ -27,7 +27,7 @@ function ChangeCredentialsModal({ isOpen, onClose }) {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/change-password`, {
-        method: 'POST', // Usually POST or PUT for this action
+        method: 'PUT', // Usually POST or PUT for this action
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`

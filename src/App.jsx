@@ -97,6 +97,7 @@ import AppMessageUses from "./pages/AppMessageUses";
 import StatisticalReport from "./pages/StatisticalReport";
 import AppUsersReport from "./pages/AppUsersReport";
 import SurveyReport from "./pages/SurveyReport";
+import UndertakingAcknowledgement from "./pages/UndertakingAcknowledgement";
 import ManageSurvey from "./pages/ManageSurvey";
 import Survey from "./pages/Survey";
 import VideoGallery from "./pages/VideoGallery";
@@ -280,7 +281,7 @@ function App() {
           <Route path="staff/class-teacher" element={<ClassTeacher />} />
           <Route path="assignment" element={<AssignmentList />} />
           <Route path="assignment/create" element={<CreateAssignment />} />
-          <Route path="assignment/view/:id" element={<ViewAssignment />} />
+          <Route path="assignment/view" element={<ViewAssignment />} />
           <Route path="timetable" element={<TimeTable />} />
           <Route path="syllabus" element={<SyllabusList />} />
           <Route path="syllabus/create" element={<CreateSyllabus />} />
@@ -329,10 +330,14 @@ function App() {
             element={<TransportAttendance />}
           />
           <Route path="gallery/photos" element={<Photos />} />
+          <Route path="photos" element={<Photos />} />
           <Route path="gallery/photos/create" element={<CreateAlbum />} />
+          <Route path="photos/create" element={<CreateAlbum />} />
           <Route path="gallery/photos/edit/:id" element={<EditAlbum />} />
           <Route path="gallery/videos" element={<VideoGallery />} />
           <Route path="gallery/media" element={<MediaGallery />} />
+          <Route path="favorite/add" element={<AddFavorite />} />
+          <Route path="gallery/favorites" element={<AddFavorite />} />
           <Route path="survey" element={<Survey />} />
           <Route path="survey/manage" element={<ManageSurvey />} />
           <Route path="self/attendance" element={<MyAttendance />} />
@@ -419,6 +424,7 @@ function App() {
           <Route path="report/statistical" element={<StatisticalReport />} />
           <Route path="report/app-users" element={<AppUsersReport />} />
           <Route path="report/survey" element={<SurveyReport />} />
+          <Route path="report/undertaking" element={<UndertakingAcknowledgement />} />
           {/* School Masters / Settings Routes */}
           <Route path="settings/wing" element={<ManageWing />} />
           <Route path="settings/caste" element={<ManageCaste />} />

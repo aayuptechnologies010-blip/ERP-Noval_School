@@ -55,11 +55,42 @@ const initialSurveys = [
 const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
 
 function ManageSurvey() {
-  const [surveys, setSurveys] = useState(initialSurveys);
+  const [surveys, setSurveys] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSurvey, setEditingSurvey] = useState(null);
   const [analyticsModal, setAnalyticsModal] = useState(null);
+
+  React.useEffect(() => {
+    fetchSurveys();
+  }, []);
+
+  const fetchSurveys = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/surveys`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const mapped = data.map(s => ({
+          ...s,
+          audience: s.audience || s.targetAudience || 'General',
+          responses: s.responses || 0,
+          totalTarget: s.totalTarget || 100,
+          status: s.isActive ? 'Active' : 'Closed',
+          startDate: s.startDate || s.createdAt || '',
+          endDate: s.endDate || s.deadline || ''
+        }));
+        setSurveys(mapped);
+      }
+    } catch (error) {
+      console.error("Error fetching surveys:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [formData, setFormData] = useState({
     title: '',
@@ -82,40 +113,77 @@ function ManageSurvey() {
     setIsModalOpen(true);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    if (editingSurvey) {
-      setSurveys(surveys.map(s => s.id === editingSurvey.id ? { ...s, ...formData } : s));
-    } else {
-      setSurveys([...surveys, {
-        ...formData,
-        id: Date.now(),
-        responses: 0,
-        totalTarget: 100,
-        analyticsData: [],
-        sentimentData: [
-          { name: 'Satisfied', value: 0, color: '#10b981' },
-          { name: 'Neutral', value: 0, color: '#f59e0b' },
-          { name: 'Dissatisfied', value: 0, color: '#ef4444' },
-        ]
-      }]);
+    try {
+      const token = localStorage.getItem('token');
+      const payload = { ...formData, isActive: formData.status === 'Active' };
+      let response;
+
+      if (editingSurvey) {
+        response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/surveys/${editingSurvey._id || editingSurvey.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/surveys`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      if (response.ok) {
+        fetchSurveys();
+      }
+    } catch (error) {
+      console.error("Error saving survey:", error);
     }
     setIsModalOpen(false);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if(window.confirm('Are you sure you want to delete this survey?')) {
-      setSurveys(surveys.filter(s => s.id !== id));
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/surveys/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          fetchSurveys();
+        }
+      } catch (error) {
+        console.error("Error deleting survey:", error);
+      }
     }
   };
 
-  const handleStatusToggle = (id) => {
-    setSurveys(surveys.map(s => {
-      if (s.id === id) {
-        return { ...s, status: s.status === 'Active' ? 'Closed' : 'Active' };
+  const handleStatusToggle = async (id, currentStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const newStatus = currentStatus === 'Active' ? 'Closed' : 'Active';
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/surveys/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus, isActive: newStatus === 'Active' })
+      });
+      if (response.ok) {
+        fetchSurveys();
       }
-      return s;
-    }));
+    } catch (error) {
+      console.error("Error toggling status:", error);
+    }
   };
 
   const responseRate = (s) => s.totalTarget > 0 ? Math.round((s.responses / s.totalTarget) * 100) : 0;
@@ -203,17 +271,17 @@ function ManageSurvey() {
             </thead>
             <tbody>
               {filteredSurveys.map(s => (
-                <tr key={s.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <tr key={s._id || s.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={{ ...tdStyle, fontWeight: 600, color: '#334155' }}>{s.title}</td>
                   <td style={tdStyle}>{s.audience}</td>
                   <td style={tdStyle}>
                     <div style={{ fontSize: 12 }}>
-                      <span style={{ color: '#10b981', fontWeight: 600 }}>{s.startDate}</span> to <span style={{ color: '#ef4444', fontWeight: 600 }}>{s.endDate}</span>
+                      <span style={{ color: '#10b981', fontWeight: 600 }}>{s.startDate ? new Date(s.startDate).toLocaleDateString() : ''}</span> to <span style={{ color: '#ef4444', fontWeight: 600 }}>{s.endDate ? new Date(s.endDate).toLocaleDateString() : s.deadline ? new Date(s.deadline).toLocaleDateString() : ''}</span>
                     </div>
                   </td>
                   <td style={tdStyle}>
                     <div>
-                      <div style={{ fontWeight: 700, color: '#1e293b' }}>{s.responses}</div>
+                      <div style={{ fontWeight: 700, color: '#1e293b' }}>{s.responses || 0}</div>
                       <div style={{ height: 4, background: '#e2e8f0', borderRadius: 4, width: 80, marginTop: 4 }}>
                         <div style={{ height: '100%', background: '#3b82f6', borderRadius: 4, width: `${responseRate(s)}%` }} />
                       </div>
@@ -222,24 +290,24 @@ function ManageSurvey() {
                   </td>
                   <td style={tdStyle}>
                     <button 
-                      onClick={() => handleStatusToggle(s.id)}
+                      onClick={() => handleStatusToggle(s._id || s.id, s.status)}
                       style={{ 
                         background: 'none', border: 'none', cursor: 'pointer',
                         padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 700,
                         display: 'flex', alignItems: 'center', gap: 6,
-                        backgroundColor: s.status === 'Active' ? '#dcfce7' : '#fee2e2',
-                        color: s.status === 'Active' ? '#16a34a' : '#ef4444',
+                        backgroundColor: (s.isActive || s.status === 'Active') ? '#dcfce7' : '#fee2e2',
+                        color: (s.isActive || s.status === 'Active') ? '#16a34a' : '#ef4444',
                       }}
                     >
-                      {s.status === 'Active' ? <FaCheckCircle /> : <FaTimesCircle />}
-                      {s.status}
+                      {(s.isActive || s.status === 'Active') ? <FaCheckCircle /> : <FaTimesCircle />}
+                      {s.status || (s.isActive ? 'Active' : 'Closed')}
                     </button>
                   </td>
                   <td style={tdStyle}>
                     <div style={{ display: 'flex', gap: 12 }}>
                       <button onClick={() => handleOpenModal(s)} style={actionBtnStyle('#3b82f6')} title="Edit"><FaEdit /></button>
                       <button onClick={() => setAnalyticsModal(s)} style={actionBtnStyle('#8b5cf6')} title="Analytics"><FaChartBar /></button>
-                      <button onClick={() => handleDelete(s.id)} style={actionBtnStyle('#ef4444')} title="Delete"><FaTrash /></button>
+                      <button onClick={() => handleDelete(s._id || s.id)} style={actionBtnStyle('#ef4444')} title="Delete"><FaTrash /></button>
                     </div>
                   </td>
                 </tr>

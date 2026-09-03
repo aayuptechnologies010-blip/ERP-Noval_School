@@ -1,12 +1,13 @@
 import React from 'react';
 import { FaBirthdayCake } from 'react-icons/fa';
 
-function BirthdayCards() {
+function BirthdayCards({ data }) {
+  const bd = data || {};
   const cards = [
-    { title: 'Colleagues Birthdays', count: '0' },
-    { title: 'Upcoming Birthdays', count: '1' },
-    { title: 'Students Birthdays', count: '3' },
-    { title: 'Upcoming Birthdays', count: '28' },
+    { title: 'Colleagues Birthdays', count: bd.colleagueBirthdays ?? 0 },
+    { title: 'Upcoming Birthdays', count: bd.upcomingColleagueBirthdays ?? 0 },
+    { title: 'Students Birthdays', count: bd.studentBirthdays ?? 0 },
+    { title: 'Upcoming Birthdays', count: bd.upcomingStudentBirthdays ?? 0 },
   ];
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSearch, FaCalendarAlt, FaFileAlt } from 'react-icons/fa';
 
 function ObservationReport() {
@@ -7,17 +7,57 @@ function ObservationReport() {
   const [toDate, setToDate] = useState('');
   const [reportData, setReportData] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [teachersList, setTeachersList] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const handleGetReport = () => {
-    // Dummy Data Simulation
-    const dummyData = [
-      { id: 1, name: 'Mr. AKHILESH MISHRA', date: '2023-10-12', subject: 'Maths', score: '8.5/10', remarks: 'Good interaction with students.' },
-      { id: 2, name: 'Miss. ARCHANA YADAV', date: '2023-10-14', subject: 'Science', score: '9/10', remarks: 'Excellent practical demonstration.' },
-      { id: 3, name: 'Mr. ASHISH KUMAR', date: '2023-10-15', subject: 'English', score: '7.5/10', remarks: 'Needs to improve voice modulation.' }
-    ];
+  useEffect(() => {
+    fetchTeachers();
+  }, []);
 
-    setReportData(dummyData);
+  const fetchTeachers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staffs`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const formatted = Array.isArray(data) ? data.map(t => ({
+          id: t._id,
+          name: `${t.firstName || ''} ${t.lastName || ''}`.trim() || 'Unknown',
+        })) : [];
+        setTeachersList(formatted);
+      }
+    } catch (error) {
+      console.error('Error fetching teachers:', error);
+    }
+  };
+
+  const handleGetReport = async () => {
+    setLoading(true);
     setHasSearched(true);
+    try {
+      const token = localStorage.getItem('token');
+      let url = `${import.meta.env.VITE_API_BASE_URL}/api/teacher-observations/report?`;
+      if (teacher !== 'All') url += `staff=${teacher}&`;
+      if (fromDate) url += `fromDate=${fromDate}&`;
+      if (toDate) url += `toDate=${toDate}&`;
+      
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setReportData(data);
+      } else {
+        setReportData([]);
+      }
+    } catch (error) {
+      console.error('Error fetching report:', error);
+      setReportData([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -44,9 +84,9 @@ function ObservationReport() {
                 style={inputStyle}
               >
                 <option value="All">All Teachers</option>
-                <option value="Mr. AKHILESH MISHRA">Mr. AKHILESH MISHRA</option>
-                <option value="Miss. ARCHANA YADAV">Miss. ARCHANA YADAV</option>
-                <option value="Mr. ASHISH KUMAR">Mr. ASHISH KUMAR</option>
+                {teachersList.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
               </select>
             </div>
 
@@ -94,10 +134,14 @@ function ObservationReport() {
                 </tr>
               </thead>
               <tbody>
-                {reportData.map((row, index) => (
-                  <tr key={row.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={tdStyle}>{row.name}</td>
-                    <td style={tdStyle}>{row.date}</td>
+                {loading ? (
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: 'center', padding: '32px', color: '#64748b' }}>Loading report data...</td>
+                  </tr>
+                ) : reportData.map((row, index) => (
+                  <tr key={row._id || index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={tdStyle}>{row.staffName || row.name}</td>
+                    <td style={tdStyle}>{new Date(row.observationDate || row.date).toLocaleDateString()}</td>
                     <td style={tdStyle}>{row.subject}</td>
                     <td style={tdStyle}>
                       <span style={{ background: '#dcfce7', color: '#166534', padding: '4px 8px', borderRadius: '4px', fontWeight: 600, fontSize: 12 }}>
@@ -107,7 +151,7 @@ function ObservationReport() {
                     <td style={tdStyle}>{row.remarks}</td>
                   </tr>
                 ))}
-                {reportData.length === 0 && (
+                {!loading && reportData.length === 0 && (
                   <tr>
                     <td colSpan="5" style={{ textAlign: 'center', padding: '32px', color: '#94a3b8' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>

@@ -106,15 +106,38 @@ function MarkAttendanceTab() {
   const [attn,     setAttn]     = useState({});
   const [checked,  setChecked]  = useState([]);
 
-  function handleGet() {
-    const init = {};
-    STUDENTS.forEach(s => {
-      init[`${s.id}_m`] = 'P';
-      init[`${s.id}_a`] = 'P';
-    });
-    setAttn(init);
-    setRows(STUDENTS);
-    setChecked([]);
+  const [loading,  setLoading]  = useState(false);
+
+  async function handleGet() {
+    if (route === 'Select Routes' || trip === 'Select Trip Type') {
+      alert("Please select a route and trip type first.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/transport/students`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const init = {};
+        data.forEach(s => {
+          init[`${s.id}_m`] = 'P';
+          init[`${s.id}_a`] = 'P';
+        });
+        setAttn(init);
+        setRows(data);
+        setChecked([]);
+      } else {
+        alert("Failed to fetch students");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred");
+    } finally {
+      setLoading(false);
+    }
   }
 
   function setCell(key, val) {
@@ -141,6 +164,42 @@ function MarkAttendanceTab() {
       });
       return next;
     });
+  }
+
+  async function handleSubmit() {
+    if (!rows || rows.length === 0) return;
+    
+    const records = rows.map(s => ({
+      studentId: s.id,
+      morningStatus: attn[`${s.id}_m`],
+      afternoonStatus: attn[`${s.id}_a`]
+    }));
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/transport/attendance/mark`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({
+          date,
+          route,
+          tripType: trip,
+          stop,
+          records
+        })
+      });
+      if (res.ok) {
+        alert("Attendance submitted successfully!");
+      } else {
+        alert("Failed to submit attendance");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error submitting attendance");
+    }
   }
 
   const allChecked  = rows && checked.length === rows.length;
@@ -269,7 +328,9 @@ function MarkAttendanceTab() {
                 ))}
               </div>
             </div>
-            <Btn color="#10b981" style={{ padding: '12px 32px' }}>Submit Attendance</Btn>
+            <Btn color="#10b981" onClick={handleSubmit} style={{ padding: '12px 32px' }}>
+              {loading ? 'Submitting...' : 'Submit Attendance'}
+            </Btn>
           </div>
         </>
       )}
@@ -281,22 +342,94 @@ function MarkAttendanceTab() {
    VIEW ATTENDANCE TAB
 ══════════════════════════════════════════════════ */
 function ViewAttendanceTab() {
-  const [date,  setDate]  = useState('');
+  const [date,  setDate]  = useState(new Date().toISOString().split('T')[0]);
   const [route, setRoute] = useState('Select Routes');
+  const [trip,  setTrip]  = useState('All');
   const [stop,  setStop]  = useState('Select');
+  const [records, setRecords] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchRecords = async () => {
+    if (!date) return alert("Please select a date.");
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/transport/attendance/view?date=${date}&tripType=${trip}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRecords(data);
+      } else {
+        alert("Failed to fetch records");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{ padding: '24px' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-end', background: '#f8fafc', padding: 20, borderRadius: 12, border: '1px solid #e2e8f0' }}>
         <DateInput label="Date" value={date} onChange={setDate} />
+        <Select label="Trip Type" options={TRIP_ALL} value={trip} onChange={setTrip} />
         <Select label="Routes" options={ROUTES} value={route} onChange={setRoute} />
         <Select label="Stoppage" options={STOPPAGES} value={stop} onChange={setStop} />
-        <Btn style={{ height: 40, display: 'flex', alignItems: 'center', gap: 8 }}><FaSearch /> View Records</Btn>
+        <Btn onClick={fetchRecords} style={{ height: 40, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <FaSearch /> {loading ? 'Fetching...' : 'View Records'}
+        </Btn>
       </div>
-      <div style={{ marginTop: 40, textAlign: 'center', color: '#94a3b8' }}>
-        <FaChartLine size={48} style={{ opacity: 0.2, marginBottom: 16 }} />
-        <p>Select filters to view attendance records.</p>
-      </div>
+      
+      {records ? (
+        <div style={{ marginTop: 24, overflowX: 'auto', background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0' }}>
+          {records.length > 0 ? (
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                  {['Adm No.', 'Student Details', 'Father Name', 'Class', 'Trip Type', 'Route', 'Morning', 'Afternoon'].map(h => (
+                    <th key={h} style={thStyle}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {records.map((r, i) => (
+                  <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={tdStyle}>{r.adm}</td>
+                    <td style={tdStyle}>
+                      <p style={{ margin: 0, fontWeight: 600, color: '#1e293b' }}>{r.name}</p>
+                      <p style={{ margin: 0, fontSize: 12, color: '#64748b' }}>{r.contact}</p>
+                    </td>
+                    <td style={tdStyle}>{r.father}</td>
+                    <td style={{ ...tdStyle, fontWeight: 600, color: '#3b82f6' }}>{r.cls}</td>
+                    <td style={tdStyle}>{r.tripType}</td>
+                    <td style={tdStyle}>{r.route}</td>
+                    <td style={tdStyle}>
+                      <span style={{ background: STATUS_BG[r.morningStatus] || '#f1f5f9', color: STATUS_COLOR[r.morningStatus] || '#94a3b8', padding: '4px 10px', borderRadius: 4, fontWeight: 700 }}>
+                        {STATUS_LABEL[r.morningStatus] || 'N/A'}
+                      </span>
+                    </td>
+                    <td style={tdStyle}>
+                      <span style={{ background: STATUS_BG[r.afternoonStatus] || '#f1f5f9', color: STATUS_COLOR[r.afternoonStatus] || '#94a3b8', padding: '4px 10px', borderRadius: 4, fontWeight: 700 }}>
+                        {STATUS_LABEL[r.afternoonStatus] || 'N/A'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>No records found for the selected filters.</div>
+          )}
+        </div>
+      ) : (
+        <div style={{ marginTop: 40, textAlign: 'center', color: '#94a3b8' }}>
+          <FaChartLine size={48} style={{ opacity: 0.2, marginBottom: 16 }} />
+          <p>Select filters to view attendance records.</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -305,12 +438,98 @@ function ViewAttendanceTab() {
    OUT PASS TAB
 ══════════════════════════════════════════════════ */
 function OutPassTab() {
-  const [date, setDate] = useState('');
+  const [assignDate, setAssignDate] = useState(new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+  const [students, setStudents] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState('');
+  const [className, setClassName] = useState('');
+  const [section, setSection] = useState('');
+  const [passes, setPasses] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  React.useEffect(() => {
+    fetchStudents();
+    fetchPasses();
+  }, []);
+
+  const fetchStudents = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/transport/students`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) setStudents(await res.json());
+    } catch (e) { console.error(e); }
+  };
+
+  const fetchPasses = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/transport/outpass`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) setPasses(await res.json());
+    } catch (e) { console.error(e); }
+  };
+
+  const handleGenerate = async () => {
+    if (!selectedStudent || !className || !assignDate || !endDate) return alert("Fill all fields");
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/transport/outpass`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: selectedStudent, className, section, assignDate, endDate })
+      });
+      if (res.ok) {
+        alert("Out Pass generated");
+        fetchPasses();
+      } else alert("Failed to generate");
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  };
+
   return (
     <div style={{ padding: '24px' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-end', background: '#f8fafc', padding: 20, borderRadius: 12, border: '1px solid #e2e8f0', maxWidth: 400 }}>
-        <DateInput label="Date" value={date} onChange={setDate} />
-        <Btn style={{ height: 40 }}>Generate Pass</Btn>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-end', background: '#f8fafc', padding: 20, borderRadius: 12, border: '1px solid #e2e8f0' }}>
+        <Select label="Student" options={['Select', ...students.map(s => s.id)]} value={selectedStudent} onChange={setSelectedStudent} />
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 100 }}>
+          <Lbl>Class</Lbl>
+          <input type="text" value={className} onChange={e => setClassName(e.target.value)} style={{ border: '1px solid #cbd5e1', borderRadius: 8, padding: '9px 14px', fontSize: 14, outline: 'none' }} />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 100 }}>
+          <Lbl>Section</Lbl>
+          <input type="text" value={section} onChange={e => setSection(e.target.value)} style={{ border: '1px solid #cbd5e1', borderRadius: 8, padding: '9px 14px', fontSize: 14, outline: 'none' }} />
+        </div>
+        <DateInput label="Assign Date" value={assignDate} onChange={setAssignDate} />
+        <DateInput label="End Date" value={endDate} onChange={setEndDate} />
+        <Btn onClick={handleGenerate} style={{ height: 40 }}>{loading ? 'Generating...' : 'Generate Pass'}</Btn>
+      </div>
+
+      <div style={{ marginTop: 24, overflowX: 'auto', background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <thead>
+            <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+              <th style={thStyle}>Adm No.</th>
+              <th style={thStyle}>Student Name</th>
+              <th style={thStyle}>Class/Section</th>
+              <th style={thStyle}>Assign Date</th>
+              <th style={thStyle}>End Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {passes.map((p, i) => (
+              <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <td style={tdStyle}>{p.adm}</td>
+                <td style={tdStyle}><p style={{ margin: 0, fontWeight: 600 }}>{p.name}</p></td>
+                <td style={tdStyle}>{p.cls} {p.section}</td>
+                <td style={tdStyle}>{p.assignDate}</td>
+                <td style={tdStyle}>{p.endDate}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

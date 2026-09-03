@@ -1,17 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaFileExcel, FaCreditCard, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
-const dummyRecharges = [
-  { id: 'REC001', date: '2026-08-01', credits: 5000, amount: '₹1,500', method: 'Credit Card', status: 'Success' },
-  { id: 'REC002', date: '2026-07-15', credits: 10000, amount: '₹2,800', method: 'Net Banking', status: 'Success' },
-  { id: 'REC003', date: '2026-06-10', credits: 2000, amount: '₹700', method: 'UPI', status: 'Failed' },
-  { id: 'REC004', date: '2026-05-22', credits: 5000, amount: '₹1,500', method: 'UPI', status: 'Success' },
-];
+// Dummy data removed
 
 function SMSRechargeLog() {
   const [filter, setFilter] = useState('All');
+  const [allData, setAllData] = useState([]);
+  const [summary, setSummary] = useState({ totalCredits: 0, totalAmount: 0, totalRecharges: 0 });
 
-  const filtered = dummyRecharges.filter(r => filter === 'All' || r.status === filter);
+  useEffect(() => { fetchData(); }, []);
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/sms/recharge`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAllData(data.records || []);
+        if (data.summary) setSummary(data.summary);
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const filtered = allData.filter(r => filter === 'All' || r.status === filter);
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>

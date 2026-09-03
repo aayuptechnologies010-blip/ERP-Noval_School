@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import { FaSearch } from 'react-icons/fa';
 
-const dummyContacts = [
-  { id: 1, sno: '01', class: '4-A', rollNo: '6', admissionNo: '471', recipientName: 'ANUPAM SAMRAT', childName: 'ANUPAM SAMRAT', mobileNo: '9580340797' },
-  { id: 2, sno: '02', class: '10-A', rollNo: '14', admissionNo: '1280', recipientName: 'DIVYANSHU YADAV', childName: 'DIVYANSHU YADAV', mobileNo: '9616148976' },
-  { id: 3, sno: '03', class: '5-B', rollNo: '12', admissionNo: '512', recipientName: 'RAHUL KUMAR', childName: 'RAHUL KUMAR', mobileNo: '9876543210' },
-  { id: 4, sno: '04', class: '9-C', rollNo: '22', admissionNo: '1023', recipientName: 'NEHA GUPTA', childName: 'NEHA GUPTA', mobileNo: '9123456780' },
-];
+// Dummy data removed
 
 const templates = {
   'Select': '',
@@ -52,10 +47,29 @@ function SpecifiedSMS() {
   };
 
   // Get Contacts Action
-  const handleGetContact = () => {
-    // Simulate fetching contacts
-    setContacts(dummyContacts);
-    setSelectedIds([]); // reset selection
+  const handleGetContact = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/students`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.students || []);
+        const formatted = list.map((s, idx) => ({
+          id: s._id || idx,
+          sno: String(idx + 1).padStart(2, '0'),
+          class: s.class ? s.class.className : 'N/A',
+          rollNo: s.rollNo || '-',
+          admissionNo: s.admissionNo || '-',
+          recipientName: s.fatherName || `${s.firstName} ${s.lastName}`,
+          childName: `${s.firstName || ''} ${s.lastName || ''}`.trim(),
+          mobileNo: s.mobileNo || s.fatherMobileNo || '-'
+        }));
+        setContacts(formatted);
+        setSelectedIds([]);
+      }
+    } catch (err) { console.error(err); }
   };
 
   // Handle Search Filtering
@@ -83,7 +97,7 @@ function SpecifiedSMS() {
   };
 
   // Send SMS Action
-  const handleSendSMS = () => {
+  const handleSendSMS = async () => {
     if (selectedIds.length === 0) {
       alert('Please select at least one contact to send the SMS.');
       return;
@@ -92,15 +106,50 @@ function SpecifiedSMS() {
       alert('SMS text cannot be empty.');
       return;
     }
-    alert(`SMS sent successfully to ${selectedIds.length} recipients!`);
-    // Reset form after sending
-    setContacts([]);
-    setSelectedIds([]);
-    setSmsType('Select');
-    setSmsText('');
-    setDate('');
-    setSmsSubject('Select');
-    setCopyToSender(false);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        smsType,
+        message: smsText,
+        sendCopy: copyToSender,
+        date: date || new Date().toISOString().split('T')[0],
+        recipients: selectedIds.map(id => {
+          const contact = contacts.find(c => c.id === id);
+          return {
+            recipientName: contact.recipientName,
+            mobileNo: contact.mobileNo
+          };
+        })
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/specified-sms`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        alert(`SMS sent successfully to ${selectedIds.length} recipients!`);
+        // Reset form after sending
+        setContacts([]);
+        setSelectedIds([]);
+        setSmsType('Select');
+        setSmsText('');
+        setDate('');
+        setSmsSubject('Select');
+        setCopyToSender(false);
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to send SMS: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error("Error sending specified SMS:", error);
+      alert('An error occurred while sending the SMS.');
+    }
   };
 
   return (

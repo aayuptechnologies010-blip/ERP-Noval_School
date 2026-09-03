@@ -7,11 +7,34 @@ function CreateSyllabus() {
   const [title, setTitle] = useState('');
   const [className, setClassName] = useState('');
   const [subject, setSubject] = useState('');
+  const [syllabusFile, setSyllabusFile] = useState(null);
   
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    alert('Syllabus created successfully! (Dummy Action)');
-    navigate('/dashboard/syllabus');
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('class', className);
+      formData.append('subject', subject);
+      if (syllabusFile) formData.append('attachment', syllabusFile);
+
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/syllabus`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+
+      if (res.ok) {
+        alert('Syllabus created successfully!');
+        navigate('/dashboard/syllabus');
+      } else {
+        alert('Failed to create syllabus');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error creating syllabus');
+    }
   };
 
   return (
@@ -69,12 +92,16 @@ function CreateSyllabus() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <label style={{ fontSize: 13, color: '#475569', fontWeight: 600 }}>Upload Syllabus File (PDF/Word) <span style={{ color: '#ef4444' }}>*</span></label>
               <div style={{ position: 'relative' }}>
-                <input type="file" required style={{ opacity: 0, position: 'absolute', width: '100%', height: '100%', cursor: 'pointer', zIndex: 10 }} />
+                <input type="file" required style={{ opacity: 0, position: 'absolute', width: '100%', height: '100%', cursor: 'pointer', zIndex: 10 }} onChange={e => setSyllabusFile(e.target.files[0])} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, border: '2px dashed #cbd5e1', borderRadius: 8, padding: '24px', background: '#f8fafc', color: '#64748b' }}>
                   <FaUpload size={20} />
                   <div>
-                    <span style={{ fontWeight: 600, color: '#3b82f6' }}>Click to upload</span> or drag and drop<br/>
-                    <span style={{ fontSize: 12 }}>PDF, DOCX up to 10MB</span>
+                    {syllabusFile ? (
+                      <span style={{ fontWeight: 600, color: '#16a34a' }}>✓ {syllabusFile.name}</span>
+                    ) : (
+                      <><span style={{ fontWeight: 600, color: '#3b82f6' }}>Click to upload</span> or drag and drop<br/>
+                      <span style={{ fontSize: 12 }}>PDF, DOCX up to 10MB</span></>
+                    )}
                   </div>
                 </div>
               </div>

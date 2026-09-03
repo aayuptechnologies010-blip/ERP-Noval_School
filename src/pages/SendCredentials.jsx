@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import { FaSearch } from 'react-icons/fa';
 
-const dummyContacts = [
-  { id: 1, sno: '01', class: '4-A', rollNo: '6', admissionNo: '471', recipientName: 'ANUPAM SAMRAT', childName: 'ANUPAM SAMRAT', mobileNo: '9580340797', email: 'anupam@example.com' },
-  { id: 2, sno: '02', class: '10-A', rollNo: '14', admissionNo: '1280', recipientName: 'DIVYANSHU YADAV', childName: 'DIVYANSHU YADAV', mobileNo: '9616148976', email: 'divyanshu@example.com' },
-  { id: 3, sno: '03', class: '5-B', rollNo: '12', admissionNo: '512', recipientName: 'RAHUL KUMAR', childName: 'RAHUL KUMAR', mobileNo: '9876543210', email: 'rahul@example.com' },
-];
+// Dummy data removed
 
 function SendCredentials() {
   const [sendVia, setSendVia] = useState('SMS');
@@ -15,13 +11,36 @@ function SendCredentials() {
   const [contacts, setContacts] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
 
-  const handleGetContact = () => {
+  const handleGetContact = async () => {
     if (sendTo === 'Select') {
       alert('Please select "Send To" first!');
       return;
     }
-    setContacts(dummyContacts);
-    setSelectedIds([]);
+    try {
+      const token = localStorage.getItem('token');
+      // depending on sendTo we can fetch staff or students.
+      const ep = sendTo === 'Staff' ? '/api/staffs' : '/api/students';
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}${ep}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.students || data.staff || []);
+        const formatted = list.map((s, idx) => ({
+          id: s._id || idx,
+          sno: String(idx + 1).padStart(2, '0'),
+          class: s.class ? s.class.className : (s.department || 'N/A'),
+          rollNo: s.rollNo || s.employeeId || '-',
+          admissionNo: s.admissionNo || '-',
+          recipientName: s.fatherName || `${s.firstName || ''} ${s.lastName || ''}`.trim(),
+          childName: `${s.firstName || ''} ${s.lastName || ''}`.trim(),
+          mobileNo: s.mobileNo || s.fatherMobileNo || '-',
+          email: s.email || '-'
+        }));
+        setContacts(formatted);
+        setSelectedIds([]);
+      }
+    } catch (err) { console.error(err); }
   };
 
   const filteredContacts = contacts.filter(contact => 
@@ -46,16 +65,50 @@ function SendCredentials() {
     }
   };
 
-  const handleSendCredentials = () => {
+  const handleSendCredentials = async () => {
     if (selectedIds.length === 0) {
       alert(`Please select at least one contact to send the credentials.`);
       return;
     }
-    alert(`Credentials sent successfully via ${sendVia} to ${selectedIds.length} recipients!`);
-    setContacts([]);
-    setSelectedIds([]);
-    setSendTo('Select');
-    setSendVia('SMS');
+
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        sendVia,
+        sendToType: sendTo,
+        recipients: selectedIds.map(id => {
+          const contact = contacts.find(c => c.id === id);
+          return {
+            recipientName: contact.recipientName,
+            mobileNo: contact.mobileNo,
+            email: contact.email
+          };
+        })
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/credentials/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        alert(`Credentials sent successfully via ${sendVia} to ${selectedIds.length} recipients!`);
+        setContacts([]);
+        setSelectedIds([]);
+        setSendTo('Select');
+        setSendVia('SMS');
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to send credentials: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error("Error sending credentials:", error);
+      alert('An error occurred while sending credentials.');
+    }
   };
 
   return (

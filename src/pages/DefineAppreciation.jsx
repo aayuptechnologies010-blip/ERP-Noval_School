@@ -1,14 +1,6 @@
 import React, { useState } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaTimes, FaStar } from 'react-icons/fa';
 
-const dummyAppreciations = [
-  { id: 1, title: 'Best Student Award', category: 'Academic', description: 'Given to students with highest academic performance.', points: 10 },
-  { id: 2, title: 'Sports Champion', category: 'Sports', description: 'Awarded to top performer in annual sports meet.', points: 8 },
-  { id: 3, title: 'Perfect Attendance', category: 'Attendance', description: 'No absence throughout the academic term.', points: 5 },
-  { id: 4, title: 'Best Behavior', category: 'Discipline', description: 'Recognized for outstanding discipline and conduct.', points: 7 },
-  { id: 5, title: 'Cultural Star', category: 'Cultural', description: 'Excellence in cultural activities and performances.', points: 6 },
-];
-
 const categoryColors = {
   Academic:    { bg: '#e0e7ff', color: '#4f46e5' },
   Sports:      { bg: '#dcfce7', color: '#16a34a' },
@@ -20,7 +12,27 @@ const categoryColors = {
 const emptyForm = { title: '', category: 'Academic', description: '', points: '' };
 
 function DefineAppreciation() {
-  const [appreciations, setAppreciations] = useState(dummyAppreciations);
+  const [appreciations, setAppreciations] = useState([]);
+
+  React.useEffect(() => {
+    fetchAppreciations();
+  }, []);
+
+  const fetchAppreciations = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/appreciations`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Map backend _id to id for compatibility
+        setAppreciations(data.map(item => ({ ...item, id: item._id })));
+      }
+    } catch (err) {
+      console.error('Failed to fetch appreciations:', err);
+    }
+  };
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -30,20 +42,54 @@ function DefineAppreciation() {
   const openAdd = () => { setEditItem(null); setForm(emptyForm); setShowModal(true); };
   const openEdit = (item) => { setEditItem(item); setForm({ ...item }); setShowModal(true); };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title || !form.description || !form.points) return alert('Please fill all required fields.');
-    if (editItem) {
-      setAppreciations(appreciations.map(a => a.id === editItem.id ? { ...form, id: editItem.id, points: Number(form.points) } : a));
-    } else {
-      setAppreciations([...appreciations, { ...form, id: Date.now(), points: Number(form.points) }]);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const url = editItem 
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/appreciations/${editItem.id}`
+        : `${import.meta.env.VITE_API_BASE_URL}/api/appreciations`;
+        
+      const res = await fetch(url, {
+        method: editItem ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ ...form, points: Number(form.points) })
+      });
+      
+      if (res.ok) {
+        fetchAppreciations();
+        setShowModal(false);
+      } else {
+        alert('Failed to save appreciation.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error saving appreciation.');
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Delete this appreciation definition?')) {
-      setAppreciations(appreciations.filter(a => a.id !== id));
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/appreciations/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          fetchAppreciations();
+        } else {
+          alert('Failed to delete appreciation.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error deleting appreciation.');
+      }
     }
   };
 

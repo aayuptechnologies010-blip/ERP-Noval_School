@@ -96,13 +96,13 @@ function Sidebar({ currentTheme }) {
       icon: FaBookmark, 
       hasArrow: true,
       subItems: [
-        { name: 'Transport Attendance', icon: FaBus, path: '/dashboard/favorites/transport' },
-        { name: 'Students Profile', icon: FaUserGraduate, path: '/dashboard/favorites/students' },
-        { name: 'Staff Profile', icon: FaUserTie, path: '/dashboard/favorites/staff' },
-        { name: 'Photo Albums', icon: FaImages, path: '/dashboard/favorites/photos' },
-        { name: 'Birthday Report', icon: FaBirthdayCake, path: '/dashboard/favorites/birthday' },
-        { name: 'Report', icon: FaFileAlt, path: '/dashboard/favorites/report' },
-        { name: 'Add to favorite', icon: FaPlus, path: '/dashboard/favorites/add' },
+        { name: 'Transport Attendance', icon: FaBus, path: '/dashboard/transport/attendance' },
+        { name: 'Students Profile', icon: FaUserGraduate, path: '/dashboard/students/profile' },
+        { name: 'Staff Profile', icon: FaUserTie, path: '/dashboard/staff/profile' },
+        { name: 'Photo Albums', icon: FaImages, path: '/dashboard/gallery/photos' },
+        { name: 'Birthday Report', icon: FaBirthdayCake, path: '/dashboard/report/birthday' },
+        { name: 'Report', icon: FaFileAlt, path: '/dashboard/reports' },
+        { name: 'Add to favorite', icon: FaPlus, path: '/dashboard/favorite/add' },
       ]
     },
     { 
@@ -149,49 +149,49 @@ function Sidebar({ currentTheme }) {
       name: 'Message', 
       icon: FaEnvelope, 
       subItems: [
-        { name: 'Compose Message', path: '/dashboard/message/compose' },
-        { name: 'Inbox', path: '/dashboard/message/inbox' },
-        { name: 'Sent Messages', path: '/dashboard/message/sent' },
-        { name: 'Specified Message', path: '/dashboard/message/specified' },
+        { name: 'Compose Message', path: '/dashboard/messages/compose' },
+        { name: 'Inbox', path: '/dashboard/messages' },
+        { name: 'Sent Messages', path: '/dashboard/messages/sent' },
+        { name: 'Specified Message', path: '/dashboard/messages/specified' },
       ]
     },
     { 
       name: 'Announcement', 
       icon: FaBullhorn, 
       subItems: [
-        { name: 'School Notice', path: '/dashboard/announcement/school' },
-        { name: 'Class Notice', path: '/dashboard/announcement/class' },
-        { name: 'Staff Notice', path: '/dashboard/announcement/staff' },
-        { name: 'Circular', path: '/dashboard/announcement/circular' },
-        { name: 'Create Circular', path: '/dashboard/announcement/create-circular' },
+        { name: 'School Notice', path: '/dashboard/communication/announcements' },
+        { name: 'Class Notice', path: '/dashboard/communication/class-notice' },
+        { name: 'Staff Notice', path: '/dashboard/communication/staff-notice' },
+        { name: 'Circular', path: '/dashboard/communication/circulars' },
+        { name: 'Create Circular', path: '/dashboard/communication/circulars/create' },
       ]
     },
     { 
       name: 'Manage SMS', 
       icon: FaMobileAlt, 
       subItems: [
-        { name: 'Send SMS', path: '/dashboard/sms/send' },
-        { name: 'Specified SMS', path: '/dashboard/sms/specified' },
-        { name: 'Send Credentials', path: '/dashboard/sms/credentials' },
-        { name: 'Text To Number', path: '/dashboard/sms/text' },
+        { name: 'Send SMS', path: '/dashboard/communication/sms/send' },
+        { name: 'Specified SMS', path: '/dashboard/communication/sms/specified' },
+        { name: 'Send Credentials', path: '/dashboard/communication/sms/credentials' },
+        { name: 'Text To Number', path: '/dashboard/communication/sms/text-to-number' },
       ]
     },
     { 
       name: 'Teacher Observation', 
       icon: FaSearch, 
       subItems: [
-        { name: 'Observation Entry', path: '/dashboard/observation/entry' },
-        { name: 'Observation Report', path: '/dashboard/observation/report' },
+        { name: 'Observation Entry', path: '/dashboard/teacher/observation' },
+        { name: 'Observation Report', path: '/dashboard/teacher/observation-report' },
       ]
     },
     { 
       name: 'My Info', 
       icon: FaUser, 
       subItems: [
-        { name: 'My Attendance', path: '/dashboard/myinfo/attendance' },
-        { name: 'My Leave', path: '/dashboard/myinfo/leave' },
-        { name: 'Pending Leaves', path: '/dashboard/myinfo/pending' },
-        { name: 'Payslip', path: '/dashboard/myinfo/payslip' },
+        { name: 'My Attendance', path: '/dashboard/self/attendance' },
+        { name: 'My Leave', path: '/dashboard/self/leave' },
+        { name: 'Pending Leaves', path: '/dashboard/self/pending' },
+        { name: 'Payslip', path: '/dashboard/self/payslip' },
       ]
     },
     { name: 'Library', icon: FaBookReader, path: '/dashboard/library' },
@@ -258,14 +258,14 @@ function Sidebar({ currentTheme }) {
         { name: 'Undertaking Acknowledgement', path: '/dashboard/report/undertaking' },
       ]
     },
-    { name: 'Manage Survey', icon: FaNetworkWired, path: '/dashboard/managesurvey' },
-    { name: 'Transport Attendance', icon: FaBus, path: '/dashboard/transport' },
+    { name: 'Manage Survey', icon: FaNetworkWired, path: '/dashboard/survey/manage' },
+    { name: 'Transport Attendance', icon: FaBus, path: '/dashboard/transport/attendance' },
     { name: 'Survey', icon: FaNetworkWired, path: '/dashboard/survey' },
     { 
       name: 'Gallery', 
       icon: FaImages, 
       subItems: [
-        { name: 'Photo Albums', path: '/dashboard/photos' },
+        { name: 'Photo Albums', path: '/dashboard/gallery/photos' },
         { name: 'Video Albums', path: '/dashboard/gallery/videos' },
         { name: 'Favorites', path: '/dashboard/gallery/favorites' },
         { name: 'Media Gallery', path: '/dashboard/gallery/media' },

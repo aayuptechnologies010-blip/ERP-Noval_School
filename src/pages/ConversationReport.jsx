@@ -1,37 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSearch, FaComments, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
-const dummyData = [
-  { id: 1, sender: 'Mrs. Kavita Singh', receiver: 'Parent (Rohan)', topic: 'Academic Progress', date: '2026-08-04', status: 'Resolved' },
-  { id: 2, sender: 'Principal', receiver: 'All Staff', topic: 'Annual Function Planning', date: '2026-08-03', status: 'Open' },
-  { id: 3, sender: 'Mr. Rajesh Kumar', receiver: 'Student (Aarav)', topic: 'Math Assignment Issue', date: '2026-08-02', status: 'Resolved' },
-  { id: 4, sender: 'Miss Priya Sharma', receiver: 'Parent (Sneha)', topic: 'Discipline Issue', date: '2026-08-01', status: 'Pending Review' },
-  { id: 5, sender: 'Admin', receiver: 'Mrs. Kavita Singh', topic: 'Leave Request', date: '2026-07-30', status: 'Resolved' },
-];
-
-const pieData = [
-  { name: 'Resolved', value: 60, color: '#10b981' },
-  { name: 'Open', value: 25, color: '#3b82f6' },
-  { name: 'Pending Review', value: 15, color: '#f59e0b' },
-];
-
-const barData = [
-  { day: 'Mon', count: 12 },
-  { day: 'Tue', count: 18 },
-  { day: 'Wed', count: 15 },
-  { day: 'Thu', count: 22 },
-  { day: 'Fri', count: 25 },
-  { day: 'Sat', count: 8 },
-];
+// Dummy data removed
 
 function ConversationReport() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [allData, setAllData] = useState([]);
+  const [pieData, setPieData] = useState([]);
+  const [barData, setBarData] = useState([]);
+  const [summary, setSummary] = useState({ totalThreads: 0, resolved: 0, pendingAction: 0 });
 
-  const filtered = dummyData.filter(c => {
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams({ search, status: statusFilter });
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/conversations?${params}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAllData(data.tableData || []);
+        if (data.statusBreakdown) {
+          const colors = ['#3b82f6', '#f59e0b', '#10b981']; // Open, Pending, Resolved
+          setPieData(data.statusBreakdown.map((d, i) => ({ ...d, color: colors[i % colors.length] })));
+        }
+        if (data.weeklyTrend) setBarData(data.weeklyTrend);
+        if (data.summary) setSummary(data.summary);
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const filtered = allData.filter(c => {
     const matchStatus = statusFilter === 'All' || c.status === statusFilter;
-    const matchSearch = c.sender.toLowerCase().includes(search.toLowerCase()) || c.receiver.toLowerCase().includes(search.toLowerCase()) || c.topic.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = (c.sender || '').toLowerCase().includes(search.toLowerCase()) || (c.receiver || '').toLowerCase().includes(search.toLowerCase()) || (c.topic || '').toLowerCase().includes(search.toLowerCase());
     return matchStatus && matchSearch;
   });
 
@@ -54,7 +61,7 @@ function ConversationReport() {
             </div>
             <div>
               <p style={{ margin: 0, fontSize: 13, color: '#64748b', fontWeight: 600 }}>Total Threads</p>
-              <h3 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#1e293b' }}>342</h3>
+              <h3 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#1e293b' }}>{summary.totalThreads}</h3>
             </div>
           </div>
           <div style={{ background: '#fff', borderRadius: 8, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -63,7 +70,7 @@ function ConversationReport() {
             </div>
             <div>
               <p style={{ margin: 0, fontSize: 13, color: '#64748b', fontWeight: 600 }}>Resolved</p>
-              <h3 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#1e293b' }}>215</h3>
+              <h3 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#1e293b' }}>{summary.resolved}</h3>
             </div>
           </div>
           <div style={{ background: '#fff', borderRadius: 8, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -72,7 +79,7 @@ function ConversationReport() {
             </div>
             <div>
               <p style={{ margin: 0, fontSize: 13, color: '#64748b', fontWeight: 600 }}>Pending Action</p>
-              <h3 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#1e293b' }}>45</h3>
+              <h3 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#1e293b' }}>{summary.pendingAction}</h3>
             </div>
           </div>
         </div>
@@ -114,12 +121,26 @@ function ConversationReport() {
         <div style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
           <div style={{ padding: '16px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
             <div style={{ position: 'relative' }}>
-              <FaSearch style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={12} />
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search topic or names..." style={{ padding: '8px 12px 8px 30px', borderRadius: 6, border: '1px solid #cbd5e1', outline: 'none', fontSize: 13, width: 220 }} />
+              <FaSearch style={{ position: 'absolute', top: 12, left: 12, color: '#94a3b8' }} />
+              <input 
+                placeholder="Search topics or users..." 
+                value={search} 
+                onChange={e => setSearch(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && fetchData()}
+                style={{ padding: '10px 12px 10px 36px', borderRadius: 6, border: '1px solid #cbd5e1', outline: 'none', fontSize: 13, width: 220 }} 
+              />
             </div>
-            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #cbd5e1', outline: 'none', fontSize: 13 }}>
-              {['All', 'Resolved', 'Open', 'Pending Review'].map(s => <option key={s}>{s}</option>)}
+            <select 
+              value={statusFilter} 
+              onChange={e => setStatusFilter(e.target.value)} 
+              style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', outline: 'none', fontSize: 13, background: '#fff' }}
+            >
+              <option value="All">All Statuses</option>
+              <option value="Open">Open</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Pending Review">Pending Review</option>
             </select>
+            <button onClick={fetchData} style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Filter</button>
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>

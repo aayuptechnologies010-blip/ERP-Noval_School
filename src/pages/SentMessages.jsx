@@ -2,12 +2,29 @@ import React, { useState } from 'react';
 import { FaSearch, FaFilter, FaCalendarAlt, FaComments } from 'react-icons/fa';
 
 function SentMessages() {
-  const [fromDate, setFromDate] = useState('03-Aug-2026');
-  const [tillDate, setTillDate] = useState('03-Aug-2026');
+  const [fromDate, setFromDate] = useState('');
+  const [tillDate, setTillDate] = useState('');
+  const [sentMessagesList, setSentMessagesList] = useState([]);
+  const [activeMessage, setActiveMessage] = useState(null);
 
-  // Currently no dummy sent messages as per screenshot, it shows just filters
-  const sentMessagesList = [];
-  const activeMessage = null;
+  React.useEffect(() => {
+    fetchSentMessages();
+  }, []);
+
+  const fetchSentMessages = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/messages/sent`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSentMessagesList(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -49,7 +66,23 @@ function SentMessages() {
           </div>
 
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            {/* List would map here */}
+            {sentMessagesList.map(msg => (
+              <div 
+                key={msg._id} 
+                onClick={() => setActiveMessage(msg)}
+                style={{ 
+                  padding: '12px 16px', 
+                  borderBottom: '1px solid #e2e8f0',
+                  cursor: 'pointer',
+                  background: activeMessage?._id === msg._id ? '#f1f5f9' : 'transparent'
+                }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#334155' }}>{msg.subject}</div>
+                <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
+                  {new Date(msg.createdAt).toLocaleString()}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -64,7 +97,20 @@ function SentMessages() {
             </div>
           ) : (
              <div style={{ flex: 1, padding: 24 }}>
-               {/* Selected Sent Message View */}
+               <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                 <h2 style={{ fontSize: 20, color: '#1e293b', marginTop: 0 }}>{activeMessage.subject}</h2>
+                 <div style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>
+                   Sent on: {new Date(activeMessage.createdAt).toLocaleString()}
+                 </div>
+                 <div style={{ padding: '16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, whiteSpace: 'pre-wrap', color: '#334155', fontSize: 14 }}>
+                   {activeMessage.content}
+                 </div>
+                 {activeMessage.attachmentUrl && (
+                   <div style={{ marginTop: 16 }}>
+                     <strong>Attachment:</strong> <a href={activeMessage.attachmentUrl} target="_blank" rel="noreferrer">View File</a>
+                   </div>
+                 )}
+               </div>
              </div>
           )}
         </div>

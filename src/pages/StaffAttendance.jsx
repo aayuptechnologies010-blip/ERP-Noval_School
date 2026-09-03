@@ -1,17 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaVideo, FaSave, FaCheckCircle, FaUserCheck } from 'react-icons/fa';
 
-const dummyStaff = [
-  { id: 1, staffId: 'EMP-001', name: 'Rajesh Kumar', department: 'Mathematics' },
-  { id: 2, staffId: 'EMP-002', name: 'Priya Sharma', department: 'Science' },
-  { id: 3, staffId: 'EMP-003', name: 'Amit Patel', department: 'English' },
-  { id: 4, staffId: 'EMP-004', name: 'Sneha Gupta', department: 'Computer' },
-  { id: 5, staffId: 'EMP-005', name: 'Vikram Singh', department: 'Sports' },
-  { id: 6, staffId: 'EMP-006', name: 'Neha Verma', department: 'Mathematics' },
-  { id: 7, staffId: 'EMP-007', name: 'Arun Yadav', department: 'Science' },
-  { id: 8, staffId: 'EMP-008', name: 'Sunita Devi', department: 'Hindi' },
-];
+// Dummy staff removed
 
 const STATUS_BUTTONS = [
   { label: 'P',    bg: '#22c55e', color: '#fff', title: 'Present'  },
@@ -25,16 +16,40 @@ const STATUS_BUTTONS = [
 function StaffAttendance() {
   const navigate = useNavigate();
   const [selectedDept, setSelectedDept] = useState('All');
-  const [date, setDate] = useState('03-Aug-2026');
+  const [date, setDate] = useState(new Date().toISOString().substring(0, 10));
   const [showTable, setShowTable] = useState(true);
   const [saved, setSaved] = useState(false);
+  const [staffList, setStaffList] = useState([]);
+  const [attendance, setAttendance] = useState({});
 
-  // attendance: { [staffId]: statusLabel }
-  const [attendance, setAttendance] = useState(() => {
-    const init = {};
-    dummyStaff.forEach(s => { init[s.id] = 'P'; });
-    return init;
-  });
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const list = Array.isArray(data) ? data : (data.staff || []);
+          const formattedList = list.map(s => ({
+            id: s._id,
+            staffId: s.employeeId || 'N/A',
+            name: `${s.title || ''} ${s.firstName || ''} ${s.lastName || ''}`.trim(),
+            department: s.department || 'General'
+          }));
+          setStaffList(formattedList);
+          
+          const initAtt = {};
+          formattedList.forEach(s => { initAtt[s.id] = 'P'; });
+          setAttendance(initAtt);
+        }
+      } catch (error) {
+        console.error("Error fetching staff:", error);
+      }
+    };
+    fetchStaff();
+  }, []);
 
   const handleMark = (staffId, status) => {
     setAttendance(prev => ({ ...prev, [staffId]: status }));
@@ -46,12 +61,35 @@ function StaffAttendance() {
     setAttendance(prev => ({ ...prev, ...all }));
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+  const handleSave = async () => {
+    try {
+      const records = Object.keys(attendance).map(staffId => ({
+        staff: staffId,
+        status: attendance[staffId]
+      }));
+      
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff-attendance`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ date, records })
+      });
+      
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      } else {
+        console.error('Failed to save attendance');
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const filteredStaff = selectedDept === 'All' ? dummyStaff : dummyStaff.filter(s => s.department === selectedDept);
+  const filteredStaff = selectedDept === 'All' ? staffList : staffList.filter(s => s.department === selectedDept);
 
   const counts = filteredStaff.reduce((acc, s) => {
     const st = attendance[s.id] || 'P';

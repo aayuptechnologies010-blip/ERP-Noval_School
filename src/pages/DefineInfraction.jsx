@@ -7,19 +7,29 @@ const severityColors = {
   Severe:   { bg: '#fee2e2', color: '#ef4444' },
 };
 
-const dummyInfractions = [
-  { id: 1, title: 'Late Coming', severity: 'Minor', description: 'Student/Staff arriving late to school or class.', points: 2 },
-  { id: 2, title: 'Uniform Violation', severity: 'Minor', description: 'Not wearing proper school uniform.', points: 3 },
-  { id: 3, title: 'Cheating in Exam', severity: 'Severe', description: 'Caught cheating or using unfair means in examination.', points: 10 },
-  { id: 4, title: 'Disrespecting Teacher', severity: 'Moderate', description: 'Showing disrespect or misbehavior towards staff.', points: 7 },
-  { id: 5, title: 'Vandalism', severity: 'Severe', description: 'Damaging school property intentionally.', points: 9 },
-  { id: 6, title: 'Bullying', severity: 'Severe', description: 'Bullying, harassing or threatening other students.', points: 10 },
-];
-
 const emptyForm = { title: '', severity: 'Minor', description: '', points: '' };
 
 function DefineInfraction() {
-  const [infractions, setInfractions] = useState(dummyInfractions);
+  const [infractions, setInfractions] = useState([]);
+
+  React.useEffect(() => {
+    fetchInfractions();
+  }, []);
+
+  const fetchInfractions = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/infractions`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setInfractions(data.map(item => ({ ...item, id: item._id })));
+      }
+    } catch (err) {
+      console.error('Failed to fetch infractions:', err);
+    }
+  };
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -28,19 +38,55 @@ function DefineInfraction() {
   const openAdd = () => { setEditItem(null); setForm(emptyForm); setShowModal(true); };
   const openEdit = (item) => { setEditItem(item); setForm({ ...item }); setShowModal(true); };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title || !form.description) return alert('Please fill all required fields.');
-    if (editItem) {
-      setInfractions(infractions.map(i => i.id === editItem.id ? { ...form, id: editItem.id, points: Number(form.points) } : i));
-    } else {
-      setInfractions([...infractions, { ...form, id: Date.now(), points: Number(form.points) }]);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const url = editItem 
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/infractions/${editItem.id}`
+        : `${import.meta.env.VITE_API_BASE_URL}/api/infractions`;
+        
+      const res = await fetch(url, {
+        method: editItem ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ ...form, points: Number(form.points) || 0 })
+      });
+      
+      if (res.ok) {
+        fetchInfractions();
+        setShowModal(false);
+      } else {
+        alert('Failed to save infraction.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error saving infraction.');
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this infraction definition?')) setInfractions(infractions.filter(i => i.id !== id));
+  const handleDelete = async (id) => {
+    if (window.confirm('Delete this infraction definition?')) {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/infractions/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          fetchInfractions();
+        } else {
+          alert('Failed to delete infraction.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error deleting infraction.');
+      }
+    }
   };
 
   return (

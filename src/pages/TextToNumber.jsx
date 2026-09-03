@@ -38,7 +38,7 @@ function TextToNumber() {
     }
   };
 
-  const handleSendSMS = () => {
+  const handleSendSMS = async () => {
     if (selectMode === 'Mobile No.' && !number.trim()) {
       alert('Please enter a mobile number.');
       return;
@@ -47,13 +47,42 @@ function TextToNumber() {
       alert('SMS text cannot be empty.');
       return;
     }
-    alert(`SMS sent successfully via ${selectMode}!`);
-    // Reset form after sending
-    setSelectMode('Mobile No.');
-    setNumber('');
-    setLanguage('ENGLISH');
-    setSmsText('');
-    setSmsSubject('Select');
+
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        subject: smsSubject,
+        language: language,
+        message: smsText,
+        sendCopy: false,
+        sendTo: selectMode === 'Mobile No.' ? number : 'Bulk Contacts'
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/sms`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        alert(`SMS sent successfully via ${selectMode}!`);
+        // Reset form after sending
+        setSelectMode('Mobile No.');
+        setNumber('');
+        setLanguage('ENGLISH');
+        setSmsText('');
+        setSmsSubject('Select');
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to send SMS: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error("Error sending TextToNumber SMS:", error);
+      alert('An error occurred while sending the SMS.');
+    }
   };
 
   return (

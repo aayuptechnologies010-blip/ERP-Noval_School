@@ -2,12 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaVideo, FaLevelUpAlt, FaUsers } from 'react-icons/fa';
 
-const dummyStudents = [
-  { id: 1, admNo: '1770', name: 'ARNAV GUPTA', currentClass: 'UKG A', roll: '01' },
-  { id: 2, admNo: '2203', name: 'ANVI MAURYA', currentClass: 'UKG A', roll: '02' },
-  { id: 3, admNo: '2206', name: 'SHANVI YADAV', currentClass: 'UKG A', roll: '03' },
-  { id: 4, admNo: '2219', name: 'DIVYA', currentClass: 'UKG A', roll: '04' },
-];
+
 
 function Promotion() {
   const navigate = useNavigate();

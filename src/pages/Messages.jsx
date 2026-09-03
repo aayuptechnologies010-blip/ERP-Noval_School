@@ -1,25 +1,58 @@
 import React, { useState } from 'react';
 import { FaSearch, FaFilter, FaPaperclip, FaComments } from 'react-icons/fa';
 
-const senders = [
-  { id: 1, name: 'Mr. WASEEM FIROJ', role: 'Teacher', date: 'Fri, Nov 22, 2024 02:16 PM', avatar: 'https://i.pravatar.cc/150?img=11' },
-  { id: 2, name: 'Mrs. ANITA SHARMA', role: 'Principal', date: 'Thu, Nov 21, 2024 10:00 AM', avatar: 'https://i.pravatar.cc/150?img=5' },
-];
-
-const conversations = {
-  1: [
-    { id: 101, title: "Today's Homework", preview: "SST - Revise chp 1 and 2 of Economy and do the given question Hindi - Neta ji ka chashma path ka prashn poochha Jayega...", time: 'Fri, Nov 22, 2024 02:16 PM', hasAttachment: false },
-    { id: 102, title: "Today's Homework", preview: "SST - Revise chp 1 and 2 of Economy and Write the Worksheet in your test copy Hindi - Revise the worksheet English - Physi...", time: 'Thu, Nov 21, 2024 02:19 PM', hasAttachment: false },
-    { id: 103, title: "Hindi Worksheet", preview: "", time: 'Wed, Nov 20, 2024 02:19 PM', hasAttachment: true },
-    { id: 104, title: "Today's Homework", preview: "Maths - Revise Polynomials Hindi - Learn the work Biology - Revise and prepare the worksheet SST - Revise chp 1 and 2 of ...", time: 'Wed, Nov 20, 2024 02:16 PM', hasAttachment: false },
-  ],
-  2: [
-    { id: 201, title: "Notice: Annual Function", preview: "Dear Staff, please note that the annual function preparations will begin from next Monday...", time: 'Thu, Nov 21, 2024 10:00 AM', hasAttachment: true },
-  ]
-};
-
 function Messages() {
   const [activeSenderId, setActiveSenderId] = useState(null);
+  const [senders, setSenders] = useState([]);
+  const [conversations, setConversations] = useState({});
+
+  React.useEffect(() => {
+    fetchInbox();
+  }, []);
+
+  const fetchInbox = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/messages/inbox`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Mock processing for grouping messages by sender
+        const uniqueSenders = [];
+        const msgMap = {};
+        
+        data.forEach(msg => {
+          const senderId = msg.sender?._id || 'unknown';
+          const senderName = msg.sender?.name || 'Admin';
+          
+          if (!msgMap[senderId]) {
+            uniqueSenders.push({
+              id: senderId,
+              name: senderName,
+              role: msg.sender?.role || 'Staff',
+              date: new Date(msg.createdAt).toLocaleString(),
+              avatar: `https://ui-avatars.com/api/?name=${senderName}`
+            });
+            msgMap[senderId] = [];
+          }
+          
+          msgMap[senderId].push({
+            id: msg._id,
+            title: msg.subject,
+            preview: msg.content,
+            time: new Date(msg.createdAt).toLocaleString(),
+            hasAttachment: !!msg.attachmentUrl
+          });
+        });
+        
+        setSenders(uniqueSenders);
+        setConversations(msgMap);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const activeSender = senders.find(s => s.id === activeSenderId);
   const messages = activeSenderId ? conversations[activeSenderId] : [];

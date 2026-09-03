@@ -1,34 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-import { FaUserGraduate, FaUserTie, FaBus, FaMale, FaFemale, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaUserGraduate, FaUserTie, FaBus, FaMale, FaFemale } from 'react-icons/fa';
 
-const studentData = [
-  { name: 'Boys', value: 780, color: '#f59e0b', icon: FaMale },
-  { name: 'Girls', value: 452, color: '#3b82f6', icon: FaFemale },
-];
-const studentTotal = 1232;
-
-const staffData = [
-  { name: 'Teaching', value: 85, color: '#10b981' },
-  { name: 'Non-Teaching', value: 35, color: '#8b5cf6' },
-];
-const staffTotal = 120;
-
-const transportData = [
-  { name: 'Active', value: 420, color: '#16a34a' },
-  { name: 'Inactive', value: 15, color: '#ef4444' },
-];
-const transportTotal = 435;
+// Dummy data removed
 
 function StatisticalReport() {
   const [activeTab, setActiveTab] = useState('Student');
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/statistical`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
+        }
+      } catch (err) { console.error(err); }
+    };
+    fetchData();
+  }, []);
 
   const renderData = () => {
+    if (!stats) return { data: [], total: 0 };
     switch (activeTab) {
-      case 'Staff': return { data: staffData, total: staffTotal };
-      case 'Transport': return { data: transportData, total: transportTotal };
+      case 'Staff': return { data: stats.staff.data, total: stats.staff.total };
       case 'Student':
-      default: return { data: studentData, total: studentTotal };
+      default: return { data: stats.students.data.map((d, i) => ({ ...d, icon: i === 0 ? FaMale : FaFemale })), total: stats.students.total };
     }
   };
 

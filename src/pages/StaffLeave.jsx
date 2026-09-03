@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaPrint, FaCheck, FaTimes, FaSearch } from 'react-icons/fa';
 
-const dummyLeaveRequests = [
-  { id: 1, staffName: 'Rajesh Kumar', department: 'Mathematics', fromDate: '10-Aug-2026', toDate: '12-Aug-2026', days: 3, reason: 'Family Function', status: 'Pending', appliedOn: '01-Aug-2026' },
-  { id: 2, staffName: 'Priya Sharma', department: 'Science', fromDate: '05-Aug-2026', toDate: '06-Aug-2026', days: 2, reason: 'Sick Leave', status: 'Pending', appliedOn: '03-Aug-2026' },
-  { id: 3, staffName: 'Amit Patel', department: 'English', fromDate: '01-Aug-2026', toDate: '01-Aug-2026', days: 1, reason: 'Personal Work', status: 'Approved', appliedOn: '28-Jul-2026' },
-  { id: 4, staffName: 'Sneha Gupta', department: 'Computer', fromDate: '25-Jul-2026', toDate: '27-Jul-2026', days: 3, reason: 'Out of Station', status: 'Rejected', appliedOn: '20-Jul-2026' },
-  { id: 5, staffName: 'Vikram Singh', department: 'Sports', fromDate: '15-Aug-2026', toDate: '16-Aug-2026', days: 2, reason: 'Tournament', status: 'Cancelled', appliedOn: '10-Aug-2026' },
-];
 
 function StaffLeave() {
   const [activeTab, setActiveTab] = useState('Pending');

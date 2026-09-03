@@ -1,18 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaEye, FaTimes } from 'react-icons/fa';
 
-const dummyData = [
-  { id: 1, name: 'Miss. AARADHYA VERMA', designation: 'Teacher', msgCount: 0, avatar: 'https://i.pravatar.cc/150?u=1' },
-  { id: 2, name: 'Mr. AKASH RAI', designation: 'Accountant', msgCount: 0, avatar: 'https://i.pravatar.cc/150?u=2' },
-  { id: 3, name: 'Mr. AKHILESH MISHRA', designation: 'Teacher', msgCount: 0, avatar: 'https://i.pravatar.cc/150?u=3' },
-  { id: 4, name: 'Miss. ALFIYA BANO', designation: 'Accountant', msgCount: 0, avatar: 'https://i.pravatar.cc/150?u=4' },
-  { id: 5, name: 'Mr. AMIT DUBEY', designation: 'Teacher', msgCount: 0, avatar: 'https://i.pravatar.cc/150?u=5' },
-  { id: 6, name: 'Mr. ANKIT KUMAR', designation: 'Manager', msgCount: 0, avatar: 'https://i.pravatar.cc/150?u=6' },
-  { id: 7, name: 'Mrs. ANSHIKA', designation: 'Teacher', msgCount: 0, avatar: 'https://i.pravatar.cc/150?u=7' },
-  { id: 8, name: 'Miss. ARCHANA YADAV', designation: 'Teacher', msgCount: 0, avatar: 'https://i.pravatar.cc/150?u=8' },
-  { id: 9, name: 'Mrs. ARPANA UPADHYAY', designation: 'Teacher', msgCount: 0, avatar: 'https://i.pravatar.cc/150?u=9' },
-];
-
+// Dummy data removed
 const wingsOptions = ['Higher', 'Kindergarten', 'Middle', 'Primary'];
 
 function AppMessageUses() {
@@ -21,11 +10,47 @@ function AppMessageUses() {
   const [selectedWings, setSelectedWings] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [viewUser, setViewUser] = useState(null);
-  
+  const [staffList, setStaffList] = useState([]);
+  const [totalMessages, setTotalMessages] = useState(0);
+
   const dropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
+    // Fetch app message uses summary
+    const fetchMessages = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/app-message/uses`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setTotalMessages(data.summary?.total || 0);
+        }
+      } catch (err) { console.error(err); }
+    };
+    // Fetch staff list
+    const fetchStaff = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const list = (Array.isArray(data) ? data : data.staff || []).map((s, i) => ({
+            id: s._id || i,
+            name: `${s.title ? s.title + ' ' : ''}${s.firstName || ''} ${s.lastName || ''}`.trim(),
+            designation: s.designation || 'Staff',
+            msgCount: 0,
+            avatar: s.photo || `https://i.pravatar.cc/150?u=${i}`
+          }));
+          setStaffList(list);
+        }
+      } catch (err) { console.error(err); }
+    };
+    fetchMessages();
+    fetchStaff();
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
@@ -122,7 +147,7 @@ function AppMessageUses() {
               </tr>
             </thead>
             <tbody>
-              {dummyData.map((item, index) => (
+              {staffList.map((item, index) => (
                 <tr key={item.id} style={{ background: index % 2 === 0 ? '#fafafa' : '#fff', borderBottom: '1px solid #f1f1f1' }}>
                   <td style={tdStyle}>{index + 1}</td>
                   <td style={tdStyle}>

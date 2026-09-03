@@ -11,13 +11,43 @@ function CreateCircular() {
   const [mustRead, setMustRead] = useState(false);
   const [status, setStatus] = useState(true);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title.trim()) {
       alert('Please fill out the Title field.');
       return;
     }
-    alert('Circular saved successfully!');
-    navigate('/dashboard/announcement/circular');
+
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        title,
+        date: date || new Date().toISOString().split('T')[0],
+        details,
+        sendTo,
+        mustRead,
+        status: status ? 'Active' : 'Inactive'
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/circulars`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        alert('Circular saved successfully!');
+        navigate('/dashboard/announcement/circulars');
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to save circular: ${errorData.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error saving circular:', error);
+      alert('An error occurred while saving the circular.');
+    }
   };
 
   return (
@@ -26,7 +56,7 @@ function CreateCircular() {
       {/* Header Bar */}
       <div style={{ padding: '24px 32px 16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#2b3674', margin: 0 }}>Create Circular</h1>
-        <button onClick={() => navigate('/dashboard/announcement/circular')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+        <button onClick={() => navigate('/dashboard/announcement/circulars')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
           <FaTimes size={20} />
         </button>
       </div>

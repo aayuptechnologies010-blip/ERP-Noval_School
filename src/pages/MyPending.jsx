@@ -1,16 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaTasks, FaCheck } from 'react-icons/fa';
 
 function MyPending() {
-  const [tasks, setTasks] = useState([
-    { id: 1, title: 'Submit quarterly report', dueDate: '2023-10-25', status: 'Pending', type: 'Task' },
-    { id: 2, title: 'Approve leave requests for Class 10', dueDate: '2023-10-22', status: 'Pending', type: 'Approval' },
-    { id: 3, title: 'Library Book Return - "Physics Vol 2"', dueDate: '2023-10-20', status: 'Overdue', type: 'Due' },
-  ]);
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleComplete = (id) => {
-    setTasks(tasks.filter(t => t.id !== id));
-    alert('Task marked as completed!');
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/tasks?status=Pending`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const formatted = Array.isArray(data) ? data.map(t => ({
+          id: t._id,
+          title: t.title,
+          dueDate: t.dueDate ? t.dueDate.split('T')[0] : 'N/A',
+          status: t.status || 'Pending',
+          type: t.priority || 'Task',
+        })) : [];
+        setTasks(formatted);
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleComplete = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/tasks/${id}`, {
+        method: 'PUT',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: 'Completed' })
+      });
+      if (response.ok) {
+        setTasks(tasks.filter(t => t.id !== id));
+        alert('Task marked as completed!');
+      }
+    } catch (error) {
+      console.error('Error completing task:', error);
+    }
   };
 
   return (
@@ -37,7 +77,11 @@ function MyPending() {
               </tr>
             </thead>
             <tbody>
-              {tasks.length > 0 ? tasks.map((task) => (
+              {loading ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', padding: '32px', color: '#64748b' }}>Loading pending tasks...</td>
+                </tr>
+              ) : tasks.length > 0 ? tasks.map((task) => (
                 <tr key={task.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={tdStyle}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 import { 
   FaSearch, FaVideo, FaGripVertical, FaBus, FaUserGraduate, FaUserTie, 
   FaImages, FaBirthdayCake, FaChartPie, FaTasks, FaTable, FaBook, FaBookReader, 
@@ -97,6 +98,56 @@ const initialFavorites = [
 function AddFavorite() {
   const [favorites, setFavorites] = useState(initialFavorites);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    fetchFavorites();
+  }, []);
+
+  const fetchFavorites = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/favorites`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // data is an array of strings (names of favorites)
+        setFavorites(initialFavorites.map(item => ({
+          ...item,
+          state: data.includes(item.name)
+        })));
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const activeFavorites = favorites.filter(f => f.state).map(f => f.name);
+      
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/favorites`, {
+        method: 'PUT',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ favorites: activeFavorites })
+      });
+      if (res.ok) {
+        toast.success("Favorites updated successfully!");
+      } else {
+        toast.error("Failed to update favorites");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occurred while updating favorites");
+    }
+  };
 
   const toggleState = (id) => {
     setFavorites(favorites.map(item => 
@@ -137,7 +188,7 @@ function AddFavorite() {
                 }}
               />
             </div>
-            <button style={{ 
+            <button onClick={handleUpdate} style={{ 
               background: '#4ade80', color: '#fff', border: 'none', borderRadius: 4, 
               padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer' 
             }}>

@@ -7,11 +7,38 @@ function ComposeMessage() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Message sent successfully!');
-    setSubject('');
-    setMessage('');
+    if (!subject || !message) return alert('Please enter both subject and message.');
+    
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          subject,
+          content: message,
+          // Add default recipient or let backend handle it if recipients aren't implemented in UI
+          recipientTypes: ['Student', 'Staff'] 
+        })
+      });
+      
+      if (res.ok) {
+        alert('Message sent successfully!');
+        setSubject('');
+        setMessage('');
+        navigate('/dashboard/message/sent');
+      } else {
+        alert('Failed to send message.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error sending message.');
+    }
   };
 
   return (

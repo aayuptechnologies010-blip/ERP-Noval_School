@@ -439,6 +439,8 @@ function ToggleSwitch({ checked, onChange }) {
 
 export default function TimeTable() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isEmbedded = location.pathname.startsWith("/dashboard");
 
   // Dynamic Theme Drawer System matching MarksManager.jsx exactly
   const [isThemeDrawerOpen, setIsThemeDrawerOpen] = useState(false);
@@ -513,6 +515,19 @@ export default function TimeTable() {
 
   const currentActiveTabObj = openTabs.find((t) => t.id === activeTabId);
   const activeParentId = currentActiveTabObj ? currentActiveTabObj.parentId : openMenu;
+
+  if (isEmbedded) {
+    return (
+      <div className="flex-1 w-full h-full bg-[#f8f9fc] rounded-tl-2xl overflow-y-auto custom-scrollbar p-6">
+        <TimetableDashboardView
+          todaySelectedClass={todaySelectedClass}
+          setTodaySelectedClass={setTodaySelectedClass}
+          onOpenPage={handleOpenPage}
+          showToast={showToast}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#eaedf1] font-sans antialiased select-none">
@@ -1280,6 +1295,32 @@ function TimetableDashboardView({
   showToast
 }) {
   const [selectedClass, setSelectedClass] = useState(todaySelectedClass || "");
+  const [stats, setStats] = useState({
+    totalTeachers: 0,
+    classTeachers: 0,
+    presentToday: 0,
+    absentToday: 0,
+    majorSubjects: 0,
+    minorSubjects: 0
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/timetables/dashboard-stats`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStats(prev => ({ ...prev, ...data }));
+        }
+      } catch (err) {
+        console.error('Dashboard stats fetch failed:', err);
+      }
+    };
+    fetchStats();
+  }, []);
 
   const classOptions = [
     "Select Class",
@@ -1320,7 +1361,7 @@ function TimetableDashboardView({
                 </svg>
                 <span className="font-medium text-gray-600">Total Teachers</span>
               </div>
-              <span className="font-bold text-gray-900 text-sm">0</span>
+              <span className="font-bold text-gray-900 text-sm">{stats.totalTeachers}</span>
             </div>
             <div className="flex items-center justify-between text-xs text-gray-700">
               <div className="flex items-center gap-2.5">
@@ -1329,7 +1370,7 @@ function TimetableDashboardView({
                 </svg>
                 <span className="font-medium text-gray-600">Class Teachers</span>
               </div>
-              <span className="font-bold text-gray-900 text-sm">0</span>
+              <span className="font-bold text-gray-900 text-sm">{stats.classTeachers}</span>
             </div>
           </div>
         </div>
@@ -1350,7 +1391,7 @@ function TimetableDashboardView({
                 </svg>
                 <span className="font-medium text-gray-600">Total Present</span>
               </div>
-              <span className="font-bold text-gray-900 text-sm">0</span>
+              <span className="font-bold text-gray-900 text-sm">{stats.presentToday}</span>
             </div>
             <div className="flex items-center justify-between text-xs text-gray-700">
               <div className="flex items-center gap-2.5">
@@ -1361,7 +1402,7 @@ function TimetableDashboardView({
                 </svg>
                 <span className="font-medium text-gray-600">Total Absent</span>
               </div>
-              <span className="font-bold text-gray-900 text-sm">0</span>
+              <span className="font-bold text-gray-900 text-sm">{stats.absentToday}</span>
             </div>
           </div>
         </div>
@@ -1380,7 +1421,7 @@ function TimetableDashboardView({
                 </svg>
                 <span className="font-medium text-gray-600">Major Subjects</span>
               </div>
-              <span className="font-bold text-gray-900 text-sm">99</span>
+              <span className="font-bold text-gray-900 text-sm">{stats.majorSubjects}</span>
             </div>
             <div className="flex items-center justify-between text-xs text-gray-700">
               <div className="flex items-center gap-2.5">
@@ -1389,7 +1430,7 @@ function TimetableDashboardView({
                 </svg>
                 <span className="font-medium text-gray-600">Minor Subjects</span>
               </div>
-              <span className="font-bold text-gray-900 text-sm">3</span>
+              <span className="font-bold text-gray-900 text-sm">{stats.minorSubjects}</span>
             </div>
           </div>
         </div>
@@ -5924,6 +5965,11 @@ function TimetableReportsView({ tabId, title, showToast }) {
   // Pagination & Search
   const [currentPage, setCurrentPage] = useState(1);
   const [searchReportText, setSearchReportText] = useState("");
+  const [timetableData, setTimetableData] = useState(null);
+  const [timeSlots, setTimeSlots] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
   const totalPages = tabId === "subject_details" ? 3 : tabId === "master_requirement" ? 2 : 1;
 
   // Reset showReport when switching sub-tab
@@ -6415,10 +6461,63 @@ function TimetableReportsView({ tabId, title, showToast }) {
   // Wings List (Matching Screenshot 4)
   const wingsList = ["All Wings", "Higher", "Kindergarten", "Middle", "Pre-Primary", "Primary", "Senior Secondary"];
 
-  const handleShowClick = () => {
+  
+  const handleShowClick = async () => {
+    if (tabId === "particular_class_timetable_details" || tabId === "class_timetable_details") {
+      setLoading(true);
+      setError('');
+      try {
+        const token = localStorage.getItem('token');
+        let parts = selectedClass.split('-');
+        let cl = parts[0] || selectedClass;
+        let sec = parts[1] || '';
+        
+        const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/timetables?class=${encodeURIComponent(cl)}&section=${encodeURIComponent(sec)}`;
+        const response = await fetch(apiUrl, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const transformed = {};
+          let slots = [];
+          
+          if (data.schedule && data.schedule.length > 0) {
+            const refDay = data.schedule.reduce((prev, curr) => (curr.periods.length > prev.periods.length ? curr : prev), data.schedule[0]);
+            if (refDay && refDay.periods) {
+              slots = refDay.periods.map(p => ({
+                period: p.periodName,
+                time: `${p.startTime} - ${p.endTime}`,
+                isBreak: p.isBreak
+              }));
+            }
+            
+            data.schedule.forEach(daySchedule => {
+              transformed[daySchedule.day] = {};
+              daySchedule.periods.forEach(period => {
+                transformed[daySchedule.day][period.periodName] = {
+                  subject: period.subject,
+                  teacher: period.teacher ? `${period.teacher.firstName || ''} ${period.teacher.lastName || ''}`.trim() : '',
+                  isBreak: period.isBreak
+                };
+              });
+            });
+          }
+          setTimetableData(transformed);
+          setTimeSlots(slots);
+        } else {
+          setError('Failed to fetch timetable.');
+        }
+      } catch (err) {
+        setError('Network error.');
+      }
+      setLoading(false);
+    }
+    
     setShowReport(true);
     showToast(`Generated ${reportHeading} report preview`);
   };
+
 
   // Determine Title Banner Text based on tabId and selected options
   const getBannerTitle = () => {

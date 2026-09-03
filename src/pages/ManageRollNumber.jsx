@@ -1,26 +1,81 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaVideo, FaSave, FaListOl } from 'react-icons/fa';
 
-const dummyStudents = [
-  { id: 1, admNo: '1770', name: 'ARNAV GUPTA', currentRoll: '01' },
-  { id: 2, admNo: '2203', name: 'ANVI MAURYA', currentRoll: '02' },
-  { id: 3, admNo: '2206', name: 'SHANVI YADAV', currentRoll: '03' },
-  { id: 4, admNo: '2219', name: 'DIVYA', currentRoll: '04' },
-];
+// Dummy data removed
 
 function ManageRollNumber() {
   const navigate = useNavigate();
-  const [students, setStudents] = useState(dummyStudents);
+  const [students, setStudents] = useState([]);
   const [saved, setSaved] = useState(false);
+  const [classes, setClasses] = useState([]);
+  const [selectedClass, setSelectedClass] = useState('');
+  const [selectedSection, setSelectedSection] = useState('A');
+
+  useEffect(() => {
+    fetchClasses();
+  }, []);
+
+  const fetchClasses = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/school-classes`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setClasses(data.classes || []);
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const handleSearch = async () => {
+    if (!selectedClass) {
+      alert("Please select a class");
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/students?class=${selectedClass}&section=${selectedSection}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.students || []);
+        const formatted = list.map(s => ({
+          id: s._id,
+          admNo: s.admissionNo || '-',
+          name: `${s.firstName || ''} ${s.lastName || ''}`.trim(),
+          currentRoll: s.rollNo || ''
+        }));
+        setStudents(formatted);
+      }
+    } catch (err) { console.error(err); }
+  };
 
   const handleRollChange = (id, newRoll) => {
     setStudents(students.map(s => s.id === id ? { ...s, currentRoll: newRoll } : s));
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const updates = students.map(s => ({ studentId: s.id, rollNo: s.currentRoll }));
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/students/bulk/roll-numbers`, {
+        method: 'PUT',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ updates })
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      } else {
+        alert('Failed to update roll numbers');
+      }
+    } catch (err) { console.error(err); }
   };
 
   return (
@@ -49,20 +104,23 @@ function ManageRollNumber() {
         <div style={{ background: '#fff', borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', padding: '20px 24px', display: 'flex', alignItems: 'flex-end', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 150 }}>
             <label style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>Class</label>
-            <select style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '9px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#fff' }}>
-              <option>UKG</option>
-              <option>Class 1</option>
+            <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '9px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#fff' }}>
+              <option value="">Select Class</option>
+              {classes.map(c => (
+                <option key={c._id} value={c._id}>{c.className}</option>
+              ))}
             </select>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 150 }}>
             <label style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>Section</label>
-            <select style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '9px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#fff' }}>
-              <option>A</option>
-              <option>B</option>
+            <select value={selectedSection} onChange={e => setSelectedSection(e.target.value)} style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '9px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#fff' }}>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
             </select>
           </div>
-          <button style={{ background: '#65c466', color: '#fff', border: 'none', borderRadius: 6, padding: '9px 22px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
-            Fetch Students
+          <button onClick={handleSearch} style={{ background: '#65c466', color: '#fff', border: 'none', borderRadius: 6, padding: '9px 22px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+            GET
           </button>
         </div>
       </div>

@@ -1,49 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSyncAlt, FaFilter, FaExclamationTriangle, FaChartLine, FaSms, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, PieChart, Pie, Cell } from 'recharts';
 
-const dummySmsData = [
-  { id: 1, date: '2026-08-01', time: '09:00 AM', type: 'Attendance', recipient: 'Parent', mobile: '9876543210', status: 'Delivered', content: 'Dear Parent, your ward is present today.' },
-  { id: 2, date: '2026-08-01', time: '11:00 AM', type: 'Fees', recipient: 'Parent', mobile: '9123456789', status: 'Delivered', content: 'Dear Parent, fee payment of Rs. 5000 received.' },
-  { id: 3, date: '2026-08-02', time: '08:30 AM', type: 'Latecomers SMS', recipient: 'Student', mobile: '9888877777', status: 'Failed', content: 'You are marked late today.' },
-  { id: 4, date: '2026-08-02', time: '02:00 PM', type: 'Class Test SMS', recipient: 'Parent', mobile: '9555544444', status: 'Delivered', content: 'Class test marks for Math: 18/20.' },
-  { id: 5, date: '2026-08-03', time: '09:15 AM', type: 'Absentee SMS', recipient: 'Parent', mobile: '9999988888', status: 'Delivered', content: 'Dear Parent, your ward is absent today.' },
-  { id: 6, date: '2026-08-03', time: '01:00 PM', type: 'Credential SMS', recipient: 'Staff', mobile: '9000011111', status: 'Delivered', content: 'Your login credentials: admin / admin123' },
-];
-
-const chartData = [
-  { name: 'Aug 01', Sent: 45, Delivered: 42, Failed: 3 },
-  { name: 'Aug 02', Sent: 60, Delivered: 55, Failed: 5 },
-  { name: 'Aug 03', Sent: 85, Delivered: 80, Failed: 5 },
-  { name: 'Aug 04', Sent: 50, Delivered: 48, Failed: 2 },
-];
-
-const typeDistribution = [
-  { name: 'Attendance', value: 120, color: '#3b82f6' },
-  { name: 'Fees', value: 80, color: '#16a34a' },
-  { name: 'Marks', value: 65, color: '#ca8a04' },
-  { name: 'Latecomers', value: 35, color: '#ef4444' },
-  { name: 'Others', value: 50, color: '#8b5cf6' },
-];
+// Dummy data removed
 
 function Report() {
-  const [dateRange, setDateRange] = useState('03 Aug 2026');
+  const [dateRange, setDateRange] = useState(new Date().toISOString().substring(0, 10));
   const [smsType, setSmsType] = useState('All SMS');
   const [mobile, setMobile] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [records, setRecords] = useState(dummySmsData);
-  const [hasSearched, setHasSearched] = useState(true); // default true to show beautiful initially
+  const [records, setRecords] = useState([]);
+  const [allData, setAllData] = useState([]);
+  const [chartData, setChartData] = useState([]);
+  const [summary, setSummary] = useState({ sent: 0, delivered: 0, failed: 0 });
+  const [hasSearched, setHasSearched] = useState(true);
 
-  const handleGet = () => {
-    let filtered = dummySmsData;
+  useEffect(() => { fetchData(); }, []);
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/sms/report`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAllData(data.records || []);
+        if (data.summary) {
+          setSummary({
+            sent: data.summary.totalSent,
+            delivered: data.summary.delivered,
+            failed: data.summary.failed
+          });
+        }
+        applyFilters(data.records || []);
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const applyFilters = (dataToFilter) => {
+    let filtered = dataToFilter || allData;
     if (smsType !== 'All SMS') {
       filtered = filtered.filter(r => r.type === smsType);
     }
     if (mobile) {
-      filtered = filtered.filter(r => r.mobile.includes(mobile));
+      filtered = filtered.filter(r => (r.mobile || '').includes(mobile));
     }
     setRecords(filtered);
+    
+    // update chart based on filtered
+    const grouped = filtered.reduce((acc, r) => {
+      const dateStr = r.date;
+      if (!acc[dateStr]) acc[dateStr] = { name: dateStr, Sent: 0, Delivered: 0, Failed: 0 };
+      acc[dateStr].Sent++;
+      if (r.status === 'Delivered') acc[dateStr].Delivered++;
+      if (r.status === 'Failed') acc[dateStr].Failed++;
+      return acc;
+    }, {});
+    setChartData(Object.values(grouped));
     setHasSearched(true);
+  };
+
+  const handleGet = () => {
+    applyFilters();
   };
 
   return (
@@ -98,7 +117,7 @@ function Report() {
           </button>
 
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 20 }}>
-            <button onClick={() => { setRecords(dummySmsData); setMobile(''); setSmsType('All SMS'); }} style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: '#64748b', cursor: 'pointer' }}>
+            <button onClick={() => { setMobile(''); setSmsType('All SMS'); applyFilters(allData); }} style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: '#64748b', cursor: 'pointer' }}>
               <FaSyncAlt /> Refresh
             </button>
             <button onClick={() => setIsFilterOpen(true)} style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: '#64748b', cursor: 'pointer' }}>
@@ -112,9 +131,9 @@ function Report() {
             {/* Stats Cards */}
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
               {[
-                { title: 'Total SMS Sent', value: '240', change: '+12% this week', icon: <FaSms size={22} color="#3b82f6" />, bg: '#eff6ff' },
-                { title: 'Delivered', value: '225', change: '93.7% success rate', icon: <FaCheckCircle size={22} color="#10b981" />, bg: '#ecfdf5' },
-                { title: 'Failed', value: '15', change: '6.2% error rate', icon: <FaExclamationCircle size={22} color="#ef4444" />, bg: '#fef2f2' },
+                { title: 'Total SMS Sent', value: summary.sent, change: '', icon: <FaSms size={22} color="#3b82f6" />, bg: '#eff6ff' },
+                { title: 'Delivered', value: summary.delivered, change: '', icon: <FaCheckCircle size={22} color="#10b981" />, bg: '#ecfdf5' },
+                { title: 'Failed', value: summary.failed, change: '', icon: <FaExclamationCircle size={22} color="#ef4444" />, bg: '#fef2f2' },
               ].map((s, idx) => (
                 <div key={idx} style={{ flex: '1 1 240px', background: '#fff', borderRadius: 8, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>

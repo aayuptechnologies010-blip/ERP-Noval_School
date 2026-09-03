@@ -1,12 +1,8 @@
 import React from 'react';
 import { FaBullhorn } from 'react-icons/fa';
 
-function Feed() {
-  const notices = [
-    { type: 'Notice', title: 'Holiday Extended', date: '03-Jan-2024' },
-    { type: 'Notice', title: 'holiday', date: '06-Apr-2023' },
-    { type: 'Notice', title: 'School Timing', date: '13-Feb-2023' },
-  ];
+function Feed({ data }) {
+  const notices = data && data.length > 0 ? data : [];
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 flex-1 flex flex-col h-full min-h-[350px]">
@@ -14,7 +10,9 @@ function Feed() {
       <h2 className="text-lg font-bold text-gray-800 mb-6">Feed</h2>
       
       <div className="flex flex-col flex-1 overflow-y-auto no-scrollbar">
-        {notices.map((notice, index) => (
+        {notices.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">No recent notices</div>
+        ) : notices.map((notice, index) => (
           <div key={index} className="flex items-start gap-4 py-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition px-2 -mx-2 rounded-lg">
             
             <div className="w-10 h-10 rounded-full bg-green-100 text-green-500 flex items-center justify-center flex-shrink-0 mt-1">

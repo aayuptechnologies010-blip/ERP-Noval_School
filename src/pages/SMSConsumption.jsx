@@ -1,14 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const dailyConsumption = [
-  { day: '01 Aug', count: 120 }, { day: '02 Aug', count: 450 }, { day: '03 Aug', count: 320 },
-  { day: '04 Aug', count: 50 }, { day: '05 Aug', count: 800 }, { day: '06 Aug', count: 210 },
-  { day: '07 Aug', count: 110 }, { day: '08 Aug', count: 600 }, { day: '09 Aug', count: 300 },
-];
+// Dummy data removed
 
 function SMSConsumption() {
-  const [month, setMonth] = useState('2026-08');
+  const [month, setMonth] = useState(new Date().toISOString().substring(0, 7));
+  const [chartData, setChartData] = useState([]);
+  const [totalCredits, setTotalCredits] = useState(0);
+
+  useEffect(() => { fetchData(); }, []);
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/sms/consumption`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTotalCredits(data.summary?.totalCreditsUsed || 0);
+        setChartData((data.monthlyChart || []).map(d => ({ day: d.month, count: d.credits })));
+      }
+    } catch (err) { console.error(err); }
+  };
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -27,7 +41,7 @@ function SMSConsumption() {
         {/* Total Month Card */}
         <div style={{ background: 'linear-gradient(135deg, #10b981, #059669)', padding: 30, borderRadius: 12, color: '#fff', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)' }}>
           <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 600, opacity: 0.9 }}>Total Consumption ({new Date(month + '-01').toLocaleString('default', { month: 'long', year: 'numeric' })})</h3>
-          <p style={{ margin: 0, fontSize: 36, fontWeight: 800 }}>2,960 <span style={{ fontSize: 16, fontWeight: 500, opacity: 0.8 }}>SMS Credits</span></p>
+          <p style={{ margin: 0, fontSize: 36, fontWeight: 800 }}>{totalCredits.toLocaleString()} <span style={{ fontSize: 16, fontWeight: 500, opacity: 0.8 }}>SMS Credits</span></p>
         </div>
 
         {/* Area Chart */}
@@ -35,7 +49,7 @@ function SMSConsumption() {
           <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>Daily SMS Consumption Trend</h3>
           <div style={{ height: 350 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={dailyConsumption}>
+              <AreaChart data={chartData.length ? chartData : []}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="day" />
                 <YAxis />

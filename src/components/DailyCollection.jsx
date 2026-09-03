@@ -4,15 +4,33 @@ import {
   FaUniversity, FaGlobe, FaCreditCard, FaMobileAlt 
 } from 'react-icons/fa';
 
-function DailyCollection() {
-  const collections = [
-    { name: 'Cash', icon: FaMoneyBillWave, value: '61000', color: 'text-blue-500' },
-    { name: 'Cheque', icon: FaMoneyCheckAlt, value: '0', color: 'text-green-400' },
-    { name: 'DD', icon: FaRegCreditCard, value: '0', color: 'text-red-400' },
-    { name: 'NEFT', icon: FaUniversity, value: '0', color: 'text-orange-400' },
-    { name: 'Online', icon: FaGlobe, value: '0', color: 'text-gray-400' },
-    { name: 'Swiped Card', icon: FaCreditCard, value: '0', color: 'text-blue-400' },
-    { name: 'UPI', icon: FaMobileAlt, value: '45800', color: 'text-blue-500' },
+const iconMap = {
+  'Cash': FaMoneyBillWave,
+  'Cheque': FaMoneyCheckAlt,
+  'DD': FaRegCreditCard,
+  'NEFT': FaUniversity,
+  'Online': FaGlobe,
+  'Swiped Card': FaCreditCard,
+  'UPI': FaMobileAlt
+};
+
+const colorMap = {
+  'Cash': 'text-blue-500',
+  'Cheque': 'text-green-400',
+  'DD': 'text-red-400',
+  'NEFT': 'text-orange-400',
+  'Online': 'text-gray-400',
+  'Swiped Card': 'text-blue-400',
+  'UPI': 'text-blue-500'
+};
+
+function DailyCollection({ data }) {
+  const d = data || { total: 0, modes: [] };
+  const modes = d.modes && d.modes.length > 0 ? d.modes : [
+    { name: 'Cash', value: 0 }, { name: 'Cheque', value: 0 },
+    { name: 'DD', value: 0 }, { name: 'NEFT', value: 0 },
+    { name: 'Online', value: 0 }, { name: 'Swiped Card', value: 0 },
+    { name: 'UPI', value: 0 }
   ];
 
   return (
@@ -20,7 +38,7 @@ function DailyCollection() {
       
       {/* Header section */}
       <div className="flex flex-wrap items-center justify-between mb-8 border-b pb-4">
-        <h2 className="text-lg font-bold text-gray-800">Daily Mode Wise Collection (106800)</h2>
+        <h2 className="text-lg font-bold text-gray-800">Daily Mode Wise Collection ({d.total})</h2>
         
         <div className="flex items-center gap-6 mt-4 md:mt-0">
           <div className="flex items-center gap-4 text-sm text-gray-500 font-medium">
@@ -36,20 +54,24 @@ function DailyCollection() {
 
       {/* Stats */}
       <div className="flex flex-wrap items-center justify-between w-full">
-        {collections.map((item, index) => (
-          <React.Fragment key={item.name}>
-            <div className="flex flex-col items-center gap-2 flex-1">
-              <div className="flex items-center gap-2">
-                <item.icon className={`text-xl ${item.color}`} />
-                <span className="font-bold text-sm text-gray-700">{item.name}</span>
+        {modes.map((item, index) => {
+          const IconComponent = iconMap[item.name] || FaMoneyBillWave;
+          const colorClass = colorMap[item.name] || 'text-gray-500';
+          return (
+            <React.Fragment key={item.name}>
+              <div className="flex flex-col items-center gap-2 flex-1">
+                <div className="flex items-center gap-2">
+                  <IconComponent className={`text-xl ${colorClass}`} />
+                  <span className="font-bold text-sm text-gray-700">{item.name}</span>
+                </div>
+                <span className={`text-lg font-bold ${colorClass}`}>{item.value}</span>
               </div>
-              <span className={`text-lg font-bold ${item.color}`}>{item.value}</span>
-            </div>
-            {index < collections.length - 1 && (
-              <div className="h-10 w-px bg-gray-200 hidden md:block"></div>
-            )}
-          </React.Fragment>
-        ))}
+              {index < modes.length - 1 && (
+                <div className="h-10 w-px bg-gray-200 hidden md:block"></div>
+              )}
+            </React.Fragment>
+          );
+        })}
       </div>
       
     </div>

@@ -1,12 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEye, FaEdit, FaTrash, FaTimes, FaBook } from 'react-icons/fa';
 
-const dummyLessons = [
-  { id: 1, topic: 'Introduction to Photosynthesis', subject: 'Science', class: 'Class 7', duration: '2 Hours', date: '2023-10-10', status: 'Completed', notes: 'Explained light and dark reactions.' },
-  { id: 2, topic: 'Quadratic Equations Part 1', subject: 'Mathematics', class: 'Class 10', duration: '1.5 Hours', date: '2023-10-12', status: 'Pending', notes: 'Solving by factorization method.' },
-  { id: 3, topic: 'Rise of Nationalism in Europe', subject: 'History', class: 'Class 9', duration: '3 Hours', date: '2023-10-15', status: 'In Progress', notes: 'Discuss French revolution impact.' },
-  { id: 4, topic: 'Tenses and Voices', subject: 'English', class: 'Class 8', duration: '1 Hour', date: '2023-10-11', status: 'Completed', notes: 'Covered active and passive rules.' },
-];
+
 
 const classes = ['All', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10'];
 const statusColors = {
@@ -18,7 +13,7 @@ const statusColors = {
 const emptyForm = { topic: '', subject: '', class: 'Class 6', duration: '', date: '', status: 'Pending', notes: '' };
 
 function Lesson() {
-  const [lessons, setLessons] = useState(dummyLessons);
+  const [lessons, setLessons] = useState([]);
   const [filterClass, setFilterClass] = useState('All');
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -26,30 +21,94 @@ function Lesson() {
   const [viewItem, setViewItem] = useState(null);
   const [form, setForm] = useState(emptyForm);
 
+  useEffect(() => {
+    fetchLessons();
+  }, []);
+
+  const fetchLessons = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/lesson-plans`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const mapped = data.map(l => ({ ...l, id: l._id })); // Map _id to id for frontend
+        setLessons(mapped);
+      }
+    } catch (error) {
+      console.error('Error fetching lessons', error);
+    }
+  };
+
   const handleFormChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const openAdd = () => { setEditItem(null); setForm(emptyForm); setShowModal(true); };
   const openEdit = (lesson) => { setEditItem(lesson); setForm({ ...lesson }); setShowModal(true); };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.topic || !form.subject || !form.date) return alert('Please fill all required fields.');
 
-    if (editItem) {
-      setLessons(lessons.map(l => l.id === editItem.id ? { ...form, id: editItem.id } : l));
-    } else {
-      setLessons([{ ...form, id: Date.now() }, ...lessons]);
+    try {
+      const token = localStorage.getItem('token');
+      const url = editItem 
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/lesson-plans/${editItem._id}`
+        : `${import.meta.env.VITE_API_BASE_URL}/api/lesson-plans`;
+      const method = editItem ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(form)
+      });
+      
+      if (response.ok) {
+        fetchLessons();
+        setShowModal(false);
+        setForm(emptyForm);
+      }
+    } catch (error) {
+      console.error('Error saving lesson', error);
     }
-    setShowModal(false);
-    setForm(emptyForm);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this lesson plan?')) setLessons(lessons.filter(l => l.id !== id));
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this lesson plan?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/lesson-plans/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setLessons(lessons.filter(l => l._id !== id));
+      }
+    } catch (error) {
+      console.error('Error deleting lesson', error);
+    }
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    setLessons(lessons.map(l => l.id === id ? { ...l, status: newStatus } : l));
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/lesson-plans/${id}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (response.ok) {
+        setLessons(lessons.map(l => l._id === id ? { ...l, status: newStatus } : l));
+      }
+    } catch (error) {
+      console.error('Error updating status', error);
+    }
   };
 
   const filtered = lessons.filter(l => {
@@ -106,12 +165,12 @@ function Lesson() {
                   </td>
                   <td style={tdStyle}>{l.subject}</td>
                   <td style={tdStyle}>{l.class}</td>
-                  <td style={tdStyle}>{l.duration}</td>
-                  <td style={tdStyle}>{l.date}</td>
+                  <td style={tdStyle}>{l.duration || 'N/A'}</td>
+                  <td style={tdStyle}>{new Date(l.date).toLocaleDateString()}</td>
                   <td style={tdStyle}>
                     <select
                       value={l.status}
-                      onChange={e => handleStatusChange(l.id, e.target.value)}
+                      onChange={e => handleStatusChange(l._id, e.target.value)}
                       style={{
                         padding: '4px 8px', borderRadius: 20, fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer', outline: 'none',
                         background: statusColors[l.status]?.bg || '#f1f5f9',
@@ -124,10 +183,10 @@ function Lesson() {
                     </select>
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'center' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
                       <button onClick={() => setViewItem(l)} style={iconBtn} title="View"><FaEye size={14} color="#3b82f6" /></button>
-                      <button onClick={() => openEdit(l)} style={iconBtn} title="Edit"><FaEdit size={14} color="#eab308" /></button>
-                      <button onClick={() => handleDelete(l.id)} style={iconBtn} title="Delete"><FaTrash size={14} color="#ef4444" /></button>
+                      <button onClick={() => openEdit(l)} style={iconBtn} title="Edit"><FaEdit size={14} color="#10b981" /></button>
+                      <button onClick={() => handleDelete(l._id)} style={iconBtn} title="Delete"><FaTrash size={14} color="#ef4444" /></button>
                     </div>
                   </td>
                 </tr>

@@ -33,9 +33,9 @@ function StaffAppreciation() {
         fetch(`${baseUrl}/api/appreciations`, { headers }).then(r => r.json()),
       ]);
 
-      setRecords(Array.isArray(appreciationsRes.data) ? appreciationsRes.data : []);
-      setStaffList(Array.isArray(staffRes) ? staffRes : []);
-      setAppreciationList(Array.isArray(masterAppreciationsRes) ? masterAppreciationsRes : []);
+      setRecords(Array.isArray(appreciationsRes) ? appreciationsRes : (appreciationsRes.data || []));
+      setStaffList(Array.isArray(staffRes) ? staffRes : (staffRes.data || []));
+      setAppreciationList(Array.isArray(masterAppreciationsRes) ? masterAppreciationsRes : (masterAppreciationsRes.data || []));
     } catch (error) {
       console.error("Error fetching data", error);
       toast.error("Failed to load data");
@@ -48,6 +48,24 @@ function StaffAppreciation() {
     e.preventDefault();
     if (!form.staffId || !form.appreciationId || !form.date) return toast.error('Please fill all required fields.');
     
+    // Map IDs to expected backend schema strings
+    const selectedStaff = staffList.find(s => s._id === form.staffId);
+    const selectedAppreciation = appreciationList.find(a => a._id === form.appreciationId);
+    
+    if (!selectedStaff || !selectedAppreciation) {
+      return toast.error('Invalid staff or appreciation selected.');
+    }
+
+    const payload = {
+      staffName: `${selectedStaff.firstName} ${selectedStaff.lastName}`.trim(),
+      designation: selectedStaff.designation || (selectedStaff.role ? selectedStaff.role.roleName : 'Teacher'),
+      department: selectedStaff.department || 'N/A',
+      appreciationType: selectedAppreciation.type || selectedAppreciation.title,
+      points: selectedAppreciation.points || 0,
+      date: form.date,
+      description: form.description
+    };
+
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff-appreciations`, {
@@ -56,7 +74,7 @@ function StaffAppreciation() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(form)
+        body: JSON.stringify(payload)
       });
       
       if (response.ok) {
@@ -96,32 +114,39 @@ function StaffAppreciation() {
   };
 
   const filtered = records.filter(r => {
-    const staffName = r.staffId ? `${r.staffId.firstName} ${r.staffId.lastName}`.toLowerCase() : '';
-    const dept = r.staffId && r.staffId.designation ? r.staffId.designation.toLowerCase() : '';
-    return staffName.includes(search.toLowerCase()) || dept.includes(search.toLowerCase());
+    const staffNameStr = r.staffName ? r.staffName.toLowerCase() : '';
+    const deptStr = r.department ? r.department.toLowerCase() : '';
+    const searchLower = search.toLowerCase();
+    
+    return staffNameStr.includes(searchLower) || deptStr.includes(searchLower);
   });
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <div style={{ padding: '24px 32px 8px 32px' }}>
-        <p style={{ margin: '0 0 4px', fontSize: 13, color: '#94a3b8' }}>Discipline › Appreciation</p>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#2b3674', margin: 0 }}>Staff Appreciation</h1>
-          <button onClick={() => setShowModal(true)} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <FaPlus size={12} /> Give Appreciation
-          </button>
-        </div>
+      <div style={{ padding: '24px 32px 16px 32px' }}>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#2b3674', margin: 0 }}>Staff Appreciations</h1>
       </div>
 
-      <div style={{ padding: '12px 32px', display: 'flex', gap: 12 }}>
-        <div style={{ position: 'relative' }}>
-          <FaSearch style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={13} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or designation..." style={{ padding: '8px 12px 8px 30px', borderRadius: 6, border: '1px solid #cbd5e1', outline: 'none', fontSize: 13, width: 260 }} />
-        </div>
-      </div>
+      <div style={{ padding: '0 32px 32px 32px', flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ position: 'relative' }}>
+                <FaSearch style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                <input 
+                  type="text"
+                  placeholder="Search staff or department..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  style={{ ...inputStyle, paddingLeft: 36, width: 250 }}
+                />
+              </div>
+            </div>
+            <button onClick={() => setShowModal(true)} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <FaPlus size={12} /> Give Appreciation
+            </button>
+          </div>
 
-      <div style={{ padding: '0 32px 32px', flex: 1, overflow: 'auto' }}>
-        <div style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#f8fafc' }}>
@@ -131,36 +156,28 @@ function StaffAppreciation() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(r => (
-                <tr key={r._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+              {filtered.map(item => (
+                <tr key={item._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                  <td style={tdStyle}>{item.staffName || 'Unknown'}</td>
+                  <td style={tdStyle}>{item.designation || 'N/A'}</td>
+                  <td style={tdStyle}>{item.appreciationType || 'N/A'}</td>
                   <td style={tdStyle}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#16a34a', fontSize: 14 }}>
-                        {r.staffId?.firstName?.charAt(0) || '?'}
-                      </div>
-                      <span style={{ fontWeight: 600, color: '#1e293b' }}>
-                        {r.staffId ? `${r.staffId.firstName} ${r.staffId.lastName}` : 'Unknown'}
-                      </span>
-                    </div>
-                  </td>
-                  <td style={tdStyle}>{r.staffId?.designation || 'N/A'}</td>
-                  <td style={tdStyle}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <FaStar size={12} color="#ca8a04" /> {r.appreciationId?.title || 'Unknown'}
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fef9c3', color: '#854d0e', padding: '4px 8px', borderRadius: 12, fontSize: 12, fontWeight: 600 }}>
+                      <FaStar size={10} color="#ca8a04" />
+                      {item.points || 0}
                     </span>
                   </td>
-                  <td style={tdStyle}><span style={{ fontWeight: 700, color: '#3b82f6' }}>+{r.appreciationId?.points || 0}</span></td>
-                  <td style={tdStyle}>{new Date(r.date).toLocaleDateString()}</td>
+                  <td style={tdStyle}>{new Date(item.date).toLocaleDateString()}</td>
                   <td style={{ ...tdStyle, textAlign: 'center' }}>
                     <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
-                      <button onClick={() => setViewItem(r)} style={iconBtn} title="View"><FaEye size={14} color="#3b82f6" /></button>
-                      <button onClick={() => handleDelete(r._id)} style={iconBtn} title="Remove"><FaTimes size={14} color="#ef4444" /></button>
+                      <button onClick={() => setViewItem(item)} style={iconBtn} title="View"><FaEye size={14} color="#3b82f6" /></button>
+                      <button onClick={() => handleDelete(item._id)} style={iconBtn} title="Remove"><FaTimes size={14} color="#ef4444" /></button>
                     </div>
                   </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan="6" style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>No staff appreciation records found.</td></tr>
+                <tr><td colSpan="6" style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>No records found.</td></tr>
               )}
             </tbody>
           </table>
@@ -219,27 +236,32 @@ function StaffAppreciation() {
           <div style={{ ...modal, maxWidth: 500 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
               <div>
-                <h2 style={{ margin: '0 0 4px', fontSize: 20, color: '#1e293b' }}>{viewItem.staffId?.firstName} {viewItem.staffId?.lastName}</h2>
-                <p style={{ margin: 0, color: '#64748b', fontSize: 14 }}>{viewItem.staffId?.designation}</p>
+                <h2 style={{ margin: '0 0 4px', fontSize: 20, color: '#1e293b' }}>Appreciation Details</h2>
+                <p style={{ margin: 0, color: '#334155', fontWeight: 500 }}>{viewItem.staffName}</p>
               </div>
               <button onClick={() => setViewItem(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><FaTimes size={18} /></button>
             </div>
             
-            <div style={{ background: '#f8fafc', padding: 16, borderRadius: 8, marginBottom: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <FaStar color="#ca8a04" size={18} />
-                <span style={{ fontSize: 16, fontWeight: 600, color: '#ca8a04' }}>{viewItem.appreciationId?.title}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>Designation</span>
+                <p style={{ margin: 0, color: '#334155', fontWeight: 500 }}>{viewItem.designation}</p>
               </div>
-              <p style={{ margin: '0 0 12px', fontSize: 14, color: '#475569' }}>
-                Awarded on {new Date(viewItem.date).toLocaleDateString()}
-              </p>
-              <div style={{ display: 'inline-block', background: '#dbeafe', color: '#1d4ed8', padding: '4px 12px', borderRadius: 20, fontSize: 13, fontWeight: 700 }}>
-                +{viewItem.appreciationId?.points || 0} Points
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>Appreciation Type</span>
+                <p style={{ margin: 0, color: '#334155', fontWeight: 500 }}>{viewItem.appreciationType}</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>Points Awarded</span>
+                <p style={{ margin: 0, color: '#334155', fontWeight: 500 }}>
+                  <FaStar size={12} color="#ca8a04" style={{ marginRight: 4 }} />
+                  {viewItem.points}
+                </p>
               </div>
             </div>
             
             {viewItem.description && (
-              <div>
+              <div style={{ marginTop: 20 }}>
                 <h4 style={{ margin: '0 0 8px', fontSize: 14, color: '#334155' }}>Remarks</h4>
                 <p style={{ margin: 0, fontSize: 14, color: '#64748b', lineHeight: 1.5 }}>{viewItem.description}</p>
               </div>

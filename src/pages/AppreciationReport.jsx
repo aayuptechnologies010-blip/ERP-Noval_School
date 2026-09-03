@@ -19,14 +19,26 @@ function AppreciationReport() {
   const [reportData, setReportData] = useState([]);
   const [generated, setGenerated] = useState(false);
 
-  const generateReport = () => {
-    let data = allData;
-    if (filterType !== 'All') data = data.filter(d => d.type === filterType);
-    if (fromDate) data = data.filter(d => d.date >= fromDate);
-    if (toDate) data = data.filter(d => d.date <= toDate);
-    if (search) data = data.filter(d => d.name.toLowerCase().includes(search.toLowerCase()));
-    setReportData(data);
-    setGenerated(true);
+  const generateReport = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams();
+      if (filterType !== 'All') params.append('type', filterType);
+      if (fromDate) params.append('fromDate', fromDate);
+      if (toDate) params.append('toDate', toDate);
+      if (search) params.append('search', search);
+
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/appreciations?${params}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setReportData(data);
+        setGenerated(true);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const totalPoints = reportData.reduce((sum, r) => sum + r.points, 0);

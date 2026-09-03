@@ -1,42 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaFileSignature, FaPlus, FaEye, FaEdit, FaTrash, FaTimes } from 'react-icons/fa';
 
-const dummyData = [
-  { id: 1, title: 'Student Feedback Survey', audience: 'Students', date: '2023-10-01', status: 'Active' },
-  { id: 2, title: 'Teacher Performance Review', audience: 'Staff', date: '2023-10-15', status: 'Active' },
-  { id: 3, title: 'Parent-Teacher Meeting Survey', audience: 'Parents', date: '2023-09-20', status: 'Closed' },
-];
-
 function Questionnaire() {
-  const [questionnaires, setQuestionnaires] = useState(dummyData);
+  const [questionnaires, setQuestionnaires] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [newQTitle, setNewQTitle] = useState('');
   const [newQAudience, setNewQAudience] = useState('Students');
   const [newQStatus, setNewQStatus] = useState('Active');
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this questionnaire?')) {
-      setQuestionnaires(questionnaires.filter(q => q.id !== id));
+  useEffect(() => {
+    fetchQuestionnaires();
+  }, []);
+
+  const fetchQuestionnaires = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/questionnaires`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setQuestionnaires(Array.isArray(data) ? data : (data.records || data.questionnaires || []));
+      }
+    } catch (error) {
+      console.error('Error fetching questionnaires:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCreateNew = (e) => {
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this questionnaire?')) {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/questionnaires/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) fetchQuestionnaires();
+      } catch (error) {
+        console.error('Error deleting questionnaire:', error);
+      }
+    }
+  };
+
+  const handleCreateNew = async (e) => {
     e.preventDefault();
     if (!newQTitle.trim()) return alert('Please enter a title');
-    
-    const newQ = {
-      id: Date.now(),
-      title: newQTitle,
-      audience: newQAudience,
-      date: new Date().toISOString().split('T')[0],
-      status: newQStatus
-    };
-    
-    setQuestionnaires([...questionnaires, newQ]);
-    setShowModal(false);
-    setNewQTitle('');
-    setNewQAudience('Students');
-    setNewQStatus('Active');
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/questionnaires`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ title: newQTitle, targetAudience: newQAudience, status: newQStatus })
+      });
+      if (response.ok) {
+        fetchQuestionnaires();
+        setShowModal(false);
+        setNewQTitle('');
+        setNewQAudience('Students');
+        setNewQStatus('Active');
+      } else {
+        alert('Failed to create questionnaire.');
+      }
+    } catch (error) {
+      console.error('Error creating questionnaire:', error);
+      alert('An error occurred.');
+    }
   };
 
   return (
@@ -70,7 +104,7 @@ function Questionnaire() {
             </thead>
             <tbody>
               {questionnaires.map((q) => (
-                <tr key={q.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <tr key={q._id || q.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={tdStyle}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       <FaFileSignature size={16} color="#94a3b8" />
@@ -78,7 +112,7 @@ function Questionnaire() {
                     </div>
                   </td>
                   <td style={tdStyle}>{q.audience}</td>
-                  <td style={tdStyle}>{q.date}</td>
+                  <td style={tdStyle}>{q.createdAt ? new Date(q.createdAt).toLocaleDateString() : q.date}</td>
                   <td style={tdStyle}>
                     <span style={{ 
                       padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600,
@@ -92,7 +126,7 @@ function Questionnaire() {
                     <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
                       <button style={actionBtn} title="View"><FaEye size={14} color="#3b82f6" /></button>
                       <button style={actionBtn} title="Edit"><FaEdit size={14} color="#eab308" /></button>
-                      <button style={actionBtn} title="Delete" onClick={() => handleDelete(q.id)}><FaTrash size={14} color="#ef4444" /></button>
+                      <button style={actionBtn} title="Delete" onClick={() => handleDelete(q._id || q.id)}><FaTrash size={14} color="#ef4444" /></button>
                     </div>
                   </td>
                 </tr>

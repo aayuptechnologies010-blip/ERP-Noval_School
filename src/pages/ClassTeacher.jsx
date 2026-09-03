@@ -1,20 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaVideo, FaSave, FaChalkboardTeacher } from 'react-icons/fa';
 
-const dummyStaff = [
-  { id: 1, staffId: 'EMP-001', name: 'Rajesh Kumar', department: 'Mathematics', classAssigned: '', sectionAssigned: '' },
-  { id: 2, staffId: 'EMP-002', name: 'Priya Sharma', department: 'Science', classAssigned: 'Class 9', sectionAssigned: 'A' },
-  { id: 3, staffId: 'EMP-003', name: 'Amit Patel', department: 'English', classAssigned: '', sectionAssigned: '' },
-  { id: 4, staffId: 'EMP-004', name: 'Sneha Gupta', department: 'Computer', classAssigned: '', sectionAssigned: '' },
-  { id: 5, staffId: 'EMP-005', name: 'Vikram Singh', department: 'Sports', classAssigned: '', sectionAssigned: '' },
-];
+// Dummy data removed
 
 function ClassTeacher() {
   const navigate = useNavigate();
   const [selectedDept, setSelectedDept] = useState('All');
-  const [staff, setStaff] = useState(dummyStaff);
+  const [staff, setStaff] = useState([]);
   const [saved, setSaved] = useState(false);
+  const [classes, setClasses] = useState([]);
+  const [departments, setDepartments] = useState(['Mathematics', 'Science', 'English', 'Computer', 'Sports']);
+
+  useEffect(() => {
+    fetchClasses();
+  }, []);
+
+  const fetchClasses = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/school-classes`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setClasses(data.classes || []);
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const handleFetchStaff = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staffs`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.staff || []);
+        const formatted = list.map(s => {
+          let classAssigned = '';
+          let sectionAssigned = '';
+          if (s.classTeacherOf) {
+            classAssigned = s.classTeacherOf.className || '';
+            // Since backend schema is single reference `classTeacherOf`, there's no direct `sectionAssigned` stored in Staff model.
+            // Using a default fallback or derived if available
+            sectionAssigned = 'A'; // Placeholder
+          }
+          return {
+            id: s._id,
+            staffId: s.employeeId || '-',
+            name: `${s.firstName || ''} ${s.lastName || ''}`.trim(),
+            department: s.department || 'N/A',
+            classAssigned,
+            sectionAssigned
+          };
+        });
+        setStaff(formatted);
+        const depts = [...new Set(formatted.map(s => s.department))].filter(Boolean);
+        if (depts.length > 0) setDepartments(depts);
+      }
+    } catch (err) { console.error(err); }
+  };
 
   const handleClassChange = (id, newClass) => {
     setStaff(staff.map(s => s.id === id ? { ...s, classAssigned: newClass } : s));
@@ -24,9 +71,29 @@ function ClassTeacher() {
     setStaff(staff.map(s => s.id === id ? { ...s, sectionAssigned: newSection } : s));
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const assignments = staff.filter(s => s.classAssigned).map(s => ({
+        staffId: s.id,
+        className: s.classAssigned,
+        section: s.sectionAssigned
+      }));
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staffs/bulk/assign-class-teacher`, {
+        method: 'PUT',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ assignments })
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      } else {
+        alert('Failed to save assignments');
+      }
+    } catch (err) { console.error(err); }
   };
 
   const filteredStaff = selectedDept === 'All' ? staff : staff.filter(s => s.department === selectedDept);
@@ -63,14 +130,13 @@ function ClassTeacher() {
               style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '9px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#fff' }}
             >
               <option value="All">All Departments</option>
-              <option value="Mathematics">Mathematics</option>
-              <option value="Science">Science</option>
-              <option value="English">English</option>
-              <option value="Computer">Computer</option>
-              <option value="Sports">Sports</option>
+              {departments.map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))}
             </select>
           </div>
           <button
+            onClick={handleFetchStaff}
             style={{ background: '#65c466', color: '#fff', border: 'none', borderRadius: 6, padding: '9px 22px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
           >
             Fetch Staff
@@ -107,12 +173,9 @@ function ClassTeacher() {
                         style={{ border: '1px solid #cbd5e1', borderRadius: 6, padding: '8px 12px', minWidth: '120px', fontSize: 13, outline: 'none', color: '#0f172a', fontWeight: 500 }}
                       >
                         <option value="">-- Select --</option>
-                        <option value="NUR">NUR</option>
-                        <option value="LKG">LKG</option>
-                        <option value="UKG">UKG</option>
-                        <option value="Class 1">Class 1</option>
-                        <option value="Class 9">Class 9</option>
-                        <option value="Class 10">Class 10</option>
+                        {classes.map(c => (
+                          <option key={c._id} value={c.className}>{c.className}</option>
+                        ))}
                       </select>
                     </td>
                     <td style={tdStyle}>

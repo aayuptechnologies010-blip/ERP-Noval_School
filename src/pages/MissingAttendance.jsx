@@ -1,29 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPaperPlane, FaSearch, FaExclamationCircle } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
-const dummyMissing = [
-  { id: 1, class: 'Class 8-A', teacher: 'Mrs. Kavita Singh', subject: 'English', date: '2026-08-04', period: '1st Period', status: 'Pending' },
-  { id: 2, class: 'Class 10-B', teacher: 'Miss Priya Sharma', subject: 'Science', date: '2026-08-04', period: '3rd Period', status: 'Pending' },
-  { id: 3, class: 'Class 7-C', teacher: 'Mr. Rajesh Kumar', subject: 'Maths', date: '2026-08-04', period: '2nd Period', status: 'Pending' },
-  { id: 4, class: 'Class 9-A', teacher: 'Mr. Anil Mehta', subject: 'Hindi', date: '2026-08-03', period: '5th Period', status: 'Pending' },
-];
+// Dummy data removed
 
 function MissingAttendance() {
-  const [records, setRecords] = useState(dummyMissing);
+  const today = new Date().toISOString().split('T')[0];
+  const [records, setRecords] = useState([]);
   const [search, setSearch] = useState('');
-  const [selectedDate, setSelectedDate] = useState('2026-08-04');
+  const [selectedDate, setSelectedDate] = useState(today);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { fetchData(today); }, []);
+
+  const fetchData = async (date) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams({ date });
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/missing-attendance?${params}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRecords(data.records || []);
+      }
+    } catch (err) { console.error(err); } finally { setLoading(false); }
+  };
 
   const handleSendReminder = (teacher, cls) => {
-    alert(`Reminder notification sent to ${teacher} for marking attendance in ${cls}.`);
+    toast.success(`Reminder sent to ${teacher} for ${cls}.`);
   };
 
   const handleSendAll = () => {
-    alert('Reminder sent to all pending teachers.');
+    if (records.length === 0) return toast.info('No missing records found.');
+    toast.success(`Reminder sent to all ${records.length} pending teachers.`);
   };
 
-  const filtered = records.filter(r => 
-    r.teacher.toLowerCase().includes(search.toLowerCase()) || 
-    r.class.toLowerCase().includes(search.toLowerCase())
+  const filtered = records.filter(r =>
+    (r.teacher || '').toLowerCase().includes(search.toLowerCase()) ||
+    (r.class || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -50,7 +66,7 @@ function MissingAttendance() {
           </div>
           <div>
             <h3 style={{ margin: 0, fontSize: 18, color: '#1e293b', fontWeight: 700 }}>{records.length} Classes Missing Attendance</h3>
-            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748b' }}>Attendance has not been finalized for these sessions today.</p>
+            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748b' }}>Attendance has not been finalized for these sessions on {selectedDate}.</p>
           </div>
         </div>
 
@@ -61,6 +77,7 @@ function MissingAttendance() {
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search teacher or class..." style={{ padding: '8px 12px 8px 30px', borderRadius: 6, border: '1px solid #cbd5e1', outline: 'none', fontSize: 13, width: 240 }} />
           </div>
           <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #cbd5e1', outline: 'none', fontSize: 13 }} />
+          <button onClick={() => fetchData(selectedDate)} style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Search</button>
         </div>
 
         {/* Table */}
@@ -74,7 +91,8 @@ function MissingAttendance() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(r => (
+              {loading && <tr><td colSpan="7" style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>Loading...</td></tr>}
+              {!loading && filtered.map(r => (
                 <tr key={r.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={{ ...tdStyle, fontWeight: 600, color: '#1e293b' }}>{r.class}</td>
                   <td style={tdStyle}>{r.period}</td>
@@ -93,8 +111,8 @@ function MissingAttendance() {
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && (
-                <tr><td colSpan="7" style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>All attendance records are up-to-date.</td></tr>
+              {!loading && filtered.length === 0 && (
+                <tr><td colSpan="7" style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>All attendance records are up-to-date for this date.</td></tr>
               )}
             </tbody>
           </table>

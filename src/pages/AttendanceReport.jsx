@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSearch, FaFilter, FaFileExcel, FaPrint } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
@@ -30,7 +30,57 @@ const COLORS = ['#10b981', '#ef4444'];
 function AttendanceReport() {
   const [reportType, setReportType] = useState('Student');
   const [selectedClass, setSelectedClass] = useState('All');
-  const [selectedDate, setSelectedDate] = useState('2026-08-04');
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [overallStats, setOverallStats] = useState([
+    { title: 'Total Students', value: '---', active: '---', inactive: '---' },
+    { title: 'Present Today', value: '---', percentage: '---', status: 'Normal' },
+    { title: 'Absent Today', value: '---', percentage: '---', status: 'Warning' },
+    { title: 'On Leave Today', value: '---', percentage: '---', status: 'Normal' },
+  ]);
+  const [monthlyAttendanceData, setMonthlyAttendanceData] = useState([]);
+  const [classWiseAttendance, setClassWiseAttendance] = useState([]);
+
+  useEffect(() => { fetchReport(); }, []);
+
+  const fetchReport = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams({ type: reportType, className: selectedClass, date: selectedDate });
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reports/attendance?${params}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        
+        if (data.summary) {
+          setOverallStats([
+            { title: `Total ${reportType}s`, value: data.summary.totalCount, active: data.summary.totalCount, inactive: 0 },
+            { title: 'Present Today', value: data.summary.presentCount, percentage: `${data.summary.presentPercentage}%`, status: 'Normal' },
+            { title: 'Absent Today', value: data.summary.absentCount, percentage: `${data.summary.absentPercentage}%`, status: 'Warning' },
+            { title: 'On Leave Today', value: data.summary.leaveCount, percentage: `${data.summary.leavePercentage}%`, status: 'Normal' },
+          ]);
+        }
+        
+        if (data.monthlyChart) {
+          setMonthlyAttendanceData(data.monthlyChart.map(m => ({
+            name: m.month,
+            Students: m.studentPercentage,
+            Staff: m.staffPercentage
+          })));
+        }
+        
+        if (data.classWiseChart) {
+          setClassWiseAttendance(data.classWiseChart.map(c => ({
+            name: c.className,
+            Present: c.presentPercentage,
+            Absent: c.absentPercentage
+          })));
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -76,7 +126,7 @@ function AttendanceReport() {
             <label style={lbl}>Date</label>
             <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} style={inp} />
           </div>
-          <button style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginTop: 18 }}>
+          <button onClick={fetchReport} style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginTop: 18 }}>
             Filter
           </button>
         </div>
