@@ -1,18 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSearch, FaEye } from 'react-icons/fa';
-
-const dummyNotices = [
-  { id: 1, heading: 'Holiday Extended', description: 'School will remain closed till...', updatedOn: '03-Jan-2024', status: 'Read' },
-  { id: 2, heading: 'School Timing', description: 'School Timing from 01/12/2...', updatedOn: '01-Dec-2023', status: 'Read' },
-];
+import { useNavigate } from 'react-router-dom';
 
 function SchoolAnnouncements() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [notices, setNotices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const filteredNotices = dummyNotices.filter(notice => 
-    notice.heading.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    notice.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    fetchNotices();
+  }, []);
+
+  const fetchNotices = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/notices`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setNotices(data.notices || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch notices", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredNotices = notices.filter(notice => {
+    const heading = notice.heading || notice.title || '';
+    const description = notice.description || notice.content || '';
+    return heading.toLowerCase().includes(searchTerm.toLowerCase()) || 
+           description.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -52,25 +75,33 @@ function SchoolAnnouncements() {
                 </tr>
               </thead>
               <tbody>
-                {filteredNotices.map((notice, idx) => (
-                  <tr key={notice.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={tdStyle}>{idx + 1}</td>
-                    <td style={tdStyle}>{notice.heading}</td>
-                    <td style={tdStyle}>{notice.description}</td>
-                    <td style={tdStyle}>{notice.updatedOn}</td>
-                    <td style={tdStyle}>
-                      <span style={{ background: '#5cb85c', color: '#fff', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600 }}>
-                        {notice.status}
-                      </span>
-                    </td>
-                    <td style={tdStyle}>
-                      <button style={{ background: '#0ea5e9', color: '#fff', border: 'none', width: 28, height: 28, borderRadius: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}>
-                        <FaEye size={14} />
-                      </button>
-                    </td>
+                {loading ? (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>Loading notices...</td>
                   </tr>
-                ))}
-                {filteredNotices.length === 0 && (
+                ) : filteredNotices.length > 0 ? (
+                  filteredNotices.map((notice, idx) => (
+                    <tr key={notice._id || notice.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={tdStyle}>{idx + 1}</td>
+                      <td style={tdStyle}>{notice.heading || notice.title}</td>
+                      <td style={tdStyle}>{notice.description || notice.content}</td>
+                      <td style={tdStyle}>{notice.updatedOn || (notice.createdAt ? new Date(notice.createdAt).toLocaleDateString() : '-')}</td>
+                      <td style={tdStyle}>
+                        <span style={{ background: notice.status === 'Read' ? '#5cb85c' : '#fbbf24', color: '#fff', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600 }}>
+                          {notice.status || 'Sent'}
+                        </span>
+                      </td>
+                      <td style={tdStyle}>
+                        <button 
+                          onClick={() => navigate(`/dashboard/announcement/view/${notice._id || notice.id}`, { state: { notice } })}
+                          style={{ background: '#0ea5e9', color: '#fff', border: 'none', width: 28, height: 28, borderRadius: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}
+                        >
+                          <FaEye size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
                   <tr>
                     <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#94a3b8' }}>
                       No notices found.
@@ -98,9 +129,13 @@ const thStyle = {
 };
 
 const tdStyle = {
-  padding: '16px 16px',
-  fontSize: 13,
+  padding: '14px 16px',
+  fontSize: 14,
   color: '#475569',
+  verticalAlign: 'middle',
+  maxWidth: 250,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
   whiteSpace: 'nowrap'
 };
 

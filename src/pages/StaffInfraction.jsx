@@ -1,44 +1,105 @@
-import React, { useState } from 'react';
-import { FaSearch, FaPlus, FaEye, FaTrash, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
-
-const severityColors = {
-  Minor:    { bg: '#fef9c3', color: '#ca8a04' },
-  Moderate: { bg: '#ffedd5', color: '#ea580c' },
-  Severe:   { bg: '#fee2e2', color: '#ef4444' },
-};
-
-const infractionTypes = ['Late Coming', 'Uniform Violation', 'Disrespecting Management', 'Absenteeism', 'Misconduct', 'Other'];
-
-const dummyRecords = [
-  { id: 1, name: 'Miss Priya Sharma', designation: 'Teacher', department: 'Science', infraction: 'Late Coming', severity: 'Minor', date: '2023-10-03', consequence: 'Verbal Warning', notes: 'Arrived 20 mins late without notice.' },
-  { id: 2, name: 'Mr. Suresh Yadav', designation: 'Peon', department: 'Support', infraction: 'Absenteeism', severity: 'Moderate', date: '2023-10-07', consequence: 'Written Warning', notes: 'Absent 3 days without leave.' },
-  { id: 3, name: 'Ms. Kavita Singh', designation: 'Teacher', department: 'English', infraction: 'Misconduct', severity: 'Moderate', date: '2023-10-11', consequence: 'Meeting with Principal', notes: 'Argument with parent.' },
-];
-
-const emptyForm = { name: '', designation: '', department: '', infraction: 'Late Coming', severity: 'Minor', date: '', consequence: '', notes: '' };
+import React, { useState, useEffect } from 'react';
+import { FaSearch, FaPlus, FaEye, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 function StaffInfraction() {
-  const [records, setRecords] = useState(dummyRecords);
+  const [records, setRecords] = useState([]);
+  const [staffList, setStaffList] = useState([]);
+  const [infractionList, setInfractionList] = useState([]);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [viewItem, setViewItem] = useState(null);
-  const [form, setForm] = useState(emptyForm);
+  
+  const [form, setForm] = useState({ 
+    staffId: '', 
+    infractionId: '', 
+    date: '', 
+    description: '' 
+  });
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Authorization': `Bearer ${token}` };
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+      const [infractionsRes, staffRes, masterInfractionsRes] = await Promise.all([
+        fetch(`${baseUrl}/api/staff-infractions`, { headers }).then(r => r.json()),
+        fetch(`${baseUrl}/api/staffs`, { headers }).then(r => r.json()),
+        fetch(`${baseUrl}/api/infractions`, { headers }).then(r => r.json()),
+      ]);
+
+      setRecords(Array.isArray(infractionsRes.data) ? infractionsRes.data : []);
+      setStaffList(Array.isArray(staffRes) ? staffRes : []);
+      setInfractionList(Array.isArray(masterInfractionsRes) ? masterInfractionsRes : []);
+    } catch (error) {
+      console.error("Error fetching data", error);
+      toast.error("Failed to load data");
+    }
+  };
 
   const handleFormChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.date) return alert('Please fill all required fields.');
-    setRecords([{ ...form, id: Date.now() }, ...records]);
-    setShowModal(false);
-    setForm(emptyForm);
+    if (!form.staffId || !form.infractionId || !form.date) return toast.error('Please fill all required fields.');
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff-infractions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(form)
+      });
+      
+      if (response.ok) {
+        toast.success("Infraction added successfully!");
+        setShowModal(false);
+        setForm({ staffId: '', infractionId: '', date: '', description: '' });
+        fetchData();
+      } else {
+        toast.error("Failed to add infraction");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Error adding infraction");
+    }
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Remove this infraction record?')) setRecords(records.filter(r => r.id !== id));
+  const handleDelete = async (id) => {
+    if (window.confirm('Remove this infraction record?')) {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff-infractions/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          toast.success("Infraction removed");
+          setRecords(records.filter(r => r._id !== id));
+        } else {
+          toast.error("Failed to remove");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Error removing infraction");
+      }
+    }
   };
 
-  const filtered = records.filter(r => r.name.toLowerCase().includes(search.toLowerCase()) || r.department.toLowerCase().includes(search.toLowerCase()));
+  const filtered = records.filter(r => {
+    const staffName = r.staffId ? `${r.staffId.firstName} ${r.staffId.lastName}`.toLowerCase() : '';
+    const dept = r.staffId && r.staffId.designation ? r.staffId.designation.toLowerCase() : '';
+    return staffName.includes(search.toLowerCase()) || dept.includes(search.toLowerCase());
+  });
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -46,20 +107,16 @@ function StaffInfraction() {
         <p style={{ margin: '0 0 4px', fontSize: 13, color: '#94a3b8' }}>Discipline › Infraction</p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#2b3674', margin: 0 }}>Staff Infraction</h1>
-          <button onClick={() => setShowModal(true)} style={addBtn}><FaPlus size={12} /> Record Infraction</button>
+          <button onClick={() => setShowModal(true)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <FaPlus size={12} /> Log Infraction
+          </button>
         </div>
       </div>
 
-      <div style={{ padding: '12px 32px', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-        {['Minor', 'Moderate', 'Severe'].map(s => (
-          <div key={s} style={{ background: '#fff', borderRadius: 8, padding: '10px 18px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 10, height: 10, borderRadius: '50%', background: severityColors[s]?.color, display: 'inline-block' }}></span>
-            <span style={{ fontSize: 13, color: '#475569' }}>{s}: <strong style={{ color: severityColors[s]?.color }}>{records.filter(r => r.severity === s).length}</strong></span>
-          </div>
-        ))}
-        <div style={{ position: 'relative', marginLeft: 'auto' }}>
-          <FaSearch style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={12} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or dept..." style={{ padding: '8px 12px 8px 30px', borderRadius: 6, border: '1px solid #cbd5e1', outline: 'none', fontSize: 13, width: 240 }} />
+      <div style={{ padding: '12px 32px', display: 'flex', gap: 12 }}>
+        <div style={{ position: 'relative' }}>
+          <FaSearch style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={13} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or designation..." style={{ padding: '8px 12px 8px 30px', borderRadius: 6, border: '1px solid #cbd5e1', outline: 'none', fontSize: 13, width: 260 }} />
         </div>
       </div>
 
@@ -68,40 +125,42 @@ function StaffInfraction() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#f8fafc' }}>
-                {['Staff Member', 'Designation', 'Department', 'Infraction', 'Severity', 'Consequence', 'Date', 'Actions'].map(h => (
+                {['Staff Member', 'Designation', 'Infraction', 'Points', 'Date', 'Actions'].map(h => (
                   <th key={h} style={thStyle}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.map(r => (
-                <tr key={r.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <tr key={r._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={tdStyle}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#ffedd5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#ea580c', fontSize: 13 }}>
-                        {r.name.charAt(0)}
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#dc2626', fontSize: 14 }}>
+                        {r.staffId?.firstName?.charAt(0) || '?'}
                       </div>
-                      <span style={{ fontWeight: 600, color: '#1e293b' }}>{r.name}</span>
+                      <span style={{ fontWeight: 600, color: '#1e293b' }}>
+                        {r.staffId ? `${r.staffId.firstName} ${r.staffId.lastName}` : 'Unknown'}
+                      </span>
                     </div>
                   </td>
-                  <td style={tdStyle}>{r.designation}</td>
-                  <td style={tdStyle}>{r.department}</td>
-                  <td style={tdStyle}><div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><FaExclamationTriangle size={11} color={severityColors[r.severity]?.color} /> {r.infraction}</div></td>
+                  <td style={tdStyle}>{r.staffId?.designation || 'N/A'}</td>
                   <td style={tdStyle}>
-                    <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: severityColors[r.severity]?.bg, color: severityColors[r.severity]?.color }}>{r.severity}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <FaExclamationTriangle size={12} color="#dc2626" /> {r.infractionId?.title || 'Unknown'}
+                    </span>
                   </td>
-                  <td style={tdStyle}>{r.consequence}</td>
-                  <td style={tdStyle}>{r.date}</td>
+                  <td style={tdStyle}><span style={{ fontWeight: 700, color: '#ef4444' }}>-{r.infractionId?.points || 0}</span></td>
+                  <td style={tdStyle}>{new Date(r.date).toLocaleDateString()}</td>
                   <td style={{ ...tdStyle, textAlign: 'center' }}>
                     <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
-                      <button onClick={() => setViewItem(r)} style={iconBtn}><FaEye size={14} color="#3b82f6" /></button>
-                      <button onClick={() => handleDelete(r.id)} style={iconBtn}><FaTrash size={14} color="#ef4444" /></button>
+                      <button onClick={() => setViewItem(r)} style={iconBtn} title="View"><FaEye size={14} color="#3b82f6" /></button>
+                      <button onClick={() => handleDelete(r._id)} style={iconBtn} title="Remove"><FaTimes size={14} color="#ef4444" /></button>
                     </div>
                   </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan="8" style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>No staff infraction records found.</td></tr>
+                <tr><td colSpan="6" style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>No staff infraction records found.</td></tr>
               )}
             </tbody>
           </table>
@@ -112,31 +171,44 @@ function StaffInfraction() {
         <div style={overlay}>
           <div style={modal}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h2 style={{ margin: 0, fontSize: 18, color: '#1e293b' }}>Record Staff Infraction</h2>
-              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><FaTimes size={16} color="#64748b" /></button>
+              <h2 style={{ margin: 0, fontSize: 18, color: '#1e293b' }}>Log Staff Infraction</h2>
+              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><FaTimes size={18} /></button>
             </div>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                <div><label style={lbl}>Staff Name *</label><input name="name" value={form.name} onChange={handleFormChange} required style={inp} placeholder="Full name" /></div>
-                <div><label style={lbl}>Designation</label><input name="designation" value={form.designation} onChange={handleFormChange} style={inp} placeholder="e.g. Teacher" /></div>
-                <div><label style={lbl}>Department</label><input name="department" value={form.department} onChange={handleFormChange} style={inp} placeholder="e.g. Science" /></div>
-                <div><label style={lbl}>Date *</label><input type="date" name="date" value={form.date} onChange={handleFormChange} required style={inp} /></div>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <label style={labelStyle}>Staff Member</label>
+                <select name="staffId" value={form.staffId} onChange={handleFormChange} style={inputStyle} required>
+                  <option value="">Select Staff</option>
+                  {staffList.map(s => (
+                    <option key={s._id} value={s._id}>{s.firstName} {s.lastName} ({s.designation})</option>
+                  ))}
+                </select>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                <div><label style={lbl}>Infraction Type</label>
-                  <select name="infraction" value={form.infraction} onChange={handleFormChange} style={inp}>
-                    {infractionTypes.map(t => <option key={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div><label style={lbl}>Severity</label>
-                  <select name="severity" value={form.severity} onChange={handleFormChange} style={inp}>
-                    <option>Minor</option><option>Moderate</option><option>Severe</option>
-                  </select>
-                </div>
+              
+              <div>
+                <label style={labelStyle}>Infraction Type</label>
+                <select name="infractionId" value={form.infractionId} onChange={handleFormChange} style={inputStyle} required>
+                  <option value="">Select Infraction</option>
+                  {infractionList.map(a => (
+                    <option key={a._id} value={a._id}>{a.title} (-{a.points} points)</option>
+                  ))}
+                </select>
               </div>
-              <div><label style={lbl}>Consequence</label><input name="consequence" value={form.consequence} onChange={handleFormChange} style={inp} placeholder="e.g. Verbal Warning" /></div>
-              <div><label style={lbl}>Notes</label><textarea name="notes" value={form.notes} onChange={handleFormChange} rows={2} style={{ ...inp, resize: 'vertical' }} placeholder="Additional notes..." /></div>
-              <button type="submit" style={{ background: '#ef4444', color: '#fff', border: 'none', padding: 12, borderRadius: 6, fontWeight: 600, cursor: 'pointer' }}>Record Infraction</button>
+
+              <div>
+                <label style={labelStyle}>Date</label>
+                <input type="date" name="date" value={form.date} onChange={handleFormChange} style={inputStyle} required />
+              </div>
+              
+              <div>
+                <label style={labelStyle}>Description / Remarks</label>
+                <textarea name="description" value={form.description} onChange={handleFormChange} style={{ ...inputStyle, height: 80, resize: 'none' }} placeholder="Optional remarks..."></textarea>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 10 }}>
+                <button type="button" onClick={() => setShowModal(false)} style={{ padding: '10px 16px', background: '#f1f5f9', border: 'none', borderRadius: 6, color: '#475569', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                <button type="submit" style={{ padding: '10px 16px', background: '#ef4444', border: 'none', borderRadius: 6, color: '#fff', fontWeight: 600, cursor: 'pointer' }}>Save Record</button>
+              </div>
             </form>
           </div>
         </div>
@@ -144,17 +216,34 @@ function StaffInfraction() {
 
       {viewItem && (
         <div style={overlay}>
-          <div style={{ ...modal, width: 420 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h2 style={{ margin: 0, fontSize: 18, color: '#1e293b' }}>Infraction Details</h2>
-              <button onClick={() => setViewItem(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><FaTimes size={16} color="#64748b" /></button>
-            </div>
-            {[['Staff', viewItem.name], ['Designation', viewItem.designation], ['Department', viewItem.department], ['Infraction', viewItem.infraction], ['Severity', viewItem.severity], ['Consequence', viewItem.consequence], ['Date', viewItem.date], ['Notes', viewItem.notes || 'N/A']].map(([k, v]) => (
-              <div key={k} style={{ display: 'flex', borderBottom: '1px solid #f1f5f9', padding: '10px 0' }}>
-                <span style={{ width: 110, color: '#94a3b8', fontSize: 13, fontWeight: 600 }}>{k}</span>
-                <span style={{ flex: 1, color: '#1e293b', fontWeight: 500 }}>{v}</span>
+          <div style={{ ...modal, maxWidth: 500 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+              <div>
+                <h2 style={{ margin: '0 0 4px', fontSize: 20, color: '#1e293b' }}>{viewItem.staffId?.firstName} {viewItem.staffId?.lastName}</h2>
+                <p style={{ margin: 0, color: '#64748b', fontSize: 14 }}>{viewItem.staffId?.designation}</p>
               </div>
-            ))}
+              <button onClick={() => setViewItem(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><FaTimes size={18} /></button>
+            </div>
+            
+            <div style={{ background: '#fef2f2', padding: 16, borderRadius: 8, marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <FaExclamationTriangle color="#dc2626" size={18} />
+                <span style={{ fontSize: 16, fontWeight: 600, color: '#dc2626' }}>{viewItem.infractionId?.title}</span>
+              </div>
+              <p style={{ margin: '0 0 12px', fontSize: 14, color: '#475569' }}>
+                Logged on {new Date(viewItem.date).toLocaleDateString()}
+              </p>
+              <div style={{ display: 'inline-block', background: '#fee2e2', color: '#b91c1c', padding: '4px 12px', borderRadius: 20, fontSize: 13, fontWeight: 700 }}>
+                -{viewItem.infractionId?.points || 0} Points
+              </div>
+            </div>
+            
+            {viewItem.description && (
+              <div>
+                <h4 style={{ margin: '0 0 8px', fontSize: 14, color: '#334155' }}>Remarks</h4>
+                <p style={{ margin: 0, fontSize: 14, color: '#64748b', lineHeight: 1.5 }}>{viewItem.description}</p>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -162,13 +251,12 @@ function StaffInfraction() {
   );
 }
 
-const addBtn = { background: '#3b82f6', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 };
-const thStyle = { padding: '14px 16px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#0f172a', borderBottom: '2px solid #e2e8f0', whiteSpace: 'nowrap' };
-const tdStyle = { padding: '14px 16px', fontSize: 14, color: '#475569', verticalAlign: 'middle' };
-const iconBtn = { background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' };
-const overlay = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 };
-const modal = { background: '#fff', padding: 28, borderRadius: 10, width: 540, maxWidth: '95vw', boxShadow: '0 10px 25px rgba(0,0,0,0.15)', maxHeight: '90vh', overflowY: 'auto' };
-const lbl = { display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#475569' };
-const inp = { width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box', fontSize: 14 };
+const thStyle = { padding: '14px 16px', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#64748b', borderBottom: '1px solid #e2e8f0' };
+const tdStyle = { padding: '14px 16px', fontSize: 14, color: '#334155', verticalAlign: 'middle' };
+const iconBtn = { background: '#f1f5f9', border: 'none', width: 32, height: 32, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' };
+const overlay = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 };
+const modal = { background: '#fff', borderRadius: 12, width: '100%', maxWidth: 450, padding: 24, boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' };
+const labelStyle = { display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#475569' };
+const inputStyle = { width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 14, outline: 'none' };
 
 export default StaffInfraction;

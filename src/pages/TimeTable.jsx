@@ -1,36 +1,80 @@
 import React, { useState } from 'react';
-import { FaSearch, FaPrint, FaDownload } from 'react-icons/fa';
+import { FaSearch, FaPrint, FaDownload, FaSpinner } from 'react-icons/fa';
 
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const timeSlots = [
-  { period: '1st Period', time: '08:00 AM - 08:45 AM' },
-  { period: '2nd Period', time: '08:45 AM - 09:30 AM' },
-  { period: '3rd Period', time: '09:30 AM - 10:15 AM' },
-  { period: 'Break', time: '10:15 AM - 10:45 AM', isBreak: true },
-  { period: '4th Period', time: '10:45 AM - 11:30 AM' },
-  { period: '5th Period', time: '11:30 AM - 12:15 PM' },
-  { period: 'Lunch Break', time: '12:15 PM - 01:00 PM', isBreak: true },
-  { period: '6th Period', time: '01:00 PM - 01:45 PM' },
-  { period: '7th Period', time: '01:45 PM - 02:30 PM' },
-];
-
-const dummyTimetable = {
-  Monday: { '1st Period': { subject: 'Mathematics', teacher: 'R. Sharma' }, '2nd Period': { subject: 'Physics', teacher: 'S. Verma' }, '3rd Period': { subject: 'English', teacher: 'K. Patel' }, '4th Period': { subject: 'Chemistry', teacher: 'A. Gupta' }, '5th Period': { subject: 'Computer', teacher: 'N. Singh' }, '6th Period': { subject: 'History', teacher: 'M. Ali' }, '7th Period': { subject: 'Geography', teacher: 'P. Kumar' } },
-  Tuesday: { '1st Period': { subject: 'Physics', teacher: 'S. Verma' }, '2nd Period': { subject: 'Mathematics', teacher: 'R. Sharma' }, '3rd Period': { subject: 'Chemistry', teacher: 'A. Gupta' }, '4th Period': { subject: 'English', teacher: 'K. Patel' }, '5th Period': { subject: 'Biology', teacher: 'J. Das' }, '6th Period': { subject: 'Computer', teacher: 'N. Singh' }, '7th Period': { subject: 'Games', teacher: 'T. Roy' } },
-  Wednesday: { '1st Period': { subject: 'English', teacher: 'K. Patel' }, '2nd Period': { subject: 'Chemistry', teacher: 'A. Gupta' }, '3rd Period': { subject: 'Mathematics', teacher: 'R. Sharma' }, '4th Period': { subject: 'Physics', teacher: 'S. Verma' }, '5th Period': { subject: 'History', teacher: 'M. Ali' }, '6th Period': { subject: 'Geography', teacher: 'P. Kumar' }, '7th Period': { subject: 'Library', teacher: 'L. Sen' } },
-  Thursday: { '1st Period': { subject: 'Chemistry', teacher: 'A. Gupta' }, '2nd Period': { subject: 'Physics', teacher: 'S. Verma' }, '3rd Period': { subject: 'English', teacher: 'K. Patel' }, '4th Period': { subject: 'Mathematics', teacher: 'R. Sharma' }, '5th Period': { subject: 'Computer', teacher: 'N. Singh' }, '6th Period': { subject: 'Biology', teacher: 'J. Das' }, '7th Period': { subject: 'Games', teacher: 'T. Roy' } },
-  Friday: { '1st Period': { subject: 'Mathematics', teacher: 'R. Sharma' }, '2nd Period': { subject: 'English', teacher: 'K. Patel' }, '3rd Period': { subject: 'Physics', teacher: 'S. Verma' }, '4th Period': { subject: 'Chemistry', teacher: 'A. Gupta' }, '5th Period': { subject: 'History', teacher: 'M. Ali' }, '6th Period': { subject: 'Computer', teacher: 'N. Singh' }, '7th Period': { subject: 'Geography', teacher: 'P. Kumar' } },
-  Saturday: { '1st Period': { subject: 'Computer', teacher: 'N. Singh' }, '2nd Period': { subject: 'Mathematics', teacher: 'R. Sharma' }, '3rd Period': { subject: 'Physics', teacher: 'S. Verma' }, '4th Period': { subject: 'Chemistry', teacher: 'A. Gupta' }, '5th Period': { subject: 'English', teacher: 'K. Patel' }, '6th Period': { subject: 'Library', teacher: 'L. Sen' }, '7th Period': { subject: 'Games', teacher: 'T. Roy' } },
-};
 
 function TimeTable() {
-  const [selectedClass, setSelectedClass] = useState('Class 10');
-  const [selectedSection, setSelectedSection] = useState('Section A');
+  const [selectedClass, setSelectedClass] = useState('');
+  const [selectedSection, setSelectedSection] = useState('');
   const [showTimetable, setShowTimetable] = useState(false);
+  const [timetableData, setTimetableData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  // We will derive time slots from the first available day's schedule since periods should be standard per day
+  const [timeSlots, setTimeSlots] = useState([]);
 
-  const handleFetch = (e) => {
+  const handleFetch = async (e) => {
     e.preventDefault();
-    setShowTimetable(true);
+    if (!selectedClass || !selectedSection) {
+      setError('Please select both Class and Section.');
+      return;
+    }
+    
+    setError('');
+    setShowTimetable(false);
+    setLoading(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/timetables?class=${encodeURIComponent(selectedClass)}&section=${encodeURIComponent(selectedSection)}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Transform data into an easy lookup map: map[day][periodName] = periodObject
+        const transformed = {};
+        let slots = [];
+        
+        if (data.schedule && data.schedule.length > 0) {
+          // Extract time slots from the longest day (or just the first one that has periods)
+          const refDay = data.schedule.reduce((prev, curr) => (curr.periods.length > prev.periods.length ? curr : prev), data.schedule[0]);
+          if (refDay && refDay.periods) {
+            slots = refDay.periods.map(p => ({
+              period: p.periodName,
+              time: `${p.startTime} - ${p.endTime}`,
+              isBreak: p.isBreak
+            }));
+          }
+          
+          data.schedule.forEach(daySchedule => {
+            transformed[daySchedule.day] = {};
+            daySchedule.periods.forEach(period => {
+              transformed[daySchedule.day][period.periodName] = {
+                subject: period.subject,
+                teacher: period.teacher ? `${period.teacher.firstName || ''} ${period.teacher.lastName || ''}`.trim() : '',
+                isBreak: period.isBreak
+              };
+            });
+          });
+        }
+        
+        setTimetableData(transformed);
+        setTimeSlots(slots);
+        setShowTimetable(true);
+      } else if (response.status === 404) {
+        setError(`No timetable found for ${selectedClass} - ${selectedSection}.`);
+      } else {
+        setError('Failed to fetch timetable. Please try again.');
+      }
+    } catch (err) {
+      console.error("Error fetching timetable:", err);
+      setError('Network error while fetching timetable.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -55,97 +99,195 @@ function TimeTable() {
         <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '24px' }}>
           <form onSubmit={handleFetch} style={{ display: 'flex', gap: 24, alignItems: 'flex-end' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <label style={{ fontSize: 13, color: '#475569', fontWeight: 600 }}>Select Class</label>
-              <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={inputStyle}>
+              <label style={{ fontSize: 13, color: '#475569', fontWeight: 600 }}>Select Class *</label>
+              <select required value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={inputStyle}>
                 <option value="">Select Class</option>
                 <option value="Class 8">Class 8</option>
                 <option value="Class 9">Class 9</option>
                 <option value="Class 10">Class 10</option>
+                {/* Dynamically this could be fetched from class endpoint in the future */}
               </select>
             </div>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <label style={{ fontSize: 13, color: '#475569', fontWeight: 600 }}>Select Section</label>
-              <select value={selectedSection} onChange={e => setSelectedSection(e.target.value)} style={inputStyle}>
+              <label style={{ fontSize: 13, color: '#475569', fontWeight: 600 }}>Select Section *</label>
+              <select required value={selectedSection} onChange={e => setSelectedSection(e.target.value)} style={inputStyle}>
                 <option value="">Select Section</option>
-                <option value="Section A">Section A</option>
-                <option value="Section B">Section B</option>
-                <option value="Section C">Section C</option>
+                <option value="A">Section A</option>
+                <option value="B">Section B</option>
+                <option value="C">Section C</option>
               </select>
             </div>
             <div style={{ flex: 1 }}>
-              <button type="submit" style={{ ...actionBtn, background: '#3b82f6', color: '#fff', border: 'none', width: '100%', justifyContent: 'center' }}>
-                <FaSearch /> Fetch Timetable
+              <button type="submit" disabled={loading} style={{ ...actionBtn, background: loading ? '#94a3b8' : '#3b82f6', color: '#fff', border: 'none', width: '100%', justifyContent: 'center' }}>
+                {loading ? <FaSpinner className="spin" /> : <FaSearch />} Fetch Timetable
               </button>
             </div>
           </form>
+          {error && <div style={{ marginTop: 16, color: '#ef4444', fontSize: 14, fontWeight: 600 }}>{error}</div>}
         </div>
 
         {/* Timetable Card */}
         {showTimetable && (
           <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '24px', flex: 1, overflowX: 'auto' }}>
             <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', marginBottom: 20, textAlign: 'center' }}>
-              Timetable for {selectedClass} - {selectedSection}
+              Timetable for {selectedClass} - Section {selectedSection}
             </h2>
             
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1000 }}>
-              <thead>
-                <tr>
-                  <th style={thDayStyle}>Days / Time</th>
-                  {timeSlots.map((slot, idx) => (
-                    <th key={idx} style={thStyle}>
-                      <div style={{ fontWeight: 700, color: '#0f172a' }}>{slot.period}</div>
-                      <div style={{ fontSize: 11, color: '#64748b', fontWeight: 500 }}>{slot.time}</div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {daysOfWeek.map((day) => (
-                  <tr key={day}>
-                    <td style={tdDayStyle}>{day}</td>
-                    {timeSlots.map((slot, idx) => {
-                      if (slot.isBreak) {
+            {timeSlots.length === 0 ? (
+              <div style={{ textAlign: 'center', color: '#64748b', padding: 20 }}>No schedule periods defined for this timetable.</div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1000 }}>
+                <thead>
+                  <tr>
+                    <th style={thDayStyle}>Days / Time</th>
+                    {timeSlots.map((slot, idx) => (
+                      <th key={idx} style={thStyle}>
+                        <div style={{ fontWeight: 700, color: '#0f172a' }}>{slot.period}</div>
+                        <div style={{ fontSize: 11, color: '#64748b', fontWeight: 500 }}>{slot.time}</div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {daysOfWeek.map(day => (
+                    <tr key={day} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={tdDayStyle}>{day}</td>
+                      
+                      {timeSlots.map((slot, idx) => {
+                        const cellData = timetableData[day]?.[slot.period];
+                        
+                        // Break slot rendering
+                        if (slot.isBreak || (cellData && cellData.isBreak)) {
+                          return (
+                            <td key={idx} style={tdBreakStyle}>
+                              BREAK
+                            </td>
+                          );
+                        }
+                        
+                        // Normal slot rendering
                         return (
-                          <td key={idx} style={tdBreakStyle}>
-                            <span style={{ transform: 'rotate(-90deg)', display: 'block', fontSize: 12, letterSpacing: 2 }}>{slot.period.toUpperCase()}</span>
+                          <td key={idx} style={tdStyle}>
+                            {cellData && cellData.subject ? (
+                              <div style={cardStyle}>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>
+                                  {cellData.subject}
+                                </div>
+                                <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+                                  {cellData.teacher || 'Unassigned'}
+                                </div>
+                              </div>
+                            ) : (
+                              <div style={emptyCardStyle}>-</div>
+                            )}
                           </td>
                         );
-                      }
-
-                      const periodData = dummyTimetable[day]?.[slot.period];
-                      return (
-                        <td key={idx} style={tdStyle}>
-                          {periodData ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
-                              <span style={{ fontSize: 13, fontWeight: 700, color: '#2563eb' }}>{periodData.subject}</span>
-                              <span style={{ fontSize: 11, color: '#475569' }}>{periodData.teacher}</span>
-                            </div>
-                          ) : (
-                            <span style={{ color: '#94a3b8', fontSize: 12 }}>-</span>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         )}
-
       </div>
+      
+      <style>{`
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 }
 
-const inputStyle = { width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', outline: 'none', fontSize: 14, color: '#334155' };
-const actionBtn = { display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 6, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: '0.2s' };
+// Styles
+const inputStyle = {
+  padding: '10px 12px',
+  borderRadius: 6,
+  border: '1px solid #cbd5e1',
+  outline: 'none',
+  fontSize: 14,
+  color: '#1e293b',
+  background: '#fff'
+};
 
-const thDayStyle = { padding: '16px', textAlign: 'center', background: '#f8fafc', border: '1px solid #e2e8f0', fontSize: 14, fontWeight: 700, color: '#334155', width: 120 };
-const thStyle = { padding: '12px', textAlign: 'center', background: '#f8fafc', border: '1px solid #e2e8f0' };
+const actionBtn = {
+  background: '#fff',
+  border: '1px solid #cbd5e1',
+  padding: '10px 16px',
+  borderRadius: 6,
+  fontSize: 13,
+  fontWeight: 600,
+  color: '#475569',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  transition: 'all 0.2s'
+};
 
-const tdDayStyle = { padding: '16px', textAlign: 'center', background: '#f8fafc', border: '1px solid #e2e8f0', fontSize: 14, fontWeight: 700, color: '#334155' };
-const tdStyle = { padding: '12px', textAlign: 'center', border: '1px solid #e2e8f0', background: '#fff' };
-const tdBreakStyle = { padding: '12px 0', textAlign: 'center', border: '1px solid #e2e8f0', background: '#f1f5f9', color: '#64748b', fontWeight: 700 };
+const thDayStyle = {
+  padding: '16px',
+  background: '#f8fafc',
+  borderBottom: '2px solid #e2e8f0',
+  borderRight: '1px solid #e2e8f0',
+  textAlign: 'center',
+  fontSize: 13,
+  fontWeight: 700,
+  color: '#334155',
+  width: 120
+};
+
+const thStyle = {
+  padding: '12px 8px',
+  background: '#f8fafc',
+  borderBottom: '2px solid #e2e8f0',
+  borderRight: '1px solid #f1f5f9',
+  textAlign: 'center'
+};
+
+const tdDayStyle = {
+  padding: '16px',
+  background: '#f8fafc',
+  borderRight: '1px solid #e2e8f0',
+  textAlign: 'center',
+  fontSize: 13,
+  fontWeight: 700,
+  color: '#334155',
+  letterSpacing: 0.5
+};
+
+const tdStyle = {
+  padding: '8px',
+  borderRight: '1px solid #f1f5f9',
+  textAlign: 'center',
+  verticalAlign: 'middle'
+};
+
+const tdBreakStyle = {
+  padding: '8px',
+  borderRight: '1px solid #f1f5f9',
+  textAlign: 'center',
+  background: '#f1f5f9',
+  color: '#94a3b8',
+  fontSize: 12,
+  fontWeight: 800,
+  letterSpacing: 2
+};
+
+const cardStyle = {
+  background: '#fff',
+  border: '1px solid #e2e8f0',
+  borderRadius: 6,
+  padding: '8px',
+  display: 'inline-block',
+  minWidth: 100,
+  boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+};
+
+const emptyCardStyle = {
+  color: '#cbd5e1',
+  fontSize: 14
+};
 
 export default TimeTable;

@@ -1,17 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaEye, FaSearch } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
-const dummyStaffNotices = [
-  { id: 1, heading: 'Staff Meeting', description: 'Urgent staff meeting in the main hall at 2 PM.', updatedOn: '15-Feb-2026', status: 'Unread' },
-  { id: 2, heading: 'Leave Policy Update', description: 'Please review the updated leave policy document attached.', updatedOn: '10-Feb-2026', status: 'Read' },
-  { id: 3, heading: 'Exam Duty Roster', description: 'Duty roster for the upcoming mid-term exams.', updatedOn: '05-Feb-2026', status: 'Read' },
-];
-
 function StaffNotice() {
   const navigate = useNavigate();
-  // Using dummy data directly since there's no class filter needed here
-  const notices = dummyStaffNotices;
+  const [notices, setNotices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStaffNotices();
+  }, []);
+
+  const fetchStaffNotices = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff-notices`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setNotices(data.staffNotices || data.notices || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch staff notices", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -38,24 +54,28 @@ function StaffNotice() {
                 </tr>
               </thead>
               <tbody>
-                {notices.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>Loading notices...</td>
+                  </tr>
+                ) : notices.length > 0 ? (
                   notices.map((notice, idx) => (
-                    <tr key={notice.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <tr key={notice._id || notice.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                       <td style={tdStyle}>{idx + 1}</td>
-                      <td style={tdStyle}>{notice.heading}</td>
-                      <td style={tdStyle}>{notice.description}</td>
-                      <td style={tdStyle}>{notice.updatedOn}</td>
+                      <td style={tdStyle}>{notice.heading || notice.title}</td>
+                      <td style={tdStyle}>{notice.description || notice.content}</td>
+                      <td style={tdStyle}>{notice.updatedOn || (notice.createdAt ? new Date(notice.createdAt).toLocaleDateString() : '-')}</td>
                       <td style={tdStyle}>
                         <span style={{ 
                           background: notice.status === 'Read' ? '#5cb85c' : '#fbbf24', 
                           color: '#fff', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600 
                         }}>
-                          {notice.status}
+                          {notice.status || 'Sent'}
                         </span>
                       </td>
                       <td style={tdStyle}>
                         <button 
-                          onClick={() => navigate(`/dashboard/announcement/staff/view/${notice.id}`, { state: { notice } })} 
+                          onClick={() => navigate(`/dashboard/announcement/staff/view/${notice._id || notice.id}`, { state: { notice } })} 
                           style={{ background: '#0ea5e9', color: '#fff', border: 'none', width: 28, height: 28, borderRadius: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}
                         >
                           <FaEye size={14} />
@@ -102,19 +122,24 @@ function StaffNotice() {
 }
 
 const thStyle = {
-  padding: '14px 16px',
+  padding: '16px',
   textAlign: 'left',
   fontSize: 13,
   fontWeight: 700,
-  color: '#334155',
-  borderBottom: '1px solid #e2e8f0',
+  color: '#0f172a',
+  background: '#f8fafc',
+  borderBottom: '2px solid #e2e8f0',
   whiteSpace: 'nowrap'
 };
 
 const tdStyle = {
-  padding: '16px 16px',
-  fontSize: 13,
+  padding: '16px',
+  fontSize: 14,
   color: '#475569',
+  verticalAlign: 'middle',
+  maxWidth: 200,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
   whiteSpace: 'nowrap'
 };
 

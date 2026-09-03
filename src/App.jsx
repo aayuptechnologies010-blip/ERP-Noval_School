@@ -106,6 +106,25 @@ import EnterpriseApp from "./EnterpriseApp";
 import WebAdminApp from "./pages/WebAdminApp";
 import AttendanceDashboard from "./pages/AttendanceDashboard";
 import MarksManager from "./pages/MarksManager";
+import ManageWing from "./pages/ManageWing";
+import ManageCaste from "./pages/ManageCaste";
+import ManageReligion from "./pages/ManageReligion";
+import ManageCategory from "./pages/ManageCategory";
+import ManageSection from "./pages/ManageSection";
+import ManageSchoolClass from "./pages/ManageSchoolClass";
+import ManageStream from "./pages/ManageStream";
+import ManageRemark from "./pages/ManageRemark";
+import ManageReason from "./pages/ManageReason";
+import ManageSubCaste from "./pages/ManageSubCaste";
+import ManageParish from "./pages/ManageParish";
+import ManageAcademicYear from "./pages/ManageAcademicYear";
+import ManageFinancialYear from "./pages/ManageFinancialYear";
+import ManageSchoolBoard from "./pages/ManageSchoolBoard";
+import ManageProfession from "./pages/ManageProfession";
+import ManageParentsStatus from "./pages/ManageParentsStatus";
+import ManageStudentClassification from "./pages/ManageStudentClassification";
+import ManageClubMaster from "./pages/ManageClubMaster";
+import ManageCommittee from "./pages/ManageCommittee";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -394,6 +413,26 @@ function App() {
           <Route path="report/statistical" element={<StatisticalReport />} />
           <Route path="report/app-users" element={<AppUsersReport />} />
           <Route path="report/survey" element={<SurveyReport />} />
+          {/* School Masters / Settings Routes */}
+          <Route path="settings/wing" element={<ManageWing />} />
+          <Route path="settings/caste" element={<ManageCaste />} />
+          <Route path="settings/religion" element={<ManageReligion />} />
+          <Route path="settings/category" element={<ManageCategory />} />
+          <Route path="settings/section" element={<ManageSection />} />
+          <Route path="settings/class" element={<ManageSchoolClass />} />
+          <Route path="settings/stream" element={<ManageStream />} />
+          <Route path="settings/remark" element={<ManageRemark />} />
+          <Route path="settings/reason" element={<ManageReason />} />
+          <Route path="settings/subcaste" element={<ManageSubCaste />} />
+          <Route path="settings/parish" element={<ManageParish />} />
+          <Route path="settings/academic-year" element={<ManageAcademicYear />} />
+          <Route path="settings/financial-year" element={<ManageFinancialYear />} />
+          <Route path="settings/board" element={<ManageSchoolBoard />} />
+          <Route path="settings/profession" element={<ManageProfession />} />
+          <Route path="settings/parents-status" element={<ManageParentsStatus />} />
+          <Route path="settings/classification" element={<ManageStudentClassification />} />
+          <Route path="settings/club" element={<ManageClubMaster />} />
+          <Route path="settings/committee" element={<ManageCommittee />} />
           <Route path="*" element={<PlaceholderPage />} />
         </Route>
 

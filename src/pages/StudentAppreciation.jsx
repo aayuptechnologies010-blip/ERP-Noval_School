@@ -1,44 +1,106 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSearch, FaPlus, FaEye, FaTimes, FaStar } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 const classes = ['All', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10'];
 const appreciationTypes = ['Best Student Award', 'Perfect Attendance', 'Sports Champion', 'Cultural Star', 'Best Behavior'];
 
-const dummyStudents = [
-  { id: 1, name: 'Aarav Sharma', class: 'Class 10', rollNo: '1001', appreciation: 'Best Student Award', date: '2023-10-01', points: 10 },
-  { id: 2, name: 'Priya Verma', class: 'Class 9', rollNo: '902', appreciation: 'Perfect Attendance', date: '2023-10-05', points: 5 },
-  { id: 3, name: 'Rohan Gupta', class: 'Class 8', rollNo: '803', appreciation: 'Sports Champion', date: '2023-10-10', points: 8 },
-  { id: 4, name: 'Sneha Singh', class: 'Class 10', rollNo: '1004', appreciation: 'Cultural Star', date: '2023-10-12', points: 6 },
-  { id: 5, name: 'Aditya Kumar', class: 'Class 7', rollNo: '705', appreciation: 'Best Behavior', date: '2023-10-14', points: 7 },
-];
-
 function StudentAppreciation() {
-  const [records, setRecords] = useState(dummyStudents);
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
   const [filterClass, setFilterClass] = useState('All');
   const [search, setSearch] = useState('');
+  
   const [showModal, setShowModal] = useState(false);
   const [viewItem, setViewItem] = useState(null);
-  const [form, setForm] = useState({ name: '', class: 'Class 6', rollNo: '', appreciation: appreciationTypes[0], date: '', points: '' });
+  const [form, setForm] = useState({ studentName: '', studentClass: 'Class 6', rollNo: '', appreciationType: appreciationTypes[0], date: '', points: '' });
+
+  const fetchRecords = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (filterClass !== 'All') params.append('studentClass', filterClass);
+
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/student-appreciations?${params.toString()}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRecords(data);
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to fetch appreciations');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecords();
+  }, [filterClass, search]);
 
   const handleFormChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.rollNo || !form.date) return alert('Please fill all required fields.');
-    setRecords([{ ...form, id: Date.now(), points: Number(form.points) || 0 }, ...records]);
-    setShowModal(false);
-    setForm({ name: '', class: 'Class 6', rollNo: '', appreciation: appreciationTypes[0], date: '', points: '' });
+    if (!form.studentName || !form.rollNo || !form.date || !form.appreciationType) {
+      return toast.error('Please fill all required fields.');
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        ...form,
+        points: Number(form.points) || 0
+      };
+
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/student-appreciations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        toast.success("Appreciation given successfully!");
+        setShowModal(false);
+        setForm({ studentName: '', studentClass: 'Class 6', rollNo: '', appreciationType: appreciationTypes[0], date: '', points: '' });
+        fetchRecords();
+      } else {
+        const err = await res.json();
+        toast.error(err.message || 'Failed to add appreciation');
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('Error adding appreciation');
+    }
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Remove this appreciation record?')) setRecords(records.filter(r => r.id !== id));
+  const handleDelete = async (id) => {
+    if (!window.confirm('Remove this appreciation record?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/student-appreciations/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        toast.success("Record deleted");
+        fetchRecords();
+      } else {
+        toast.error("Failed to delete");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Error deleting record");
+    }
   };
-
-  const filtered = records.filter(r => {
-    const matchClass = filterClass === 'All' || r.class === filterClass;
-    const matchSearch = r.name.toLowerCase().includes(search.toLowerCase()) || r.rollNo.includes(search);
-    return matchClass && matchSearch;
-  });
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -75,34 +137,35 @@ function StudentAppreciation() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(r => (
-                <tr key={r.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+              {loading && <tr><td colSpan="7" style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>Loading...</td></tr>}
+              {!loading && records.map(r => (
+                <tr key={r._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={tdStyle}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#e0e7ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#4f46e5', fontSize: 14 }}>
-                        {r.name.charAt(0)}
+                        {r.studentName ? r.studentName.charAt(0) : '?'}
                       </div>
-                      <span style={{ fontWeight: 600, color: '#1e293b' }}>{r.name}</span>
+                      <span style={{ fontWeight: 600, color: '#1e293b' }}>{r.studentName}</span>
                     </div>
                   </td>
                   <td style={tdStyle}>{r.rollNo}</td>
-                  <td style={tdStyle}>{r.class}</td>
+                  <td style={tdStyle}>{r.studentClass}</td>
                   <td style={tdStyle}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <FaStar size={12} color="#ca8a04" /> {r.appreciation}
+                      <FaStar size={12} color="#ca8a04" /> {r.appreciationType}
                     </span>
                   </td>
                   <td style={tdStyle}><span style={{ fontWeight: 700, color: '#3b82f6' }}>+{r.points}</span></td>
-                  <td style={tdStyle}>{r.date}</td>
+                  <td style={tdStyle}>{r.date ? new Date(r.date).toLocaleDateString() : ''}</td>
                   <td style={{ ...tdStyle, textAlign: 'center' }}>
                     <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
                       <button onClick={() => setViewItem(r)} style={iconBtn} title="View"><FaEye size={14} color="#3b82f6" /></button>
-                      <button onClick={() => handleDelete(r.id)} style={iconBtn} title="Remove"><FaTimes size={14} color="#ef4444" /></button>
+                      <button onClick={() => handleDelete(r._id)} style={iconBtn} title="Remove"><FaTimes size={14} color="#ef4444" /></button>
                     </div>
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && (
+              {!loading && records.length === 0 && (
                 <tr><td colSpan="7" style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>No appreciation records found.</td></tr>
               )}
             </tbody>
@@ -120,17 +183,17 @@ function StudentAppreciation() {
             </div>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                <div><label style={lbl}>Student Name *</label><input name="name" value={form.name} onChange={handleFormChange} required style={inp} placeholder="Full name" /></div>
+                <div><label style={lbl}>Student Name *</label><input name="studentName" value={form.studentName} onChange={handleFormChange} required style={inp} placeholder="Full name" /></div>
                 <div><label style={lbl}>Roll No. *</label><input name="rollNo" value={form.rollNo} onChange={handleFormChange} required style={inp} placeholder="e.g. 1001" /></div>
-                <div><label style={lbl}>Class</label>
-                  <select name="class" value={form.class} onChange={handleFormChange} style={inp}>
+                <div><label style={lbl}>Class *</label>
+                  <select name="studentClass" value={form.studentClass} onChange={handleFormChange} style={inp}>
                     {classes.filter(c => c !== 'All').map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
                 <div><label style={lbl}>Date *</label><input type="date" name="date" value={form.date} onChange={handleFormChange} required style={inp} /></div>
               </div>
-              <div><label style={lbl}>Appreciation Type</label>
-                <select name="appreciation" value={form.appreciation} onChange={handleFormChange} style={inp}>
+              <div><label style={lbl}>Appreciation Type *</label>
+                <select name="appreciationType" value={form.appreciationType} onChange={handleFormChange} style={inp}>
                   {appreciationTypes.map(a => <option key={a}>{a}</option>)}
                 </select>
               </div>
@@ -149,7 +212,7 @@ function StudentAppreciation() {
               <h2 style={{ margin: 0, fontSize: 18, color: '#1e293b' }}>Appreciation Details</h2>
               <button onClick={() => setViewItem(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><FaTimes size={16} color="#64748b" /></button>
             </div>
-            {[['Student', viewItem.name], ['Roll No.', viewItem.rollNo], ['Class', viewItem.class], ['Appreciation', viewItem.appreciation], ['Points', `+${viewItem.points}`], ['Date', viewItem.date]].map(([k, v]) => (
+            {[['Student', viewItem.studentName], ['Roll No.', viewItem.rollNo], ['Class', viewItem.studentClass], ['Appreciation', viewItem.appreciationType], ['Points', `+${viewItem.points}`], ['Date', viewItem.date ? new Date(viewItem.date).toLocaleDateString() : '']].map(([k, v]) => (
               <div key={k} style={{ display: 'flex', borderBottom: '1px solid #f1f5f9', padding: '10px 0' }}>
                 <span style={{ width: 110, color: '#94a3b8', fontSize: 13, fontWeight: 600 }}>{k}</span>
                 <span style={{ flex: 1, color: '#1e293b', fontWeight: 500 }}>{v}</span>

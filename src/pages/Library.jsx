@@ -1,25 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaBook, FaSearch, FaBookOpen } from 'react-icons/fa';
-
-const dummyBooks = [
-  { id: 1, title: 'Introduction to Algorithms', author: 'Thomas H. Cormen', category: 'Computer Science', status: 'Available', accessionNo: 'LIB-001' },
-  { id: 2, title: 'Concepts of Physics Vol 1', author: 'H.C. Verma', category: 'Physics', status: 'Issued', accessionNo: 'LIB-002' },
-  { id: 3, title: 'Objective Mathematics', author: 'R.D. Sharma', category: 'Mathematics', status: 'Available', accessionNo: 'LIB-003' },
-  { id: 4, title: 'Advanced Engineering Mathematics', author: 'Erwin Kreyszig', category: 'Mathematics', status: 'Available', accessionNo: 'LIB-004' },
-  { id: 5, title: 'Organic Chemistry', author: 'Morrison & Boyd', category: 'Chemistry', status: 'Issued', accessionNo: 'LIB-005' },
-];
+import { toast } from 'react-toastify';
 
 function Library() {
+  const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('All'); // 'All', 'Available', 'Issued'
+  const [loading, setLoading] = useState(true);
 
-  const filteredBooks = dummyBooks.filter(book => {
-    const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          book.accessionNo.toLowerCase().includes(searchTerm.toLowerCase());
+  useEffect(() => {
+    fetchBooks();
+  }, []);
+
+  const fetchBooks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/books`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setBooks(Array.isArray(data) ? data : (data.books || []));
+      } else {
+        toast.error("Failed to load library books");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Error loading library books");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredBooks = books.filter(book => {
+    const matchesSearch = (book.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          (book.author || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (book.accessionNo || '').toLowerCase().includes(searchTerm.toLowerCase());
     
+    // Status mapping: if API returns different casing
+    const isAvailable = (book.status || '').toLowerCase() === 'available';
+    const currentStatus = isAvailable ? 'Available' : 'Issued';
+
     if (activeTab === 'All') return matchesSearch;
-    return matchesSearch && book.status === activeTab;
+    return matchesSearch && currentStatus === activeTab;
   });
 
   return (
@@ -92,55 +115,65 @@ function Library() {
                 </tr>
               </thead>
               <tbody>
-                {filteredBooks.map((book) => (
-                  <tr key={book.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={tdStyle}>
-                      <span style={{ fontWeight: 600, color: '#64748b' }}>{book.accessionNo}</span>
-                    </td>
-                    <td style={tdStyle}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 40, height: 40, borderRadius: 8, background: '#e0e7ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <FaBook color="#4f46e5" size={18} />
-                        </div>
-                        <div>
-                          <p style={{ margin: 0, fontWeight: 700, color: '#1e293b', fontSize: 14 }}>{book.title}</p>
-                          <p style={{ margin: 0, fontSize: 12, color: '#64748b' }}>by {book.author}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td style={tdStyle}>{book.category}</td>
-                    <td style={tdStyle}>
-                      <span style={{ 
-                        padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                        background: book.status === 'Available' ? '#dcfce7' : '#fee2e2',
-                        color: book.status === 'Available' ? '#16a34a' : '#ef4444'
-                      }}>
-                        {book.status}
-                      </span>
-                    </td>
-                    <td style={{ ...tdStyle, textAlign: 'center' }}>
-                      <button 
-                        style={{
-                          background: book.status === 'Available' ? '#3b82f6' : '#94a3b8',
-                          color: '#fff', border: 'none', padding: '6px 16px', borderRadius: 4, 
-                          fontSize: 12, fontWeight: 600, cursor: book.status === 'Available' ? 'pointer' : 'not-allowed',
-                          display: 'inline-flex', alignItems: 'center', gap: 6
-                        }}
-                        disabled={book.status !== 'Available'}
-                        onClick={() => alert(`Requested ${book.title}`)}
-                      >
-                        <FaBookOpen size={12} /> {book.status === 'Available' ? 'Request' : 'Issued'}
-                      </button>
+                {loading ? (
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: 'center', padding: '48px', color: '#94a3b8' }}>
+                      <p>Loading books...</p>
                     </td>
                   </tr>
-                ))}
-                {filteredBooks.length === 0 && (
+                ) : filteredBooks.length === 0 ? (
                   <tr>
                     <td colSpan="5" style={{ textAlign: 'center', padding: '48px', color: '#94a3b8' }}>
                       <FaBook size={48} style={{ opacity: 0.2, marginBottom: 16 }} />
                       <p>No books found matching your criteria.</p>
                     </td>
                   </tr>
+                ) : (
+                  filteredBooks.map((book) => {
+                    const isAvailable = (book.status || '').toLowerCase() === 'available';
+                    return (
+                      <tr key={book._id || book.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={tdStyle}>
+                          <span style={{ fontWeight: 600, color: '#64748b' }}>{book.accessionNo || '-'}</span>
+                        </td>
+                        <td style={tdStyle}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <div style={{ width: 40, height: 40, borderRadius: 8, background: '#e0e7ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <FaBook color="#4f46e5" size={18} />
+                            </div>
+                            <div>
+                              <p style={{ margin: 0, fontWeight: 700, color: '#1e293b', fontSize: 14 }}>{book.title}</p>
+                              <p style={{ margin: 0, fontSize: 12, color: '#64748b' }}>by {book.author || 'Unknown'}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td style={tdStyle}>{book.category || '-'}</td>
+                        <td style={tdStyle}>
+                          <span style={{ 
+                            padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                            background: isAvailable ? '#dcfce7' : '#fee2e2',
+                            color: isAvailable ? '#16a34a' : '#ef4444'
+                          }}>
+                            {isAvailable ? 'Available' : 'Issued'}
+                          </span>
+                        </td>
+                        <td style={{ ...tdStyle, textAlign: 'center' }}>
+                          <button 
+                            style={{
+                              background: isAvailable ? '#3b82f6' : '#94a3b8',
+                              color: '#fff', border: 'none', padding: '6px 16px', borderRadius: 4, 
+                              fontSize: 12, fontWeight: 600, cursor: isAvailable ? 'pointer' : 'not-allowed',
+                              display: 'inline-flex', alignItems: 'center', gap: 6
+                            }}
+                            disabled={!isAvailable}
+                            onClick={() => toast.success(`Requested ${book.title}`)}
+                          >
+                            <FaBookOpen size={12} /> {isAvailable ? 'Request' : 'Issued'}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

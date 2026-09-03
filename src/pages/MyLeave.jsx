@@ -8,9 +8,9 @@ function MyLeave() {
 
   const [leaves, setLeaves] = useState([]);
 
-  // NOTE: Replace this static staffId with the dynamic ID from auth/user state
-  const staffId = "6a84671ca9a89a398b948b56";
-
+  // Fetch dynamic ID from auth/user state
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const staffId = user._id || user.id || "6a84671ca9a89a398b948b56"; // Fallback for safety
   useEffect(() => {
     const fetchLeaves = async () => {
       try {

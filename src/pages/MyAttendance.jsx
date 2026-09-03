@@ -1,16 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaCalendarAlt, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
-const dummyAttendance = [
-  { id: 1, date: '2023-10-01', status: 'Present', checkIn: '08:00 AM', checkOut: '04:00 PM' },
-  { id: 2, date: '2023-10-02', status: 'Holiday', checkIn: '-', checkOut: '-' },
-  { id: 3, date: '2023-10-03', status: 'Present', checkIn: '08:05 AM', checkOut: '04:10 PM' },
-  { id: 4, date: '2023-10-04', status: 'Absent', checkIn: '-', checkOut: '-' },
-  { id: 5, date: '2023-10-05', status: 'Present', checkIn: '07:55 AM', checkOut: '04:00 PM' },
-];
-
 function MyAttendance() {
-  const [month, setMonth] = useState('October');
+  const [month, setMonth] = useState('');
+  const [year, setYear] = useState(new Date().getFullYear().toString());
+  const [attendance, setAttendance] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Default to current month
+  useEffect(() => {
+    const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+    setMonth(currentMonth);
+  }, []);
+
+  useEffect(() => {
+    if (month && year) {
+      fetchMyAttendance();
+    }
+  }, [month, year]);
+
+  const fetchMyAttendance = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      // Pass month and year as query parameters
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staff-attendance/my-attendance?month=${month}&year=${year}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAttendance(data.attendance || []);
+      }
+    } catch (error) {
+      console.error("Failed to load attendance", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const totalPresent = attendance.filter(r => r.status === 'Present' || r.status === 'Late').length;
+  const totalAbsent = attendance.filter(r => r.status === 'Absent').length;
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -25,7 +54,7 @@ function MyAttendance() {
         
         <div style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '24px' }}>
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <label style={{ fontSize: 14, color: '#475569', fontWeight: 600 }}>Select Month</label>
               <select 
@@ -33,19 +62,28 @@ function MyAttendance() {
                 onChange={e => setMonth(e.target.value)}
                 style={inputStyle}
               >
-                <option value="September">September</option>
-                <option value="October">October</option>
-                <option value="November">November</option>
+                {['January','February','March','April','May','June','July','August','September','October','November','December'].map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+              <select 
+                value={year} 
+                onChange={e => setYear(e.target.value)}
+                style={inputStyle}
+              >
+                {[2023, 2024, 2025, 2026, 2027].map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
               </select>
             </div>
             <div style={{ display: 'flex', gap: 16 }}>
               <div style={statCard}>
                 <span style={statLabel}>Total Present</span>
-                <span style={{ ...statValue, color: '#16a34a' }}>21</span>
+                <span style={{ ...statValue, color: '#16a34a' }}>{totalPresent}</span>
               </div>
               <div style={statCard}>
                 <span style={statLabel}>Total Absent</span>
-                <span style={{ ...statValue, color: '#ef4444' }}>2</span>
+                <span style={{ ...statValue, color: '#ef4444' }}>{totalAbsent}</span>
               </div>
             </div>
           </div>
@@ -61,22 +99,28 @@ function MyAttendance() {
                 </tr>
               </thead>
               <tbody>
-                {dummyAttendance.map((row) => (
-                  <tr key={row.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={tdStyle}>{row.date}</td>
-                    <td style={tdStyle}>
-                      <span style={{ 
-                        padding: '4px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600,
-                        background: row.status === 'Present' ? '#dcfce7' : row.status === 'Absent' ? '#fee2e2' : '#f1f5f9',
-                        color: row.status === 'Present' ? '#16a34a' : row.status === 'Absent' ? '#ef4444' : '#64748b'
-                      }}>
-                        {row.status}
-                      </span>
-                    </td>
-                    <td style={tdStyle}>{row.checkIn}</td>
-                    <td style={tdStyle}>{row.checkOut}</td>
-                  </tr>
-                ))}
+                {loading ? (
+                  <tr><td colSpan={4} style={{ textAlign: 'center', padding: 24 }}>Loading...</td></tr>
+                ) : attendance.length === 0 ? (
+                  <tr><td colSpan={4} style={{ textAlign: 'center', padding: 24 }}>No attendance records found for this month.</td></tr>
+                ) : (
+                  attendance.map((row) => (
+                    <tr key={row._id || row.id || row.date} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={tdStyle}>{row.date ? new Date(row.date).toLocaleDateString() : '-'}</td>
+                      <td style={tdStyle}>
+                        <span style={{ 
+                          padding: '4px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600,
+                          background: (row.status === 'Present' || row.status === 'Late') ? '#dcfce7' : row.status === 'Absent' ? '#fee2e2' : '#f1f5f9',
+                          color: (row.status === 'Present' || row.status === 'Late') ? '#16a34a' : row.status === 'Absent' ? '#ef4444' : '#64748b'
+                        }}>
+                          {row.status || '-'}
+                        </span>
+                      </td>
+                      <td style={tdStyle}>{row.checkInTime || '-'}</td>
+                      <td style={tdStyle}>{row.checkOutTime || '-'}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -110,28 +154,32 @@ const thStyle = {
 const tdStyle = {
   padding: '16px',
   fontSize: 14,
-  color: '#475569'
+  color: '#475569',
+  verticalAlign: 'middle'
 };
 
 const statCard = {
+  background: '#f8fafc',
+  padding: '12px 24px',
+  borderRadius: 8,
   display: 'flex',
   flexDirection: 'column',
-  background: '#f8fafc',
-  padding: '8px 16px',
-  borderRadius: 8,
-  border: '1px solid #e2e8f0',
-  alignItems: 'center'
+  alignItems: 'center',
+  border: '1px solid #e2e8f0'
 };
 
 const statLabel = {
   fontSize: 12,
+  fontWeight: 600,
   color: '#64748b',
-  fontWeight: 600
+  textTransform: 'uppercase',
+  letterSpacing: 0.5,
+  marginBottom: 4
 };
 
 const statValue = {
-  fontSize: 18,
-  fontWeight: 700
+  fontSize: 24,
+  fontWeight: 800,
 };
 
 export default MyAttendance;

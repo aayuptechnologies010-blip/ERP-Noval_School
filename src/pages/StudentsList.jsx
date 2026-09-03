@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaListUl, FaThLarge, FaPlus, FaStar, FaRegStar, FaEdit, FaTrash } from 'react-icons/fa';
-
-import { useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 function StudentsList({ favoritesOnly = false }) {
   const [sensitiveData, setSensitiveData] = useState(true);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Filtering states
+  const [searchBy, setSearchBy] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [studentTypeFilter, setStudentTypeFilter] = useState('All');
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -78,6 +82,37 @@ function StudentsList({ favoritesOnly = false }) {
     }
   };
 
+  // Filter Logic
+  const filteredStudents = students.filter(s => {
+    if (favoritesOnly && !s.isFavorite) return false;
+    
+    // Boarding filter
+    if (studentTypeFilter === 'Boarding' && s.personalDetails?.boardingHostel !== 'Yes') return false;
+    if (studentTypeFilter === 'Day Scholar' && s.personalDetails?.boardingHostel !== 'No') return false;
+
+    // Search text filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const p = s.personalDetails || {};
+      const a = s.academicDetails || {};
+      const fullName = `${p.firstName || ''} ${p.middleName || ''} ${p.lastName || ''}`.toLowerCase();
+      const adm = (a.admissionNumber || '').toLowerCase();
+      const cls = (`${a.class || ''}-${a.section || ''}`).toLowerCase();
+      
+      if (searchBy === 'All') {
+        if (!fullName.includes(q) && !adm.includes(q) && !cls.includes(q)) return false;
+      } else if (searchBy === 'Name') {
+        if (!fullName.includes(q)) return false;
+      } else if (searchBy === 'Admission No') {
+        if (!adm.includes(q)) return false;
+      } else if (searchBy === 'Class') {
+        if (!cls.includes(q)) return false;
+      }
+    }
+
+    return true;
+  });
+
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       
@@ -99,18 +134,25 @@ function StudentsList({ favoritesOnly = false }) {
       </div>
 
       {/* Filters Section */}
-      <div style={{ padding: '0 32px 24px 32px', display: 'flex', alignItems: 'flex-end', gap: 24 }}>
+      <div style={{ padding: '0 32px 24px 32px', display: 'flex', alignItems: 'flex-end', gap: 24, flexWrap: 'wrap' }}>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: 200 }}>
             <label style={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>Search by</label>
-            <select style={{ border: '1px solid #e2e8f0', borderRadius: 4, padding: '10px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#fff' }}>
-              <option>All</option>
+            <select 
+              value={searchBy} onChange={e => setSearchBy(e.target.value)}
+              style={{ border: '1px solid #e2e8f0', borderRadius: 4, padding: '10px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#fff' }}>
+              <option value="All">All</option>
+              <option value="Name">Name</option>
+              <option value="Admission No">Admission No</option>
+              <option value="Class">Class</option>
             </select>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
             <label style={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>&nbsp;</label>
             <input 
               type="text" 
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
               placeholder="Type here..." 
               style={{ border: '1px solid #e2e8f0', borderRadius: 4, padding: '10px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#fff' }}
             />
@@ -119,23 +161,15 @@ function StudentsList({ favoritesOnly = false }) {
         
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 10 }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#334155', cursor: 'pointer' }}>
-            <input type="radio" name="studentType" defaultChecked style={{ accentColor: '#3b82f6' }} /> All
+            <input type="radio" name="studentType" checked={studentTypeFilter === 'All'} onChange={() => setStudentTypeFilter('All')} style={{ accentColor: '#3b82f6' }} /> All
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#334155', cursor: 'pointer' }}>
-            <input type="radio" name="studentType" style={{ accentColor: '#3b82f6' }} /> Boarding
+            <input type="radio" name="studentType" checked={studentTypeFilter === 'Boarding'} onChange={() => setStudentTypeFilter('Boarding')} style={{ accentColor: '#3b82f6' }} /> Boarding
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#334155', cursor: 'pointer' }}>
-            <input type="radio" name="studentType" style={{ accentColor: '#3b82f6' }} /> Day Scholar
+            <input type="radio" name="studentType" checked={studentTypeFilter === 'Day Scholar'} onChange={() => setStudentTypeFilter('Day Scholar')} style={{ accentColor: '#3b82f6' }} /> Day Scholar
           </label>
         </div>
-        
-        <button style={{ 
-          background: '#65c466', color: '#fff', border: 'none', borderRadius: 4, 
-          padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-          marginBottom: 2
-        }}>
-          SEARCH
-        </button>
       </div>
 
       {/* Main Content Card */}
@@ -145,7 +179,7 @@ function StudentsList({ favoritesOnly = false }) {
           {/* Card Header */}
           <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 style={{ fontSize: 18, fontWeight: 600, color: '#334155', margin: 0 }}>
-              Students - (Total: {students.length})
+              Students - (Total: {filteredStudents.length})
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: '#334155' }}>Show Sensitive Data</span>
@@ -203,7 +237,7 @@ function StudentsList({ favoritesOnly = false }) {
                   <tr>
                     <td colSpan="8" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>Loading students...</td>
                   </tr>
-                ) : students.filter(s => !favoritesOnly || s.isFavorite).map((student, index, filteredArray) => {
+                ) : filteredStudents.map((student, index, filteredArray) => {
                   const p = student.personalDetails || {};
                   const a = student.academicDetails || {};
                   const f = student.familyDetails || {};

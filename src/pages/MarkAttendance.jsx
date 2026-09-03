@@ -3,14 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaVideo, FaSave, FaCheckCircle, FaEdit } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
-const CLASSES = [
-  'Select Class','All','NUR','NUR A','NUR B','LKG','LKG A','LKG B','UKG','UKG A','UKG B','UKG C',
-  '1','1 A','1 B','1 C','2','2 A','2 B','2 C','3 A','3 B','3 C',
-  '4 A','4 B','4 C','5 A','5 B','5 C','6 A','6 B','6 C',
-  '7 A','7 B','7 C','8 A','8 B','8 C','9 A','9 B','9 C','9 D','9 E','9 F',
-  '10 A','10 B','10 C','10 D','11 A','11 B','11 C','11 D','11 E','11 F',
-  '12 A','12 B','12 C','12 D'
-];
 
 const STATUS_BUTTONS = [
   { label: 'P',    bg: '#22c55e', color: '#fff', title: 'Present'  },
@@ -41,7 +33,8 @@ const REVERSE_API_STATUS_MAP = {
 
 function MarkAttendance() {
   const navigate = useNavigate();
-  const [selectedClass, setSelectedClass] = useState('UKG A');
+  const [selectedClass, setSelectedClass] = useState('Select Class');
+  const [availableClasses, setAvailableClasses] = useState([]);
   const today = new Date().toISOString().split('T')[0];
   const [date, setDate] = useState(today);
   const [showTable, setShowTable] = useState(true);
@@ -78,7 +71,34 @@ function MarkAttendance() {
         setLoading(false);
       }
     };
+
+    const fetchClasses = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/promotions/classes`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const classList = ['Select Class', 'All'];
+          if (data.classes) {
+            data.classes.forEach(c => {
+              if (c.section) {
+                classList.push(`${c.class} ${c.section}`);
+              } else {
+                classList.push(c.class);
+              }
+            });
+          }
+          setAvailableClasses(classList);
+        }
+      } catch (e) {
+        console.error("Error fetching classes", e);
+      }
+    };
+
     fetchStudents();
+    fetchClasses();
   }, []);
 
   const { parsedClass, parsedSection } = useMemo(() => {
@@ -360,7 +380,7 @@ useEffect(() => {
               onChange={e => setSelectedClass(e.target.value)}
               style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '9px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#fff' }}
             >
-              {CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
+              {availableClasses.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           

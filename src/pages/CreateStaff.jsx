@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FaArrowLeft, FaSave, FaCamera } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 export default function CreateStaff() {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditMode = !!id;
   const [loading, setLoading] = useState(false);
+
+  const [masters, setMasters] = useState({ roles: [], religions: [] });
 
   // Define Form State matching JSON structure
   const [formData, setFormData] = useState({
@@ -32,13 +36,62 @@ export default function CreateStaff() {
     emergencyContactNo: '',
     emailId: '',
     alternateEmailId: '',
-    religion: 'HINDU',
+    religion: '',
     nationality: 'Indian',
     address: '',
     permanentAddress: ''
   });
 
   const [staffPhoto, setStaffPhoto] = useState(null);
+
+  useEffect(() => {
+    const fetchMasters = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = { 'Authorization': `Bearer ${token}` };
+        const baseUrl = import.meta.env.VITE_API_BASE_URL;
+        
+        const [rolesRes, religionsRes] = await Promise.all([
+          fetch(`${baseUrl}/api/roles`, { headers }).then(r => r.json()),
+          fetch(`${baseUrl}/api/religions`, { headers }).then(r => r.json()),
+        ]);
+
+        setMasters({
+          roles: Array.isArray(rolesRes) ? rolesRes : [],
+          religions: Array.isArray(religionsRes) ? religionsRes : []
+        });
+      } catch (err) {
+        console.error("Error fetching master data:", err);
+      }
+    };
+    fetchMasters();
+  }, []);
+
+  useEffect(() => {
+    if (isEditMode) {
+      const fetchStaffData = async () => {
+        setLoading(true);
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staffs/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setFormData(data);
+          } else {
+            toast.error("Failed to load staff data.");
+          }
+        } catch (error) {
+          console.error("Error fetching staff:", error);
+          toast.error("An error occurred while fetching staff data.");
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchStaffData();
+    }
+  }, [id, isEditMode]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,8 +118,9 @@ export default function CreateStaff() {
         payload.append('staffPhoto', staffPhoto);
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/staffs`, {
-        method: 'POST',
+      const url = isEditMode ? `${import.meta.env.VITE_API_BASE_URL}/api/staffs/${id}` : `${import.meta.env.VITE_API_BASE_URL}/api/staffs`;
+      const response = await fetch(url, {
+        method: isEditMode ? 'PUT' : 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
         },
@@ -75,14 +129,14 @@ export default function CreateStaff() {
 
       const data = await response.json();
       if (response.ok) {
-        toast.success("Staff created successfully!");
+        toast.success(isEditMode ? "Staff updated successfully!" : "Staff created successfully!");
         navigate('/dashboard/staff');
       } else {
-        toast.error(data.message || "Failed to create staff.");
+        toast.error(data.message || (isEditMode ? "Failed to update staff." : "Failed to create staff."));
       }
     } catch (error) {
-      console.error("Error creating staff:", error);
-      toast.error("An error occurred while creating staff.");
+      console.error("Error saving staff:", error);
+      toast.error("An error occurred while saving staff.");
     } finally {
       setLoading(false);
     }
@@ -96,11 +150,13 @@ export default function CreateStaff() {
 
   const InputField = ({ label, type = 'text', name, value, onChange, placeholder = '' }) => (
     <div className="flex flex-col">
-      <label className="text-sm font-medium text-gray-700 mb-1">{label} {['firstName', 'userName', 'contactNo'].includes(name) && <span className="text-red-500">*</span>}</label>
+      <label className="text-sm font-medium text-gray-700 mb-1">
+        {label} {['firstName', 'userName', 'contactNo'].includes(name) && <span className="text-red-500">*</span>}
+      </label>
       <input
         type={type}
         name={name}
-        value={value}
+        value={value || ''}
         onChange={onChange}
         placeholder={placeholder}
         required={['firstName', 'userName', 'contactNo'].includes(name)}
@@ -109,18 +165,21 @@ export default function CreateStaff() {
     </div>
   );
 
-  const SelectField = ({ label, name, value, onChange, options }) => (
+  const SelectField = ({ label, name, value, onChange, options, optionKey, optionLabel }) => (
     <div className="flex flex-col">
       <label className="text-sm font-medium text-gray-700 mb-1">{label} <span className="text-red-500">*</span></label>
       <select
         name={name}
-        value={value}
+        value={value || ''}
         onChange={onChange}
         required
         className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
       >
+        <option value="">-- Select --</option>
         {options.map((opt, idx) => (
-          <option key={idx} value={opt.value || opt}>{opt.label || opt}</option>
+          <option key={idx} value={optionKey ? opt[optionKey] : (opt.value || opt)}>
+            {optionLabel ? opt[optionLabel] : (opt.label || opt)}
+          </option>
         ))}
       </select>
     </div>
@@ -129,8 +188,9 @@ export default function CreateStaff() {
   return (
     <div className="flex-1 bg-gray-50 rounded-tl-3xl p-8 overflow-y-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-xl font-bold text-blue-900">Create Staff</h1>
+        <h1 className="text-xl font-bold text-blue-900">{isEditMode ? 'Edit Staff' : 'Create Staff'}</h1>
         <button 
+          type="button"
           onClick={() => navigate('/dashboard/staff')}
           className="flex items-center gap-2 bg-white px-4 py-2 rounded shadow-sm text-sm font-semibold text-gray-600 hover:bg-gray-100"
         >
@@ -145,6 +205,8 @@ export default function CreateStaff() {
             <div className="w-32 h-32 bg-gray-200 flex flex-col items-center justify-center text-gray-400 mb-3 overflow-hidden rounded-full border-4 border-gray-100">
               {staffPhoto ? (
                 <img src={URL.createObjectURL(staffPhoto)} alt="Staff" className="w-full h-full object-cover" />
+              ) : formData.staffPhoto ? (
+                <img src={formData.staffPhoto} alt="Staff" className="w-full h-full object-cover" />
               ) : (
                 <>
                   <FaCamera className="text-3xl mb-2" />
@@ -165,7 +227,7 @@ export default function CreateStaff() {
             <InputField label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} />
             
             <InputField label="User Name" name="userName" value={formData.userName} onChange={handleChange} />
-            <InputField label="Role ID" name="role" value={formData.role} onChange={handleChange} placeholder="e.g. 6a70ac68a3da1f19a80482cd" />
+            <SelectField label="Role" name="role" value={formData.role} onChange={handleChange} options={masters.roles} optionKey="_id" optionLabel="roleName" />
             <InputField label="Designation" name="designation" value={formData.designation} onChange={handleChange} />
             
             <SelectField label="Gender" name="gender" value={formData.gender} onChange={handleChange} options={['Male', 'Female', 'Other']} />
@@ -194,7 +256,7 @@ export default function CreateStaff() {
             <InputField label="Email ID" type="email" name="emailId" value={formData.emailId} onChange={handleChange} />
             <InputField label="Alternate Email ID" type="email" name="alternateEmailId" value={formData.alternateEmailId} onChange={handleChange} />
             
-            <SelectField label="Religion" name="religion" value={formData.religion} onChange={handleChange} options={['HINDU', 'MUSLIM', 'CHRISTIAN', 'SIKH', 'OTHER']} />
+            <SelectField label="Religion" name="religion" value={formData.religion} onChange={handleChange} options={masters.religions} optionKey="religionName" optionLabel="religionName" />
             <InputField label="Nationality" name="nationality" value={formData.nationality} onChange={handleChange} />
           </div>
 
@@ -211,7 +273,7 @@ export default function CreateStaff() {
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-md font-bold text-sm shadow-md transition-all disabled:opacity-50"
             >
               <FaSave className="text-lg" />
-              {loading ? 'Saving...' : 'Save Staff Details'}
+              {loading ? 'Saving...' : (isEditMode ? 'Update Staff Details' : 'Save Staff Details')}
             </button>
           </div>
 

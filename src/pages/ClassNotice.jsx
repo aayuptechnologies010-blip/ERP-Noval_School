@@ -1,18 +1,41 @@
-import React, { useState } from 'react';
-import { FaVideo, FaEye, FaTimes, FaSearch } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaVideo, FaEye, FaSearch } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-
-const dummyClassNotices = [
-  { id: 1, classId: 'NUR A', heading: 'Rhymes Competition', description: 'Annual rhymes competition will be held next week...', updatedOn: '10-Feb-2026', status: 'Read' },
-  { id: 2, classId: 'NUR A', heading: 'Bring Colors', description: 'Please send a set of wax crayons with the student.', updatedOn: '08-Feb-2026', status: 'Unread' },
-  { id: 3, classId: 'LKG B', heading: 'Fancy Dress', description: 'Fancy dress competition details.', updatedOn: '12-Feb-2026', status: 'Read' },
-];
 
 function ClassNotice() {
   const [selectedClass, setSelectedClass] = useState('NUR A');
+  const [notices, setNotices] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const filteredNotices = dummyClassNotices.filter(notice => notice.classId === selectedClass);
+  useEffect(() => {
+    fetchClassNotices();
+  }, []);
+
+  const fetchClassNotices = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/class-notices`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setNotices(data.classNotices || data.notices || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch class notices", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // The backend might return class references or strings. We do a loose match or string match.
+  const filteredNotices = notices.filter(notice => {
+    if (!notice.classId) return false;
+    const noticeClass = typeof notice.classId === 'object' ? (notice.classId.className || notice.classId.name) : notice.classId;
+    return noticeClass === selectedClass || noticeClass === selectedClass.split(' ')[0]; // Basic matching
+  });
 
   return (
     <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -56,24 +79,28 @@ function ClassNotice() {
                 </tr>
               </thead>
               <tbody>
-                {filteredNotices.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>Loading notices...</td>
+                  </tr>
+                ) : filteredNotices.length > 0 ? (
                   filteredNotices.map((notice, idx) => (
-                    <tr key={notice.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <tr key={notice._id || notice.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                       <td style={tdStyle}>{idx + 1}</td>
-                      <td style={tdStyle}>{notice.heading}</td>
-                      <td style={tdStyle}>{notice.description}</td>
-                      <td style={tdStyle}>{notice.updatedOn}</td>
+                      <td style={tdStyle}>{notice.heading || notice.title}</td>
+                      <td style={tdStyle}>{notice.description || notice.content}</td>
+                      <td style={tdStyle}>{notice.updatedOn || (notice.createdAt ? new Date(notice.createdAt).toLocaleDateString() : '-')}</td>
                       <td style={tdStyle}>
                         <span style={{ 
                           background: notice.status === 'Read' ? '#5cb85c' : '#fbbf24', 
                           color: '#fff', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600 
                         }}>
-                          {notice.status}
+                          {notice.status || 'Sent'}
                         </span>
                       </td>
                       <td style={tdStyle}>
                         <button 
-                          onClick={() => navigate(`/dashboard/announcement/class/view/${notice.id}`, { state: { notice } })} 
+                          onClick={() => navigate(`/dashboard/announcement/class/view/${notice._id || notice.id}`, { state: { notice } })} 
                           style={{ background: '#0ea5e9', color: '#fff', border: 'none', width: 28, height: 28, borderRadius: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}
                         >
                           <FaEye size={14} />
@@ -120,19 +147,24 @@ function ClassNotice() {
 }
 
 const thStyle = {
-  padding: '14px 16px',
+  padding: '16px',
   textAlign: 'left',
   fontSize: 13,
   fontWeight: 700,
-  color: '#334155',
-  borderBottom: '1px solid #e2e8f0',
+  color: '#0f172a',
+  background: '#f8fafc',
+  borderBottom: '2px solid #e2e8f0',
   whiteSpace: 'nowrap'
 };
 
 const tdStyle = {
-  padding: '16px 16px',
-  fontSize: 13,
+  padding: '16px',
+  fontSize: 14,
   color: '#475569',
+  verticalAlign: 'middle',
+  maxWidth: 200,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
   whiteSpace: 'nowrap'
 };
 

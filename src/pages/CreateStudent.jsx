@@ -9,11 +9,18 @@ export default function CreateStudent() {
   const isEditMode = !!id;
   const [loading, setLoading] = useState(false);
 
+  // Master Data State
+  const [masters, setMasters] = useState({
+    religions: [], castes: [], subCastes: [], categories: [],
+    classes: [], sections: [], boards: [], streams: [],
+    professions: [], parishes: [], clubs: [], classifications: []
+  });
+
   // Define Form State matching JSON structure
   const [personalDetails, setPersonalDetails] = useState({
     firstName: '', middleName: '', lastName: '', dateOfBirth: '', gender: 'Male',
-    religion: 'HINDU', caste: 'General', subCaste: '', nationality: 'Indian', placeOfBirth: '',
-    motherTongue: 'Hindi', parish: '0', schoolCategory: 'General', houseNames: '',
+    religion: '', caste: '', subCaste: '', nationality: 'Indian', placeOfBirth: '',
+    motherTongue: 'Hindi', parish: '', schoolCategory: '', houseNames: '',
     isNachEcs: false, isEwsCwsn: '0', isMinority: false, isDisabilityCwsn: false,
     disabilityDescription: '', isRte: '0', clubs: '', cadetType: '', statesNationalCompetitions: '0',
     foodStatus: 'Veg', boardingHostel: 'No', isOnlyChild: false
@@ -21,8 +28,8 @@ export default function CreateStudent() {
 
   const [academicDetails, setAcademicDetails] = useState({
     admissionNumber: '', admissionStatus: 'Continuous', currentStatus: 'STUDYING',
-    reason: 'New Admission', rollNumber: '', class: '', section: '', board: 'CBSE',
-    dateOfAdmission: '', dateOfJoining: '', stream: 'None', optionalSubject: '',
+    reason: 'New Admission', rollNumber: '', class: '', section: '', board: '',
+    dateOfAdmission: '', dateOfJoining: '', stream: '', optionalSubject: '',
     previousClass: '0', sixSubject: ''
   });
 
@@ -74,6 +81,54 @@ export default function CreateStudent() {
   const [files, setFiles] = useState({
     studentPhoto: null, fatherPhoto: null, motherPhoto: null, familyPhoto: null
   });
+
+  // Fetch Master Data
+  useEffect(() => {
+    const fetchMasters = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = { 'Authorization': `Bearer ${token}` };
+        const baseUrl = import.meta.env.VITE_API_BASE_URL;
+        
+        const [
+          religionsRes, castesRes, subCastesRes, categoriesRes,
+          classesRes, sectionsRes, boardsRes, streamsRes,
+          professionsRes, parishesRes, clubsRes, classificationsRes
+        ] = await Promise.all([
+          fetch(`${baseUrl}/api/religions`, { headers }).then(r => r.json()),
+          fetch(`${baseUrl}/api/castes`, { headers }).then(r => r.json()),
+          fetch(`${baseUrl}/api/sub-castes`, { headers }).then(r => r.json()),
+          fetch(`${baseUrl}/api/categories`, { headers }).then(r => r.json()),
+          fetch(`${baseUrl}/api/school-classes`, { headers }).then(r => r.json()),
+          fetch(`${baseUrl}/api/sections`, { headers }).then(r => r.json()),
+          fetch(`${baseUrl}/api/school-boards`, { headers }).then(r => r.json()),
+          fetch(`${baseUrl}/api/streams`, { headers }).then(r => r.json()),
+          fetch(`${baseUrl}/api/professions`, { headers }).then(r => r.json()),
+          fetch(`${baseUrl}/api/parishes`, { headers }).then(r => r.json()),
+          fetch(`${baseUrl}/api/clubs`, { headers }).then(r => r.json()),
+          fetch(`${baseUrl}/api/student-classifications`, { headers }).then(r => r.json()),
+        ]);
+
+        setMasters({
+          religions: Array.isArray(religionsRes) ? religionsRes : [],
+          castes: Array.isArray(castesRes) ? castesRes : [],
+          subCastes: Array.isArray(subCastesRes) ? subCastesRes : [],
+          categories: Array.isArray(categoriesRes) ? categoriesRes : [],
+          classes: Array.isArray(classesRes) ? classesRes : [],
+          sections: Array.isArray(sectionsRes) ? sectionsRes : [],
+          boards: Array.isArray(boardsRes) ? boardsRes : [],
+          streams: Array.isArray(streamsRes) ? streamsRes : [],
+          professions: Array.isArray(professionsRes) ? professionsRes : [],
+          parishes: Array.isArray(parishesRes) ? parishesRes : [],
+          clubs: Array.isArray(clubsRes) ? clubsRes : [],
+          classifications: Array.isArray(classificationsRes) ? classificationsRes : [],
+        });
+      } catch (err) {
+        console.error("Error fetching master data:", err);
+      }
+    };
+    fetchMasters();
+  }, []);
 
   useEffect(() => {
     if (isEditMode) {
@@ -207,10 +262,24 @@ export default function CreateStudent() {
     </div>
   );
 
+  const SelectField = ({ label, name, value, onChange, options, optionKey, optionLabel }) => (
+    <div className="flex flex-col gap-1">
+      <label className="text-xs font-bold text-gray-600 uppercase">{label}</label>
+      <select name={name} value={value || ''} onChange={onChange} className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-green-500">
+        <option value="">-- Select --</option>
+        {options.map((opt, i) => (
+          <option key={i} value={optionKey ? opt[optionKey] : opt}>
+            {optionLabel ? opt[optionLabel] : opt}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
   return (
     <div className="flex-1 bg-[#f8f9fc] rounded-tl-[2rem] p-6 lg:p-10 overflow-y-auto">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold text-[#2b3674]">Create New Student</h1>
+        <h1 className="text-2xl font-bold text-[#2b3674]">{isEditMode ? 'Edit Student' : 'Create New Student'}</h1>
         <button type="button" onClick={() => navigate('/dashboard/students')} className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition font-bold text-sm">
           <FaArrowLeft /> Back to List
         </button>
@@ -226,20 +295,19 @@ export default function CreateStudent() {
           <InputField label="Last Name" name="lastName" value={personalDetails.lastName} onChange={handleNestedChange(setPersonalDetails)} />
           <InputField label="Date of Birth" type="date" name="dateOfBirth" value={personalDetails.dateOfBirth} onChange={handleNestedChange(setPersonalDetails)} />
           
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-gray-600 uppercase">Gender</label>
-            <select name="gender" value={personalDetails.gender} onChange={handleNestedChange(setPersonalDetails)} className="border border-gray-300 rounded px-3 py-2 text-sm">
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <InputField label="Religion" name="religion" value={personalDetails.religion} onChange={handleNestedChange(setPersonalDetails)} />
-          <InputField label="Caste" name="caste" value={personalDetails.caste} onChange={handleNestedChange(setPersonalDetails)} />
+          <SelectField label="Gender" name="gender" value={personalDetails.gender} onChange={handleNestedChange(setPersonalDetails)} options={['Male', 'Female', 'Other']} />
+          <SelectField label="Religion" name="religion" value={personalDetails.religion} onChange={handleNestedChange(setPersonalDetails)} options={masters.religions} optionKey="religionName" optionLabel="religionName" />
+          <SelectField label="Caste" name="caste" value={personalDetails.caste} onChange={handleNestedChange(setPersonalDetails)} options={masters.castes} optionKey="casteName" optionLabel="casteName" />
+          <SelectField label="Sub Caste" name="subCaste" value={personalDetails.subCaste} onChange={handleNestedChange(setPersonalDetails)} options={masters.subCastes} optionKey="subCasteName" optionLabel="subCasteName" />
+          
           <InputField label="Nationality" name="nationality" value={personalDetails.nationality} onChange={handleNestedChange(setPersonalDetails)} />
           <InputField label="Place of Birth" name="placeOfBirth" value={personalDetails.placeOfBirth} onChange={handleNestedChange(setPersonalDetails)} />
           <InputField label="Mother Tongue" name="motherTongue" value={personalDetails.motherTongue} onChange={handleNestedChange(setPersonalDetails)} />
+          <SelectField label="Parish" name="parish" value={personalDetails.parish} onChange={handleNestedChange(setPersonalDetails)} options={masters.parishes} optionKey="parishName" optionLabel="parishName" />
+          
+          <SelectField label="School Category" name="schoolCategory" value={personalDetails.schoolCategory} onChange={handleNestedChange(setPersonalDetails)} options={masters.categories} optionKey="categoryName" optionLabel="categoryName" />
           <InputField label="House Name" name="houseNames" value={personalDetails.houseNames} onChange={handleNestedChange(setPersonalDetails)} />
+          <SelectField label="Clubs" name="clubs" value={personalDetails.clubs} onChange={handleNestedChange(setPersonalDetails)} options={masters.clubs} optionKey="clubName" optionLabel="clubName" />
           
           <div className="flex flex-col gap-1">
             <label className="text-xs font-bold text-gray-600 uppercase">Boarding/Hostel</label>
@@ -248,7 +316,6 @@ export default function CreateStudent() {
               <option value="Yes">Yes</option>
             </select>
           </div>
-
           <InputField label="Is Only Child" type="checkbox" name="isOnlyChild" value={personalDetails.isOnlyChild} onChange={handleNestedChange(setPersonalDetails)} />
         </div>
 
@@ -257,13 +324,14 @@ export default function CreateStudent() {
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
           <InputField label="Admission Number" name="admissionNumber" value={academicDetails.admissionNumber} onChange={handleNestedChange(setAcademicDetails)} />
           <InputField label="Roll Number" name="rollNumber" value={academicDetails.rollNumber} onChange={handleNestedChange(setAcademicDetails)} />
-          <InputField label="Class" name="class" value={academicDetails.class} onChange={handleNestedChange(setAcademicDetails)} />
-          <InputField label="Section" name="section" value={academicDetails.section} onChange={handleNestedChange(setAcademicDetails)} />
+          <SelectField label="Class" name="class" value={academicDetails.class} onChange={handleNestedChange(setAcademicDetails)} options={masters.classes} optionKey="className" optionLabel="className" />
+          <SelectField label="Section" name="section" value={academicDetails.section} onChange={handleNestedChange(setAcademicDetails)} options={masters.sections} optionKey="sectionName" optionLabel="sectionName" />
           <InputField label="Date of Admission" type="date" name="dateOfAdmission" value={academicDetails.dateOfAdmission} onChange={handleNestedChange(setAcademicDetails)} />
           <InputField label="Date of Joining" type="date" name="dateOfJoining" value={academicDetails.dateOfJoining} onChange={handleNestedChange(setAcademicDetails)} />
-          <InputField label="Board" name="board" value={academicDetails.board} onChange={handleNestedChange(setAcademicDetails)} />
-          <InputField label="Admission Status" name="admissionStatus" value={academicDetails.admissionStatus} onChange={handleNestedChange(setAcademicDetails)} />
-          <InputField label="Current Status" name="currentStatus" value={academicDetails.currentStatus} onChange={handleNestedChange(setAcademicDetails)} />
+          <SelectField label="Board" name="board" value={academicDetails.board} onChange={handleNestedChange(setAcademicDetails)} options={masters.boards} optionKey="boardName" optionLabel="boardName" />
+          <SelectField label="Stream" name="stream" value={academicDetails.stream} onChange={handleNestedChange(setAcademicDetails)} options={masters.streams} optionKey="streamName" optionLabel="streamName" />
+          <SelectField label="Admission Status" name="admissionStatus" value={academicDetails.admissionStatus} onChange={handleNestedChange(setAcademicDetails)} options={['Continuous', 'New', 'Re-Admission']} />
+          <SelectField label="Current Status" name="currentStatus" value={academicDetails.currentStatus} onChange={handleNestedChange(setAcademicDetails)} options={['STUDYING', 'TC ISSUED', 'ALUMNI']} />
         </div>
 
         {/* CONTACT ADDRESS */}
@@ -305,7 +373,7 @@ export default function CreateStudent() {
               <InputField label="Last Name" name="lastName" value={familyDetails.father.lastName} onChange={handleNestedChange(setFamilyDetails, 'father')} />
               <InputField label="Mobile" name="mobile" value={familyDetails.father.mobile} onChange={handleNestedChange(setFamilyDetails, 'father')} />
               <InputField label="Email" name="email" value={familyDetails.father.email} onChange={handleNestedChange(setFamilyDetails, 'father')} />
-              <InputField label="Profession" name="profession" value={familyDetails.father.profession} onChange={handleNestedChange(setFamilyDetails, 'father')} />
+              <SelectField label="Profession" name="profession" value={familyDetails.father.profession} onChange={handleNestedChange(setFamilyDetails, 'father')} options={masters.professions} optionKey="professionName" optionLabel="professionName" />
               <InputField label="Annual Income" name="annualIncome" value={familyDetails.father.annualIncome} onChange={handleNestedChange(setFamilyDetails, 'father')} />
             </div>
           </div>
@@ -318,7 +386,7 @@ export default function CreateStudent() {
               <InputField label="Last Name" name="lastName" value={familyDetails.mother.lastName} onChange={handleNestedChange(setFamilyDetails, 'mother')} />
               <InputField label="Mobile" name="mobile" value={familyDetails.mother.mobile} onChange={handleNestedChange(setFamilyDetails, 'mother')} />
               <InputField label="Email" name="email" value={familyDetails.mother.email} onChange={handleNestedChange(setFamilyDetails, 'mother')} />
-              <InputField label="Profession" name="profession" value={familyDetails.mother.profession} onChange={handleNestedChange(setFamilyDetails, 'mother')} />
+              <SelectField label="Profession" name="profession" value={familyDetails.mother.profession} onChange={handleNestedChange(setFamilyDetails, 'mother')} options={masters.professions} optionKey="professionName" optionLabel="professionName" />
               <InputField label="Annual Income" name="annualIncome" value={familyDetails.mother.annualIncome} onChange={handleNestedChange(setFamilyDetails, 'mother')} />
             </div>
           </div>
@@ -374,7 +442,7 @@ export default function CreateStudent() {
         {/* SUBMIT */}
         <div className="mt-12 flex justify-end border-t border-gray-200 pt-6">
           <button type="submit" disabled={loading} className="flex items-center gap-2 bg-green-500 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-600 transition shadow-md disabled:opacity-50 text-lg">
-            {loading ? 'Saving...' : <><FaSave /> Save Student</>}
+            {loading ? 'Saving...' : <><FaSave /> {isEditMode ? 'Update Student' : 'Save Student'}</>}
           </button>
         </div>
 
