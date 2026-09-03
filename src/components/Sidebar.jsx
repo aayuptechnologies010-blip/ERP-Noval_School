@@ -145,6 +145,7 @@ function Sidebar({ currentTheme }) {
     { name: 'Assignment', icon: FaTasks, path: '/dashboard/assignment' },
     { name: 'Timetable', icon: FaTable, path: '/dashboard/timetable' },
     { name: 'Syllabus', icon: FaBook, path: '/dashboard/syllabus' },
+    { name: 'Marks Manager', icon: FaChartPie, path: '/marks' },
     { 
       name: 'Message', 
       icon: FaEnvelope, 

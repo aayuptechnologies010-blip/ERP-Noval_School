@@ -176,6 +176,7 @@ function App() {
 
         {/* Attendance Module Routes */}
         <Route path="/attendance" element={<AttendanceDashboard />} />
+        <Route path="/marks" element={<MarksManager />} />
         <Route
           path="/attendance/define-holiday"
           element={<AttendanceDashboard />}
