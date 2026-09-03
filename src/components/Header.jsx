@@ -474,7 +474,14 @@ function Header({
                 <FaKey className="text-gray-500" /> Change Credentials
               </div>
 
-              <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 transition">
+              <div 
+                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 transition"
+                onClick={() => {
+                  localStorage.removeItem("token");
+                  localStorage.removeItem("user");
+                  navigate("/");
+                }}
+              >
                 <FaSignOutAlt className="text-gray-500" /> Logout
               </div>
             </div>

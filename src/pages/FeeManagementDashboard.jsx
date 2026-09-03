@@ -227,8 +227,8 @@ const MENU = [
       { text: 'Fee Group to Fee Head' },
       { text: 'Assign Amount Group' },
       { text: 'Assign Multiple Group to Student' },
-      { 
-        text: 'Define and Assign Concession', 
+      {
+        text: 'Define and Assign Concession',
         children: [
           { text: 'Define Concession' },
           { text: 'Define Fee Head Concession' },
@@ -236,26 +236,26 @@ const MENU = [
           { text: 'Define Concession Type' },
           { text: 'Assign Concession' },
           { text: 'Assign concession to single student' }
-        ] 
+        ]
       },
       { text: 'Student Fee Adjustment' },
       { text: 'Student Fee Details' },
       { text: 'Assign Opening Balance' },
       { text: 'Verify Structure' },
       { text: 'Set Due Limit' },
-      { 
-        text: 'Late Fee Settings', 
+      {
+        text: 'Late Fee Settings',
         children: [
           { text: 'Late Fee Setting' },
           { text: 'Late Fee Setting Head Wise' },
           { text: 'Assign Waive off/Manual Late Fine' }
-        ] 
+        ]
       },
       { text: 'Create Students Fees Structure' },
       { text: 'Define Expense Head' },
     ]
   },
-  { 
+  {
     icon: CreditCard, text: 'Manage Fee', children: [
       { text: 'Fee Entry' },
       { text: 'Print Fee Receipt & Certificate' },
@@ -275,15 +275,15 @@ const MENU = [
       { text: 'Fees Upload With Paymode' },
       { text: 'Online Fees Upload With Deposit Bank' },
       { text: 'Fees Upload With Deposit Bank' },
-      { 
-        text: 'Amount Without Structure', 
+      {
+        text: 'Amount Without Structure',
         children: [
           { text: 'Pay Amount Without Structure' },
           { text: 'Support To Needy Students' },
           { text: 'Manage Security Money' },
           { text: 'Security Money Return' },
           { text: 'Pay amount without structure for Staff' }
-        ] 
+        ]
       },
       { text: 'ChequeEntry' },
       { text: 'Online Fee Transaction' },
@@ -293,9 +293,9 @@ const MENU = [
       { text: 'Multiple Remarks' },
       { text: 'Transfer Concession' },
       { text: 'Sponsorship' }
-    ] 
+    ]
   },
-  { 
+  {
     icon: Bus, text: 'Transport', children: [
       { text: 'Travel Agency Master' },
       { text: 'Vehicle Reminder' },
@@ -310,21 +310,21 @@ const MENU = [
       { text: 'Assign Self Transport To Student' },
       { text: 'Transfer Route' },
       { text: 'Change Route Vehicle' },
-      { 
-        text: 'Vehicle Management', 
+      {
+        text: 'Vehicle Management',
         children: [
           { text: 'Vehicle Master Entry' },
           { text: 'Vehicle Fuel Entry' },
           { text: 'Vehicle Service Entry' },
           { text: 'Daily Meter Entry' }
-        ] 
+        ]
       },
       { text: 'Driver Detail' }
-    ] 
+    ]
   },
-  { 
-    icon: BarChart2, 
-    text: 'Transaction Report', 
+  {
+    icon: BarChart2,
+    text: 'Transaction Report',
     children: [
       {
         text: 'Collection Reports',
@@ -443,7 +443,7 @@ const MENU = [
       { text: 'Bad Debts Report' },
       { text: 'Get Difference from Bank Amount' },
       { text: 'Student Amount Fee Type Wise' }
-    ] 
+    ]
   },
   {
     icon: ClipboardList,
@@ -465,13 +465,13 @@ const MENU = [
         ]
       },
       { text: 'Fee Reminder' },
-      { 
-        text: 'Vehicle Deail Report', 
+      {
+        text: 'Vehicle Deail Report',
         children: [
           { text: 'Vehicle Wise Avg Fuel Detail' },
           { text: 'Vehicle Service Report' },
           { text: 'Daily Meter Report' }
-        ] 
+        ]
       },
       { text: 'Opening Dues Report' },
       { text: 'Sms Report' },
