@@ -1,22 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, Label,
 } from 'recharts';
-
-const DATA = [
-  { month: 'April',       Estimated: 12800000, Received: 9200000,  Concession: 0, Due: 3600000  },
-  { month: 'May',         Estimated: 2900000,  Received: 1900000,  Concession: 0, Due: 1000000  },
-  { month: 'June',        Estimated: 2900000,  Received: 1800000,  Concession: 0, Due: 1000000  },
-  { month: 'July',        Estimated: 3000000,  Received: 1700000,  Concession: 0, Due: 1200000  },
-  { month: 'August',      Estimated: 3000000,  Received: 1000000,  Concession: 0, Due: 1900000  },
-  { month: 'September',   Estimated: 3000000,  Received: 350000,   Concession: 0, Due: 2600000  },
-  { month: 'October',     Estimated: 4200000,  Received: 350000,   Concession: 0, Due: 3800000  },
-  { month: 'November',    Estimated: 3000000,  Received: 250000,   Concession: 0, Due: 2800000  },
-  { month: 'December',    Estimated: 3000000,  Received: 200000,   Concession: 0, Due: 2800000  },
-  { month: 'January',     Estimated: 3000000,  Received: 200000,   Concession: 0, Due: 2800000  },
-  { month: 'Feb-March',   Estimated: 7200000,  Received: 350000,   Concession: 0, Due: 6800000  },
-];
 
 const COLORS = {
   Estimated:  '#2ab5b5',
@@ -53,10 +39,34 @@ const Legend = () => (
 
 const fmtY = (v) => {
   if (v === 0) return '0';
-  return (v / 1000000).toFixed(0) + '000000';
+  return (v / 1000).toFixed(0) + 'k';
 };
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 export default function EstimatedCollectionCard() {
+  const [data, setData] = useState([]);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/api/fee-reports/dashboard/estimated-collection`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const result = await res.json();
+        if (res.ok) {
+          setData(result);
+          setTotal(result.reduce((acc, curr) => acc + curr.Received, 0));
+        }
+      } catch (error) {
+        console.error('Failed to fetch estimated collection', error);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <div style={{ background: '#fff', border: '1px solid #e2e8f0', flex: 1, minWidth: 0 }}>
       <div style={{ padding: '14px 20px 10px 20px', borderBottom: '1px solid #e2e8f0' }}>
@@ -64,21 +74,21 @@ export default function EstimatedCollectionCard() {
           <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', textTransform: 'uppercase', letterSpacing: 0.3 }}>
             Estimated Collection{' '}
             <span style={{ fontWeight: 400, fontSize: 11, color: '#64748b', textTransform: 'none' }}>
-              (Installment Wise) (2026-2027)
+              (Month Wise)
             </span>
           </div>
           <Legend />
         </div>
         <div style={{ marginTop: 4, fontSize: 13, color: '#374151' }}>
-          Total :{' '}
-          <span style={{ fontWeight: 700, fontSize: 15 }}>₹ 48000522</span>
+          Total Received :{' '}
+          <span style={{ fontWeight: 700, fontSize: 15 }}>₹ {total.toLocaleString('en-IN')}</span>
         </div>
       </div>
       <div style={{ padding: '8px 8px 0 0' }}>
         <div style={{ height: 320 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={DATA}
+              data={data}
               margin={{ top: 5, right: 20, left: 20, bottom: 45 }}
               barCategoryGap="30%"
               barGap={1}
@@ -92,20 +102,18 @@ export default function EstimatedCollectionCard() {
                 interval={0}
               >
                 <Label
-                  value="INSTALLMENT"
+                  value="MONTH"
                   position="insideBottom"
                   offset={-14}
                   style={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600, letterSpacing: 1 }}
                 />
               </XAxis>
               <YAxis
-                domain={[0, 14000000]}
-                ticks={[0, 2000000, 4000000, 6000000, 8000000, 10000000, 12000000, 14000000]}
                 tickFormatter={fmtY}
                 tick={{ fontSize: 10, fill: '#94a3b8' }}
                 axisLine={false}
                 tickLine={false}
-                width={72}
+                width={60}
               >
                 <Label
                   value="COLLECTION (₹)"

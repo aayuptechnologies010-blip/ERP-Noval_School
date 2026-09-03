@@ -1,46 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip, Label,
 } from 'recharts';
 
-const DATA = [
-  { date: '30-Jul', value: 170000 },
-  { date: '31-Jul', value: 105000 },
-  { date: '01-Aug', value: 120000 },
-  { date: '03-Aug', value: 285000 },
-  { date: '05-Aug', value: 190000 },
-  { date: '06-Aug', value: 140000 },
-  { date: '07-Aug', value: 155000 },
-  { date: '08-Aug', value: 145000 },
-  { date: '09-Aug', value: 10000  },
-  { date: '10-Aug', value: 330000 },
-  { date: '11-Aug', value: 360000 },
-  { date: '12-Aug', value: 420000 },
-  { date: '13-Aug', value: 395000 },
-  { date: '14-Aug', value: 760000 },
-  { date: '15-Aug', value: 170000 },
-  { date: '16-Aug', value: 445000 },
-  { date: '17-Aug', value: 450000 },
-  { date: '18-Aug', value: 340000 },
-  { date: '19-Aug', value: 135000 },
-  { date: '20-Aug', value: 90000  },
-  { date: '21-Aug', value: 35000  },
-  { date: '22-Aug', value: 80000  },
-  { date: '24-Aug', value: 10000  },
-  { date: '25-Aug', value: 45000  },
-  { date: '27-Aug', value: 20000  },
-];
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const fmtY = (v) => {
   if (v === 0) return '0';
-  return (v / 100000).toFixed(0) + '00000';
-};
-
-const fmtYAxis = (v) => {
-  if (v >= 1000000) return (v / 1000000).toFixed(0) + '00000';
-  if (v >= 100000) return v.toLocaleString('en-IN');
-  return v.toString();
+  return (v / 1000).toFixed(0) + 'k';
 };
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -54,6 +22,26 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function TransactionHistoryCard() {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/api/fee-reports/dashboard/transaction-history`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const result = await res.json();
+        if (res.ok) {
+          setData(result);
+        }
+      } catch (error) {
+        console.error('Failed to fetch transaction history', error);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <div style={{ background: '#fff', border: '1px solid #e2e8f0', marginBottom: 0 }}>
       <div style={{ padding: '14px 20px 10px 20px', borderBottom: '1px solid #e2e8f0' }}>
@@ -63,7 +51,7 @@ export default function TransactionHistoryCard() {
       </div>
       <div style={{ padding: '10px 8px 0 0', height: 340 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={DATA} margin={{ top: 10, right: 30, left: 20, bottom: 60 }}>
+          <AreaChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 60 }}>
             <defs>
               <linearGradient id="txGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#29a9d8" stopOpacity={0.18} />
@@ -89,9 +77,7 @@ export default function TransactionHistoryCard() {
               />
             </XAxis>
             <YAxis
-              domain={[0, 800000]}
-              ticks={[0, 100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000]}
-              tickFormatter={(v) => v === 0 ? '0' : (v / 100000).toFixed(0) + '00000'}
+              tickFormatter={fmtY}
               tick={{ fontSize: 10, fill: '#94a3b8' }}
               axisLine={false}
               tickLine={false}

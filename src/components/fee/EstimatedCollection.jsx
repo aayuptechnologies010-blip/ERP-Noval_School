@@ -7,20 +7,6 @@ import {
 
 const FEE_TYPES = ['All Fee Type', 'School Fee'];
 
-const CHART_DATA = [
-  { month: 'April',        Estimated: 1240, Received: 950,  Concession: 20, Due: 350  },
-  { month: 'May',          Estimated: 1240, Received: 870,  Concession: 15, Due: 400  },
-  { month: 'June',         Estimated: 1240, Received: 820,  Concession: 10, Due: 470  },
-  { month: 'July',         Estimated: 1240, Received: 750,  Concession: 8,  Due: 520  },
-  { month: 'August',       Estimated: 1240, Received: 480,  Concession: 5,  Due: 780  },
-  { month: 'September',    Estimated: 1240, Received: 160,  Concession: 2,  Due: 1080 },
-  { month: 'October',      Estimated: 1240, Received: 110,  Concession: 0,  Due: 1140 },
-  { month: 'November',     Estimated: 1240, Received: 100,  Concession: 0,  Due: 1150 },
-  { month: 'December',     Estimated: 1240, Received: 95,   Concession: 0,  Due: 1160 },
-  { month: 'January',      Estimated: 1240, Received: 85,   Concession: 0,  Due: 1170 },
-  { month: 'Feb-March',    Estimated: 1240, Received: 80,   Concession: 0,  Due: 1180 },
-];
-
 const COLORS = {
   Estimated:  '#2ab5b5',
   Received:   '#7c3aed',
@@ -36,7 +22,7 @@ const CustomTooltip = ({ active, payload, label }) => {
       {payload.map(p => (
         <div key={p.name} style={{ display: 'flex', justifyContent: 'space-between', gap: 20, padding: '2px 0' }}>
           <span style={{ color: p.color, fontWeight: 600 }}>{p.name}</span>
-          <span style={{ color: '#374151', fontVariantNumeric: 'tabular-nums' }}>{p.value.toLocaleString('en-IN')}</span>
+          <span style={{ color: '#374151', fontVariantNumeric: 'tabular-nums' }}>₹ {p.value.toLocaleString('en-IN')}</span>
         </div>
       ))}
     </div>
@@ -54,15 +40,65 @@ const Legend = () => (
   </div>
 );
 
+const fmtY = (v) => {
+  if (v === 0) return '0';
+  if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+  if (v >= 1000) return (v / 1000).toFixed(0) + 'k';
+  return v;
+};
+
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const token = localStorage.getItem('token');
+
 export default function EstimatedCollection() {
   const [feeType, setFeeType] = useState('All Fee Type');
   const [open, setOpen] = useState(false);
   const dropRef = useRef(null);
+  
+  const [chartData, setChartData] = useState([]);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [studentStrength, setStudentStrength] = useState(0);
 
   useEffect(() => {
     const h = (e) => { if (dropRef.current && !dropRef.current.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
+  }, []);
+
+  useEffect(() => {
+    const fetchAllData = async () => {
+      try {
+        // Fetch Chart Data
+        const res1 = await fetch(`${API_URL}/api/fee-reports/dashboard/estimated-collection`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res1.ok) {
+          const data = await res1.json();
+          setChartData(data);
+        }
+
+        // Fetch Total Revenue for the big number
+        const res2 = await fetch(`${API_URL}/api/fee-reports/dashboard/revenue-summary`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res2.ok) {
+          const revData = await res2.json();
+          setTotalRevenue(revData.totalPayable || 0);
+        }
+
+        // Fetch Student Headcount
+        const res3 = await fetch(`${API_URL}/api/fee-reports/dashboard/student-headcount`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res3.ok) {
+          const hcData = await res3.json();
+          setStudentStrength(hcData.total || 0);
+        }
+      } catch (err) {
+        console.error('Error fetching Estimated Collection data', err);
+      }
+    };
+    fetchAllData();
   }, []);
 
   return (
@@ -81,13 +117,13 @@ export default function EstimatedCollection() {
               Estimated Collection with Strength
             </span>
             <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>
-              (Installment/Fee Type Wise) (2026-2027)
+              (Installment/Fee Type Wise)
             </span>
           </div>
           <div style={{ marginTop: 6 }}>
             <span style={{ fontSize: 13, color: '#64748b' }}>Total:&nbsp;</span>
-            <span style={{ fontSize: 22, fontWeight: 900, color: '#1e293b', letterSpacing: '-0.5px' }}>₹ 48000522</span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: '#64748b', marginLeft: 3 }}>(1237)</span>
+            <span style={{ fontSize: 22, fontWeight: 900, color: '#1e293b', letterSpacing: '-0.5px' }}>₹ {totalRevenue.toLocaleString('en-IN')}</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#64748b', marginLeft: 3 }}>({studentStrength})</span>
           </div>
         </div>
 
@@ -141,7 +177,7 @@ export default function EstimatedCollection() {
       <div style={{ padding: '16px 12px 20px 4px', height: 620 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
-            data={CHART_DATA}
+            data={chartData}
             margin={{ top: 10, right: 30, left: 20, bottom: 50 }}
             barCategoryGap="40%"
             barGap={3}
@@ -162,12 +198,11 @@ export default function EstimatedCollection() {
               />
             </XAxis>
             <YAxis
-              domain={[0, 1400]}
-              ticks={[0, 200, 400, 600, 800, 1000, 1200, 1400]}
+              tickFormatter={fmtY}
               tick={{ fontSize: 11, fill: '#6b7280' }}
               axisLine={false}
               tickLine={false}
-              width={60}
+              width={70}
             >
               <Label
                 value="COLLECTION (₹)"

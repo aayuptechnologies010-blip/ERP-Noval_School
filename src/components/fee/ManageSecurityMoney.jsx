@@ -1,13 +1,101 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Search, Save, Eye, Printer, RotateCcw } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 export default function ManageSecurityMoney() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [student, setStudent] = useState(null);
+  
+  const [amount, setAmount] = useState('');
+  const [paymode, setPaymode] = useState('Cash');
+  const [remarks, setRemarks] = useState('');
+  
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null);
+
+  const handleSearch = async () => {
+    if (!searchQuery) return;
+    setLoading(true);
+    setMessage(null);
+    try {
+      const token = localStorage.getItem('token');
+      // Using an existing generic search or ledger API endpoint. We'll assume GET /api/students/search?q=
+      // Since we don't have a dedicated search, let's just fetch all and filter for now, or use the ledger API
+      const res = await fetch(`${API_URL}/api/students`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const found = data.find(s => 
+          s.admissionNumber === searchQuery || 
+          s.firstName?.toLowerCase() === searchQuery.toLowerCase()
+        );
+        if (found) {
+          setStudent(found);
+        } else {
+          setMessage({ type: 'error', text: 'Student not found.' });
+          setStudent(null);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      setMessage({ type: 'error', text: 'Error searching student' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!student || !amount) {
+      setMessage({ type: 'error', text: 'Please fill amount and search student first.' });
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/security-money/deposit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          studentId: student._id,
+          amount,
+          paymentMode: paymode,
+          remarks
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setMessage({ type: 'success', text: `Security Money Deposited! Receipt: ${data.data.receiptNo}` });
+        setAmount('');
+        setRemarks('');
+      } else {
+        setMessage({ type: 'error', text: data.message });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Server error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div style={{ padding: '20px', background: '#f3f4f6', minHeight: '100%' }}>
       
+      {message && (
+        <div style={{ padding: '10px', marginBottom: '15px', borderRadius: '4px', background: message.type === 'success' ? '#d1fae5' : '#fee2e2', color: message.type === 'success' ? '#065f46' : '#991b1b', fontSize: '13px' }}>
+          {message.text}
+        </div>
+      )}
+
       <div style={{ display: 'flex', gap: '20px', background: '#fff', padding: '20px', borderRadius: '4px', border: '1px solid #e5e7eb' }}>
         
-        {/* Left Panel */}
+        {/* Left Panel - Student Info */}
         <div style={{ width: '250px', flexShrink: 0, borderRight: '1px solid #e5e7eb', paddingRight: '20px' }}>
           <div style={{ width: '120px', height: '120px', background: '#e5e7eb', margin: '0 auto 20px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="80" height="80" viewBox="0 0 24 24" fill="#9ca3af">
@@ -15,76 +103,100 @@ export default function ManageSecurityMoney() {
             </svg>
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', fontSize: '11px', color: '#374151' }}>
-            <div style={{ fontWeight: 'bold' }}>Name:</div>
-            <div style={{ borderBottom: '1px solid #e5e7eb', paddingBottom: '15px', fontWeight: 'bold' }}>Address:</div>
-            <div style={{ borderBottom: '1px solid #e5e7eb', paddingBottom: '15px', fontWeight: 'bold' }}>Father's Name:</div>
-            <div style={{ borderBottom: '1px solid #e5e7eb', paddingBottom: '15px', fontWeight: 'bold' }}>Admission No.:</div>
-            <div style={{ borderBottom: '1px solid #e5e7eb', paddingBottom: '15px', fontWeight: 'bold' }}>Class:</div>
-            <div style={{ fontWeight: 'bold' }}>Fees Group:</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', fontSize: '12px', color: '#374151' }}>
+            <div style={{ fontWeight: 'bold' }}>Name: <span style={{ fontWeight: 'normal' }}>{student?.firstName} {student?.lastName}</span></div>
+            <div style={{ borderBottom: '1px solid #e5e7eb', paddingBottom: '15px', fontWeight: 'bold' }}>Address: <span style={{ fontWeight: 'normal' }}>{student?.currentAddress}</span></div>
+            <div style={{ borderBottom: '1px solid #e5e7eb', paddingBottom: '15px', fontWeight: 'bold' }}>Father's Name: <span style={{ fontWeight: 'normal' }}>{student?.fatherName}</span></div>
+            <div style={{ borderBottom: '1px solid #e5e7eb', paddingBottom: '15px', fontWeight: 'bold' }}>Admission No.: <span style={{ fontWeight: 'normal' }}>{student?.admissionNumber}</span></div>
+            <div style={{ fontWeight: 'bold' }}>Class: <span style={{ fontWeight: 'normal' }}>{student?.class?.name}</span></div>
           </div>
         </div>
 
-        {/* Right Panel */}
+        {/* Right Panel - Deposit Form */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
           {/* Top Search Bar */}
           <div style={{ display: 'flex', gap: '10px' }}>
-            <select style={{ padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '12px', outline: 'none', width: '130px' }}>
-              <option>2026-2027</option>
-            </select>
-            <select style={{ padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '12px', outline: 'none', width: '150px' }}>
-              <option>All Classes</option>
-            </select>
-            <select style={{ padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '12px', outline: 'none', width: '150px' }}>
-              <option>All Section</option>
-            </select>
             <div style={{ display: 'flex', flex: 1 }}>
-              <input type="text" style={{ flex: 1, padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: '4px 0 0 4px', fontSize: '12px', outline: 'none' }} />
-              <button style={{ background: '#29a9d8', border: 'none', padding: '0 15px', borderRadius: '0 4px 4px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Search size={14} color="#fff" />
+              <input 
+                type="text" 
+                placeholder="Search by Admission No or Name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ flex: 1, padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '4px 0 0 4px', fontSize: '13px', outline: 'none' }} 
+              />
+              <button 
+                onClick={handleSearch}
+                disabled={loading}
+                style={{ background: '#29a9d8', border: 'none', padding: '0 20px', borderRadius: '0 4px 4px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Search size={16} color="#fff" />
               </button>
             </div>
+          </div>
+
+          <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', borderBottom: '1px solid #e5e7eb', paddingBottom: '10px', marginTop: '10px' }}>
+            Deposit Security Money
           </div>
 
           {/* Form Fields */}
           <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: '150px' }}>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Date:</label>
-              <input type="text" defaultValue="29-Aug-2026" style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '12px', outline: 'none' }} />
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Date:</label>
+              <input type="text" readOnly value={new Date().toLocaleDateString()} style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '13px', outline: 'none', background: '#f9fafb' }} />
             </div>
+            
             <div style={{ flex: 1, minWidth: '150px' }}>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Rec. No.:</label>
-              <input type="text" style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '12px', outline: 'none' }} />
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Amount (₹):</label>
+              <input 
+                type="number" 
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00" 
+                style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '13px', outline: 'none' }} 
+              />
             </div>
+            
             <div style={{ flex: 1, minWidth: '150px' }}>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Amount:</label>
-              <input type="text" defaultValue="0.00" style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '12px', outline: 'none' }} />
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '20px' }}>
-            <div style={{ width: '200px' }}>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Paymode</label>
-              <select style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '12px', outline: 'none' }}>
-                <option>Select Paymode</option>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Paymode</label>
+              <select 
+                value={paymode}
+                onChange={(e) => setPaymode(e.target.value)}
+                style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '13px', outline: 'none' }}
+              >
+                <option value="Cash">Cash</option>
+                <option value="Cheque">Cheque</option>
+                <option value="Online">Online</option>
+                <option value="DD">DD</option>
               </select>
             </div>
           </div>
+          
+          <div>
+             <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Remarks:</label>
+             <input 
+               type="text" 
+               value={remarks}
+               onChange={(e) => setRemarks(e.target.value)}
+               placeholder="Optional remarks" 
+               style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '13px', outline: 'none' }} 
+             />
+          </div>
 
           {/* Buttons */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
-            <button style={{ background: '#fff', color: '#4ade80', border: '1px solid #4ade80', padding: '6px 15px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Save size={14} /> Save
+          <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+            <button 
+              onClick={handleSave}
+              disabled={loading}
+              style={{ background: '#4ade80', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '4px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}
+            >
+              <Save size={16} /> Save Deposit
             </button>
-            <button style={{ background: '#fff', color: '#29a9d8', border: '1px solid #29a9d8', padding: '6px 15px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Eye size={14} /> View
-            </button>
-            <button style={{ background: '#fff', color: '#3b82f6', border: '1px solid #3b82f6', padding: '6px 15px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Printer size={14} /> Print
-            </button>
-            <button style={{ background: '#fff', color: '#f59e0b', border: '1px solid #f59e0b', padding: '6px 15px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <RotateCcw size={14} /> Reset
+            <button 
+              onClick={() => { setStudent(null); setAmount(''); setRemarks(''); }}
+              style={{ background: '#f59e0b', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '4px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}
+            >
+              <RotateCcw size={16} /> Reset
             </button>
           </div>
 

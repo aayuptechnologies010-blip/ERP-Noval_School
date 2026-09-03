@@ -1,14 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, User, Users } from 'lucide-react';
 import ProgressBar from './ProgressBar';
 
-const total = 1237;
-const boys = 783;
-const girls = 454;
-const boysPct = Math.round((boys / total) * 100);
-const girlsPct = Math.round((girls / total) * 100);
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 export default function StudentHeadcount() {
+  const [stats, setStats] = useState({ total: 0, boys: 0, girls: 0 });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/api/fee-reports/dashboard/student-headcount`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const result = await res.json();
+        if (res.ok) {
+          setStats(result);
+        }
+      } catch (error) {
+        console.error('Failed to fetch student headcount', error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const total = stats.total || 1; // prevent divide by zero
+  const boysPct = Math.round((stats.boys / total) * 100) || 0;
+  const girlsPct = Math.round((stats.girls / total) * 100) || 0;
+
   return (
     <div className="bg-white border border-gray-200 shadow-sm h-full flex flex-col">
       {/* Title bar */}
@@ -23,7 +43,7 @@ export default function StudentHeadcount() {
         {/* Total */}
         <div className="text-center pb-3 border-b border-gray-100">
           <span className="text-sm text-gray-500">Total:&nbsp;</span>
-          <span className="text-3xl font-black text-gray-800">{total.toLocaleString('en-IN')}</span>
+          <span className="text-3xl font-black text-gray-800">{stats.total.toLocaleString('en-IN')}</span>
         </div>
 
         {/* Boys */}
@@ -36,7 +56,7 @@ export default function StudentHeadcount() {
               <span className="text-xs font-semibold text-gray-600">Boys</span>
             </div>
             <span className="text-xs font-bold text-gray-700 tabular-nums">
-              {boys}({boysPct}%)
+              {stats.boys}({boysPct}%)
             </span>
           </div>
           <ProgressBar value={boysPct} color="bg-slate-600" trackColor="bg-gray-200" height="h-3" />
@@ -52,7 +72,7 @@ export default function StudentHeadcount() {
               <span className="text-xs font-semibold text-gray-600">Girls</span>
             </div>
             <span className="text-xs font-bold text-gray-700 tabular-nums">
-              {girls}({girlsPct}%)
+              {stats.girls}({girlsPct}%)
             </span>
           </div>
           <ProgressBar value={girlsPct} color="bg-red-400" trackColor="bg-gray-200" height="h-3" />

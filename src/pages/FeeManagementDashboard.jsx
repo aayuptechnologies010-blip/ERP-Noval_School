@@ -28,6 +28,7 @@ import DefineSMSTemplate from '../components/fee/DefineSMSTemplate';
 import BillBookSetting from '../components/fee/BillBookSetting';
 import GenerateBillBookDetails from '../components/fee/GenerateBillBookDetails';
 import BusIdSetting from '../components/fee/BusIdSetting';
+import OnlinePageSetting from '../components/fee/OnlinePageSetting';
 import FeeEntryLockSetting from '../components/fee/FeeEntryLockSetting';
 import DefineFeeInstallment from '../components/fee/DefineFeeInstallment';
 import DefineFeeHead from '../components/fee/DefineFeeHead';
@@ -44,6 +45,7 @@ import AssignConcessionToSingleStudent from '../components/fee/AssignConcessionT
 import AssignConcession from '../components/fee/AssignConcession';
 import StudentFeeAdjustment from '../components/fee/StudentFeeAdjustment';
 import StudentFeeDetails from '../components/fee/StudentFeeDetails';
+import CreateStudentsFeesStructure from '../components/fee/CreateStudentsFeesStructure';
 import AssignOpeningBalance from '../components/fee/AssignOpeningBalance';
 import VerifyStructure from '../components/fee/VerifyStructure';
 import LateFeeSetting from '../components/fee/LateFeeSetting';

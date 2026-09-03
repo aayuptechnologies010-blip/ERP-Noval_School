@@ -1,52 +1,131 @@
-import React from 'react';
-import { Save, Eye, Printer, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Save, Edit2, Trash2, RotateCcw, Plus } from 'lucide-react';
+
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
+const inputStyle = { width: '100%', padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' };
+const labelStyle = { display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: '#374151' };
+const btnBase = { border: 'none', padding: '8px 16px', borderRadius: '4px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' };
 
 export default function DefineTransportGroup() {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [form, setForm] = useState({ groupName: '', remarks: '' });
+
+  const token = localStorage.getItem('token');
+
+  const fetchItems = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/transport/groups`, { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) setItems(await res.json());
+    } catch (err) { console.error(err); }
+  };
+
+  useEffect(() => { fetchItems(); }, []);
+
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSave = async () => {
+    if (!form.groupName) { setMessage({ type: 'error', text: 'Group Name is required.' }); return; }
+    setLoading(true);
+    try {
+      const url = editingId ? `${API_URL}/api/transport/groups/${editingId}` : `${API_URL}/api/transport/groups`;
+      const method = editingId ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(form)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage({ type: 'success', text: data.message });
+        setForm({ groupName: '', remarks: '' });
+        setEditingId(null);
+        fetchItems();
+      } else { setMessage({ type: 'error', text: data.message }); }
+    } catch (err) { setMessage({ type: 'error', text: 'Server error' }); }
+    finally { setLoading(false); }
+  };
+
+  const handleEdit = (item) => { setForm({ groupName: item.groupName, remarks: item.remarks || '' }); setEditingId(item._id); setMessage(null); };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this group?')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/transport/groups/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) { setMessage({ type: 'success', text: 'Group deleted' }); fetchItems(); }
+    } catch (err) { setMessage({ type: 'error', text: 'Server error' }); }
+  };
+
+  const handleReset = () => { setForm({ groupName: '', remarks: '' }); setEditingId(null); setMessage(null); };
+
   return (
-    <div style={{ padding: '20px', background: '#fff', minHeight: '100%' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        
-        <div style={{ display: 'flex', gap: '30px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          
-          <div style={{ flex: 1, minWidth: '250px', maxWidth: '350px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Distance Name</label>
-              <input type="text" style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '12px', outline: 'none' }} />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Distance From(K.M.)</label>
-              <input type="text" style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '12px', outline: 'none' }} />
-            </div>
-          </div>
-
-          <div style={{ flex: 1, minWidth: '250px', maxWidth: '350px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Distance Amount(Monthly)</label>
-              <input type="text" style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '12px', outline: 'none' }} />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Distance To(K.M.)</label>
-              <input type="text" style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '12px', outline: 'none' }} />
-            </div>
-          </div>
-
+    <div style={{ padding: '20px', background: '#f3f4f6', minHeight: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {message && (
+        <div style={{ padding: '10px', borderRadius: '4px', background: message.type === 'success' ? '#d1fae5' : '#fee2e2', color: message.type === 'success' ? '#065f46' : '#991b1b', fontSize: '13px' }}>
+          {message.text}
         </div>
-
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
-          <button style={{ background: '#fff', color: '#4ade80', border: '1px solid #4ade80', padding: '8px 20px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Save size={14} /> Save
+      )}
+      <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #e5e7eb', maxWidth: '500px' }}>
+        <h3 style={{ margin: '0 0 16px 0', fontSize: '15px', color: '#1f2937', fontWeight: 'bold' }}>
+          {editingId ? 'Edit' : 'Add'} Transport Group
+        </h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div>
+            <label style={labelStyle}>Group Name *</label>
+            <input name="groupName" value={form.groupName} onChange={handleChange} placeholder="e.g. Group A" style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Remarks</label>
+            <input name="remarks" value={form.remarks} onChange={handleChange} placeholder="Optional remarks" style={inputStyle} />
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+          <button onClick={handleSave} disabled={loading} style={{ ...btnBase, background: '#10b981', color: '#fff' }}>
+            {editingId ? <Edit2 size={14} /> : <Plus size={14} />} {editingId ? 'Update' : 'Save'}
           </button>
-          <button style={{ background: '#fff', color: '#29a9d8', border: '1px solid #29a9d8', padding: '8px 20px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Eye size={14} /> View
-          </button>
-          <button style={{ background: '#fff', color: '#3b82f6', border: '1px solid #3b82f6', padding: '8px 20px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Printer size={14} /> Print
-          </button>
-          <button style={{ background: '#fff', color: '#f59e0b', border: '1px solid #f59e0b', padding: '8px 20px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <button onClick={handleReset} style={{ ...btnBase, background: '#f59e0b', color: '#fff' }}>
             <RotateCcw size={14} /> Reset
           </button>
         </div>
+      </div>
 
+      <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+        <div style={{ padding: '15px 20px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ margin: 0, fontSize: '15px', color: '#1f2937', fontWeight: 'bold' }}>All Transport Groups</h3>
+          <span style={{ fontSize: '12px', color: '#6b7280' }}>{items.length} records</span>
+        </div>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+          <thead style={{ background: '#f9fafb' }}>
+            <tr>
+              <th style={{ padding: '12px 16px', textAlign: 'left', color: '#374151', borderBottom: '1px solid #e5e7eb' }}>#</th>
+              <th style={{ padding: '12px 16px', textAlign: 'left', color: '#374151', borderBottom: '1px solid #e5e7eb' }}>Group Name</th>
+              <th style={{ padding: '12px 16px', textAlign: 'left', color: '#374151', borderBottom: '1px solid #e5e7eb' }}>Remarks</th>
+              <th style={{ padding: '12px 16px', textAlign: 'center', color: '#374151', borderBottom: '1px solid #e5e7eb' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.length === 0 ? (
+              <tr><td colSpan="4" style={{ padding: '30px', textAlign: 'center', color: '#6b7280' }}>No groups found. Add one above.</td></tr>
+            ) : (
+              items.map((item, i) => (
+                <tr key={item._id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                  <td style={{ padding: '12px 16px', color: '#6b7280' }}>{i + 1}</td>
+                  <td style={{ padding: '12px 16px', color: '#1f2937', fontWeight: '600' }}>{item.groupName}</td>
+                  <td style={{ padding: '12px 16px', color: '#374151' }}>{item.remarks || '-'}</td>
+                  <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                      <button onClick={() => handleEdit(item)} style={{ ...btnBase, background: '#3b82f6', color: '#fff', padding: '6px 12px', fontSize: '12px' }}><Edit2 size={12} /> Edit</button>
+                      <button onClick={() => handleDelete(item._id)} style={{ ...btnBase, background: '#ef4444', color: '#fff', padding: '6px 12px', fontSize: '12px' }}><Trash2 size={12} /> Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

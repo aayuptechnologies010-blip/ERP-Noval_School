@@ -1,30 +1,138 @@
-import React from 'react';
-import { Search, Plus, Download, Edit, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, Download, Edit, Trash2, X, Save, RefreshCw } from 'lucide-react';
+
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 export default function DefineFeeGroup() {
-  const data = [
-    { id: 1, name: 'NR- UKG', special: 'False', modified: '31-Mar-2026' },
-    { id: 2, name: 'I-V', special: 'False', modified: '31-Mar-2026' },
-    { id: 3, name: 'VI-VIII', special: 'False', modified: '31-Mar-2026' },
-    { id: 4, name: 'IX', special: 'False', modified: '31-Mar-2026' },
-    { id: 5, name: 'X', special: 'False', modified: '31-Mar-2026' },
-    { id: 6, name: 'XI', special: 'False', modified: '31-Mar-2026' },
-    { id: 7, name: 'NEW_NUR-UKG', special: 'False', modified: '31-Mar-2026' },
-    { id: 8, name: 'NEW_I-II', special: 'False', modified: '31-Mar-2026' },
-    { id: 9, name: 'NEW_III-V', special: 'False', modified: '31-Mar-2026' },
-    { id: 10, name: 'NEW_VI-VIII', special: 'False', modified: '31-Mar-2026' }
-  ];
+  const [feeGroups, setFeeGroups] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState('add');
+  const [selectedRow, setSelectedRow] = useState(null);
+  
+  const [name, setName] = useState('');
+  const [special, setSpecial] = useState('False');
+
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success');
+
+  const showToast = (msg, type = 'success') => {
+    setToastMessage(msg);
+    setToastType(type);
+    setTimeout(() => setToastMessage(''), 3000);
+  };
+
+  const fetchFeeGroups = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/fee-groups`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFeeGroups(data);
+      }
+    } catch (error) {
+      console.error('Error fetching fee groups:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchFeeGroups();
+  }, []);
+
+  const openAddModal = () => {
+    setModalMode('add');
+    setSelectedRow(null);
+    setName('');
+    setSpecial('False');
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (row) => {
+    setModalMode('edit');
+    setSelectedRow(row);
+    setName(row.name);
+    setSpecial(row.special || 'False');
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!name) {
+      showToast('Please fill all fields', 'error');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const method = modalMode === 'add' ? 'POST' : 'PUT';
+      const url = modalMode === 'add' ? `${API_URL}/api/fee-groups` : `${API_URL}/api/fee-groups/${selectedRow._id}`;
+      
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ name, special })
+      });
+
+      if (res.ok) {
+        showToast(modalMode === 'add' ? 'Fee Group Added' : 'Fee Group Updated');
+        fetchFeeGroups();
+        setIsModalOpen(false);
+      } else {
+        const err = await res.json();
+        showToast(err.message || 'Error saving fee group', 'error');
+      }
+    } catch (error) {
+      showToast('Network error', 'error');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this fee group?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/fee-groups/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        showToast('Fee Group Deleted');
+        fetchFeeGroups();
+      } else {
+        const err = await res.json();
+        showToast(err.message || 'Error deleting', 'error');
+      }
+    } catch (error) {
+      showToast('Network error', 'error');
+    }
+  };
 
   return (
-    <div style={{ padding: '24px', background: '#fff', minHeight: '100%' }}>
+    <div style={{ padding: '24px', background: '#fff', minHeight: '100%', position: 'relative' }}>
+      
+      {toastMessage && (
+        <div style={{ 
+          position: 'absolute', top: '24px', right: '24px', 
+          backgroundColor: toastType === 'success' ? '#4ade80' : '#ef4444', 
+          color: '#fff', padding: '12px 24px', borderRadius: '4px', 
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)', zIndex: 1000, fontWeight: 500, fontSize: '14px' 
+        }}>
+          {toastMessage}
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: '4px', padding: '6px 12px', width: '300px' }}>
           <Search size={16} color="#94a3b8" />
-          <input type="text" placeholder="Search Head" style={{ border: 'none', outline: 'none', marginLeft: '8px', fontSize: '13px', width: '100%' }} />
+          <input type="text" placeholder="Search Group" style={{ border: 'none', outline: 'none', marginLeft: '8px', fontSize: '13px', width: '100%' }} />
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button style={{ backgroundColor: '#29a9d8', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer' }}>
+          <button onClick={openAddModal} style={{ backgroundColor: '#29a9d8', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer' }}>
             <Plus size={16} /> Add New Group
           </button>
           <button style={{ backgroundColor: '#29a9d8', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer' }}>
@@ -45,38 +153,69 @@ export default function DefineFeeGroup() {
           </tr>
         </thead>
         <tbody>
-          {data.map((row) => (
-            <tr key={row.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
-              <td style={{ padding: '10px 12px', textAlign: 'left', borderRight: '1px solid #e2e8f0', color: '#095484' }}>{row.id}</td>
+          {feeGroups.map((row, index) => (
+            <tr key={row._id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+              <td style={{ padding: '10px 12px', textAlign: 'left', borderRight: '1px solid #e2e8f0', color: '#095484' }}>{index + 1}</td>
               <td style={{ padding: '10px 12px', textAlign: 'left', borderRight: '1px solid #e2e8f0', color: '#333' }}>{row.name}</td>
               <td style={{ padding: '10px 12px', textAlign: 'left', borderRight: '1px solid #e2e8f0', color: '#333' }}>{row.special}</td>
-              <td style={{ padding: '10px 12px', textAlign: 'left', borderRight: '1px solid #e2e8f0', color: '#333' }}>{row.modified}</td>
+              <td style={{ padding: '10px 12px', textAlign: 'left', borderRight: '1px solid #e2e8f0', color: '#333' }}>{new Date(row.updatedAt).toLocaleDateString()}</td>
               <td style={{ padding: '10px 12px', textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '12px' }}>
-                <Edit size={14} color="#64748b" style={{ cursor: 'pointer' }} />
-                <Trash2 size={14} color="#ef4444" style={{ cursor: 'pointer' }} />
+                <Edit size={14} color="#64748b" style={{ cursor: 'pointer' }} onClick={() => openEditModal(row)} />
+                <Trash2 size={14} color="#ef4444" style={{ cursor: 'pointer' }} onClick={() => handleDelete(row._id)} />
               </td>
             </tr>
           ))}
+          {feeGroups.length === 0 && (
+            <tr>
+              <td colSpan="5" style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>No Fee Groups Found</td>
+            </tr>
+          )}
         </tbody>
       </table>
 
-      {/* Footer */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', fontSize: '13px', color: '#333' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span>Show</span>
-          <select style={{ padding: '4px 8px', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
-            <option>10</option>
-          </select>
-          <span>entries</span>
+      {/* Modal */}
+      {isModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ backgroundColor: '#fff', width: '500px', borderRadius: '4px', display: 'flex', flexDirection: 'column' }}>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderBottom: '1px solid #e2e8f0' }}>
+              <span style={{ fontSize: '16px', color: '#333' }}>{modalMode === 'add' ? 'Add New Group' : 'Edit Fee Group'}</span>
+              <X size={18} color="#94a3b8" style={{ cursor: 'pointer' }} onClick={() => setIsModalOpen(false)} />
+            </div>
+
+            <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#333', marginBottom: '8px' }}>Group Name</label>
+                <input 
+                  type="text" 
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)} 
+                  required
+                  style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', outline: 'none', fontSize: '13px' }} 
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#333' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={special === 'True'} 
+                    onChange={(e) => setSpecial(e.target.checked ? 'True' : 'False')}
+                    style={{ width: '16px', height: '16px' }} 
+                  /> Is Special
+                </label>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+                <button type="submit" style={{ backgroundColor: '#4ade80', color: '#fff', border: 'none', padding: '8px 24px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 500 }}>
+                  {modalMode === 'add' ? <><Save size={16} /> Save</> : <><RefreshCw size={16} /> Update</>}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-        <div>Showing 1 to 10 of 14 entries</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <button style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748b' }}>Previous</button>
-          <button style={{ border: 'none', background: '#0ea5e9', color: '#fff', width: '28px', height: '28px', borderRadius: '4px', cursor: 'pointer' }}>1</button>
-          <button style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#333', width: '28px', height: '28px' }}>2</button>
-          <button style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#333' }}>Next</button>
-        </div>
-      </div>
+      )}
+
     </div>
   );
 }

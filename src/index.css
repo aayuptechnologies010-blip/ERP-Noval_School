@@ -107,11 +107,14 @@ body {
   body * {
     visibility: hidden;
   }
-  #payslip-container,
-  #payslip-container * {
+  .no-print, .no-print * {
+    display: none !important;
+  }
+  #payslip-container, #payslip-container *,
+  .printable-content, .printable-content * {
     visibility: visible;
   }
-  #payslip-container {
+  #payslip-container, .printable-content {
     position: absolute;
     left: 0;
     top: 0;

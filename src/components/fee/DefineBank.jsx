@@ -20,68 +20,182 @@ export default function DefineBank() {
   const [pageSize, setPageSize] = useState(10);
   
   const [showModal, setShowModal] = useState(false);
-  const [bankName, setBankName] = useState('');
+  
+  // State for all form fields
+  const [formData, setFormData] = useState({
+    bankName: '',
+    accountNumber: '',
+    mobile: '',
+    address: '',
+    ifscCode: '',
+    bsrCode: '',
+    isSchool: false
+  });
+
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [showError, setShowError] = useState(false);
   const [showExportToast, setShowExportToast] = useState(false);
 
   const [banks, setBanks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [editingBankId, setEditingBankId] = useState(null);
+
+  const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
+  useEffect(() => {
+    fetchBanks();
+  }, []);
+
+  const fetchBanks = async () => {
+    try {
+      setLoading(true);
+      // Depending on auth implementation, token might be needed here
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${API_URL}/api/banks`, { headers });
+      if (!res.ok) throw new Error('Failed to fetch banks');
+      const data = await res.json();
+      setBanks(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleExport = () => {
     setShowExportToast(true);
     setTimeout(() => setShowExportToast(false), 3000);
   };
 
-  const handleSave = () => {
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+    if (name === 'bankName' && showError && value.trim() !== '') {
+      setShowError(false);
+    }
+  };
+
+  const handleSave = async () => {
     setHasSubmitted(true);
-    if (bankName.trim() === '') {
+    if (formData.bankName.trim() === '') {
       setShowError(true);
-    } else {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      let res;
       if (editingBankId) {
-        setBanks(banks.map(b => b.srNo === editingBankId ? { ...b, bankName } : b));
-        setSuccessMessage('Bank Name Updated Successfully');
+        // Update
+        res = await fetch(`${API_URL}/api/banks/${editingBankId}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify(formData)
+        });
       } else {
-        const newBank = {
-          srNo: banks.length > 0 ? Math.max(...banks.map(b => b.srNo)) + 1 : 1,
-          bankName: bankName,
-          accountNumber: '',
-          mobile: '',
-          address: '',
-          ifscCode: '',
-          bsrCode: '',
-          modifiedDate: '28-Aug-2026'
-        };
-        setBanks([...banks, newBank]);
-        setSuccessMessage('Bank Name Saved Successfully');
+        // Create
+        res = await fetch(`${API_URL}/api/banks`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(formData)
+        });
       }
 
+      if (!res.ok) throw new Error('Operation failed');
+      
+      setSuccessMessage(editingBankId ? 'Bank Name Updated Successfully' : 'Bank Name Saved Successfully');
+      setShowSuccessToast(true);
+      setTimeout(() => setShowSuccessToast(false), 3000);
+
       setShowModal(false);
-      setBankName('');
       setEditingBankId(null);
       setHasSubmitted(false);
       setShowError(false);
       
-      setShowSuccessToast(true);
-      setTimeout(() => setShowSuccessToast(false), 3000);
+      // Refresh list
+      fetchBanks();
+
+    } catch (error) {
+      console.error(error);
+      alert('An error occurred while saving the bank details');
     }
   };
 
-  const handleEdit = (bank) => {
-    setEditingBankId(bank.srNo);
-    setBankName(bank.bankName);
+  const openNewModal = () => {
+    setEditingBankId(null);
+    setFormData({
+      bankName: '',
+      accountNumber: '',
+      mobile: '',
+      address: '',
+      ifscCode: '',
+      bsrCode: '',
+      isSchool: false
+    });
     setHasSubmitted(false);
     setShowError(false);
     setShowModal(true);
   };
 
-  const handleDelete = (srNo) => {
-    setBanks(banks.filter(bank => bank.srNo !== srNo));
-    setSuccessMessage('Bank Name Deleted Successfully');
-    setShowSuccessToast(true);
-    setTimeout(() => setShowSuccessToast(false), 3000);
+  const handleEdit = (bank) => {
+    setEditingBankId(bank._id);
+    setFormData({
+      bankName: bank.bankName || '',
+      accountNumber: bank.accountNumber || '',
+      mobile: bank.mobile || '',
+      address: bank.address || '',
+      ifscCode: bank.ifscCode || '',
+      bsrCode: bank.bsrCode || '',
+      isSchool: bank.isSchool || false
+    });
+    setHasSubmitted(false);
+    setShowError(false);
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this bank?")) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${API_URL}/api/banks/${id}`, {
+        method: 'DELETE',
+        headers
+      });
+
+      if (!res.ok) throw new Error('Deletion failed');
+
+      setSuccessMessage('Bank Name Deleted Successfully');
+      setShowSuccessToast(true);
+      setTimeout(() => setShowSuccessToast(false), 3000);
+      
+      // Refresh list
+      fetchBanks();
+    } catch (error) {
+      console.error(error);
+      alert('An error occurred while deleting the bank');
+    }
+  };
+
+  // Format date helper
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
   };
 
   return (
@@ -102,7 +216,7 @@ export default function DefineBank() {
 
         {/* Buttons */}
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => { setEditingBankId(null); setBankName(''); setHasSubmitted(false); setShowError(false); setShowModal(true); }} style={{
+          <button onClick={openNewModal} style={{
             display: 'flex', alignItems: 'center', gap: 6,
             background: '#29a9d8', border: 'none', borderRadius: 4,
             padding: '7px 14px', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer',
@@ -144,7 +258,13 @@ export default function DefineBank() {
             </tr>
           </thead>
           <tbody>
-            {banks.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={COLUMNS.length} style={{ padding: '14px 12px', textAlign: 'center', color: '#64748b' }}>
+                  Loading...
+                </td>
+              </tr>
+            ) : banks.length === 0 ? (
               <tr>
                 <td colSpan={COLUMNS.length} style={{
                   padding: '14px 12px', textAlign: 'center',
@@ -155,19 +275,19 @@ export default function DefineBank() {
                 </td>
               </tr>
             ) : (
-              banks.map(bank => (
-                <tr key={bank.srNo} style={{ height: 32, borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={{ padding: '8px 12px', color: '#374151', borderRight: '1px solid #f1f5f9' }}>{bank.srNo}</td>
+              banks.filter(b => b.bankName.toLowerCase().includes(search.toLowerCase())).map((bank, index) => (
+                <tr key={bank._id} style={{ height: 32, borderBottom: '1px solid #f1f5f9' }}>
+                  <td style={{ padding: '8px 12px', color: '#374151', borderRight: '1px solid #f1f5f9' }}>{index + 1}</td>
                   <td style={{ padding: '8px 12px', color: '#374151', borderRight: '1px solid #f1f5f9' }}>{bank.bankName}</td>
-                  <td style={{ padding: '8px 12px', color: '#374151', borderRight: '1px solid #f1f5f9' }}>{bank.accountNumber}</td>
-                  <td style={{ padding: '8px 12px', color: '#374151', borderRight: '1px solid #f1f5f9' }}>{bank.mobile}</td>
-                  <td style={{ padding: '8px 12px', color: '#374151', borderRight: '1px solid #f1f5f9' }}>{bank.address}</td>
-                  <td style={{ padding: '8px 12px', color: '#374151', borderRight: '1px solid #f1f5f9' }}>{bank.ifscCode}</td>
-                  <td style={{ padding: '8px 12px', color: '#374151', borderRight: '1px solid #f1f5f9' }}>{bank.bsrCode}</td>
-                  <td style={{ padding: '8px 12px', color: '#374151', borderRight: '1px solid #f1f5f9' }}>{bank.modifiedDate}</td>
+                  <td style={{ padding: '8px 12px', color: '#374151', borderRight: '1px solid #f1f5f9' }}>{bank.accountNumber || '-'}</td>
+                  <td style={{ padding: '8px 12px', color: '#374151', borderRight: '1px solid #f1f5f9' }}>{bank.mobile || '-'}</td>
+                  <td style={{ padding: '8px 12px', color: '#374151', borderRight: '1px solid #f1f5f9' }}>{bank.address || '-'}</td>
+                  <td style={{ padding: '8px 12px', color: '#374151', borderRight: '1px solid #f1f5f9' }}>{bank.ifscCode || '-'}</td>
+                  <td style={{ padding: '8px 12px', color: '#374151', borderRight: '1px solid #f1f5f9' }}>{bank.bsrCode || '-'}</td>
+                  <td style={{ padding: '8px 12px', color: '#374151', borderRight: '1px solid #f1f5f9' }}>{formatDate(bank.updatedAt || bank.createdAt)}</td>
                   <td style={{ padding: '8px 12px', color: '#374151', display: 'flex', gap: 12, alignItems: 'center' }}>
                     <Edit size={14} color="#94a3b8" style={{ cursor: 'pointer' }} onClick={() => handleEdit(bank)} />
-                    <Trash2 size={14} color="#ef4444" style={{ cursor: 'pointer' }} onClick={() => handleDelete(bank.srNo)} />
+                    <Trash2 size={14} color="#ef4444" style={{ cursor: 'pointer' }} onClick={() => handleDelete(bank._id)} />
                   </td>
                 </tr>
               ))
@@ -220,47 +340,82 @@ export default function DefineBank() {
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600, color: '#333' }}>Bank Name <span style={{ color: 'red' }}>*</span></label>
                   <input 
                     type="text" 
-                    value={bankName}
-                    onChange={(e) => {
-                      setBankName(e.target.value);
-                      if (showError && e.target.value.trim() !== '') setShowError(false);
-                    }}
+                    name="bankName"
+                    value={formData.bankName}
+                    onChange={handleChange}
                     style={{ 
-                      width: '100%', padding: '8px 12px', border: (hasSubmitted && bankName.trim() === '') ? '1px solid red' : '1px solid #d9d9d9', 
+                      width: '100%', padding: '8px 12px', border: (hasSubmitted && formData.bankName.trim() === '') ? '1px solid red' : '1px solid #d9d9d9', 
                       borderRadius: '4px', outline: 'none', fontSize: '13px'
                     }} 
                   />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600, color: '#333' }}>Account Number</label>
-                  <input type="text" style={{ width: '100%', padding: '8px 12px', border: '1px solid #d9d9d9', borderRadius: '4px', outline: 'none', fontSize: '13px' }} />
+                  <input 
+                    type="text" 
+                    name="accountNumber"
+                    value={formData.accountNumber}
+                    onChange={handleChange}
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #d9d9d9', borderRadius: '4px', outline: 'none', fontSize: '13px' }} 
+                  />
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '24px' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600, color: '#333' }}>Mobile</label>
-                  <input type="text" style={{ width: '100%', padding: '8px 12px', border: '1px solid #d9d9d9', borderRadius: '4px', outline: 'none', fontSize: '13px' }} />
+                  <input 
+                    type="text" 
+                    name="mobile"
+                    value={formData.mobile}
+                    onChange={handleChange}
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #d9d9d9', borderRadius: '4px', outline: 'none', fontSize: '13px' }} 
+                  />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600, color: '#333' }}>Address</label>
-                  <input type="text" style={{ width: '100%', padding: '8px 12px', border: '1px solid #d9d9d9', borderRadius: '4px', outline: 'none', fontSize: '13px' }} />
+                  <input 
+                    type="text" 
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #d9d9d9', borderRadius: '4px', outline: 'none', fontSize: '13px' }} 
+                  />
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '24px' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600, color: '#333' }}>IFSC Code</label>
-                  <input type="text" style={{ width: '100%', padding: '8px 12px', border: '1px solid #d9d9d9', borderRadius: '4px', outline: 'none', fontSize: '13px' }} />
+                  <input 
+                    type="text" 
+                    name="ifscCode"
+                    value={formData.ifscCode}
+                    onChange={handleChange}
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #d9d9d9', borderRadius: '4px', outline: 'none', fontSize: '13px' }} 
+                  />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600, color: '#333' }}>BSR Code</label>
-                  <input type="text" style={{ width: '100%', padding: '8px 12px', border: '1px solid #d9d9d9', borderRadius: '4px', outline: 'none', fontSize: '13px' }} />
+                  <input 
+                    type="text" 
+                    name="bsrCode"
+                    value={formData.bsrCode}
+                    onChange={handleChange}
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #d9d9d9', borderRadius: '4px', outline: 'none', fontSize: '13px' }} 
+                  />
                 </div>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <input type="checkbox" id="isSchool" style={{ cursor: 'pointer' }} />
+                <input 
+                  type="checkbox" 
+                  id="isSchool" 
+                  name="isSchool"
+                  checked={formData.isSchool}
+                  onChange={handleChange}
+                  style={{ cursor: 'pointer' }} 
+                />
                 <label htmlFor="isSchool" style={{ fontSize: '13px', color: '#333', cursor: 'pointer' }}>Is School</label>
               </div>
             </div>
