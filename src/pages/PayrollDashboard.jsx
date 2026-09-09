@@ -1,3 +1,4 @@
+// Updated: 2026-09-07 - Dynamic Monthly Salary Reports sync
 import React, { useState } from 'react';
 import { HelpCircle, Info, Settings, Fingerprint, GraduationCap, PieChart } from 'lucide-react';
 import { FaMoneyBill } from 'react-icons/fa';
@@ -101,6 +102,8 @@ import IncrementRollback from '../components/payroll/IncrementRollback';
 import StaffSalaryStructure from '../components/payroll/StaffSalaryStructure';
 import GenerateSalaryStatus from '../components/payroll/GenerateSalaryStatus';
 import DailyWagesAttendance from '../components/payroll/DailyWagesAttendance';
+// Salary Reports (5 Fully Dynamic Modules with Ayup Records)
+// Income Tax Section (6 Fully Dynamic Modules with Ayup Records)
 import BankStatementReport from '../components/payroll/BankStatementReport';
 import HeadWiseReport from '../components/payroll/HeadWiseReport';
 import SalarySheet from '../components/payroll/SalarySheet';

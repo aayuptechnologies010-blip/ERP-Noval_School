@@ -1,30 +1,83 @@
-import React from 'react';
-import { Edit, Trash2, Plus, Download } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Edit, Trash2, Plus, Download, X, Save } from 'lucide-react';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export default function DefineStaffType() {
-  const staffTypes = [
-    { id: 1, type: 'Management', hourly: 'No', showEcare: 'Yes' },
-    { id: 2, type: 'Support Staff', hourly: 'No', showEcare: 'Yes' },
-    { id: 3, type: 'PRIMARY TEACHERS', hourly: 'No', showEcare: 'Yes' },
-    { id: 4, type: 'PRE-PRIM. TEACHERS', hourly: 'No', showEcare: 'Yes' },
-    { id: 5, type: 'TEACHERS', hourly: 'No', showEcare: 'Yes' },
-    { id: 6, type: 'Front Office/Accounts', hourly: 'No', showEcare: 'Yes' },
-    { id: 7, type: 'OTHER', hourly: 'No', showEcare: 'No' },
-    { id: 8, type: 'ADHOC', hourly: 'No', showEcare: 'No' },
-    { id: 9, type: 'NON TEACHING', hourly: 'No', showEcare: 'No' },
-    { id: 10, type: 'Cont Emp', hourly: 'Yes', showEcare: 'Yes' },
-  ];
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [formData, setFormData] = useState({ type: '', hourly: false, showEcare: false });
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  const token = localStorage.getItem('token');
+  const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/staff-types`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) {
+        let result = await res.json();
+        if (search) {
+          result = result.filter(item => item.type.toLowerCase().includes(search.toLowerCase()));
+        }
+        setData(result);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [search]);
+
+  const handleSave = async () => {
+    try {
+      const url = editingId ? `${API_BASE}/api/staff-types/${editingId}` : `${API_BASE}/api/staff-types`;
+      const method = editingId ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers, body: JSON.stringify(formData) });
+      if (res.ok) {
+        setShowModal(false);
+        setEditingId(null);
+        setFormData({ type: '', hourly: false, showEcare: false });
+        fetchData();
+      }
+    } catch (err) {
+      alert('Error saving data');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/staff-types/${id}`, { method: 'DELETE', headers });
+      if (res.ok) {
+        setDeleteConfirm(null);
+        fetchData();
+      }
+    } catch (err) {
+      alert('Error deleting data');
+    }
+  };
 
   return (
     <div className="mail-template-container">
       <div className="mail-template-header">
-        <input type="text" className="mail-search-input" placeholder="Search" />
+        <input 
+          type="text" 
+          className="mail-search-input" 
+          placeholder="Search" 
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button className="add-template-btn">
+          <button className="add-template-btn" onClick={() => { setEditingId(null); setFormData({ type: '', hourly: false, showEcare: false }); setShowModal(true); }}>
             <Plus size={16} /> Add New Staff Type
-          </button>
-          <button className="add-template-btn">
-            <Download size={16} /> Export
           </button>
         </div>
       </div>
@@ -33,64 +86,74 @@ export default function DefineStaffType() {
         <table className="mail-table">
           <thead>
             <tr>
-              <th style={{ width: '80px', textAlign: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                  Sr No. <span className="sort-arrows">↕</span>
-                </div>
-              </th>
-              <th>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  Staff Type <span className="sort-arrows">↕</span>
-                </div>
-              </th>
-              <th style={{ width: '150px', textAlign: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                  Hourly <span className="sort-arrows">↕</span>
-                </div>
-              </th>
-              <th style={{ width: '150px', textAlign: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                  Show On e-Care <span className="sort-arrows">↕</span>
-                </div>
-              </th>
+              <th style={{ width: '80px', textAlign: 'center' }}>Sr No.</th>
+              <th>Staff Type</th>
+              <th style={{ width: '150px', textAlign: 'center' }}>Hourly</th>
+              <th style={{ width: '150px', textAlign: 'center' }}>Show E-care</th>
               <th style={{ width: '100px', textAlign: 'center' }}>Action</th>
             </tr>
           </thead>
           <tbody>
-            {staffTypes.map((row, index) => (
-              <tr key={row.id} className={index % 2 === 0 ? 'row-even' : 'row-odd'}>
-                <td style={{ textAlign: 'center' }}>{row.id}</td>
-                <td>{row.type}</td>
-                <td style={{ textAlign: 'center' }}>{row.hourly}</td>
-                <td style={{ textAlign: 'center' }}>{row.showEcare}</td>
-                <td>
-                  <div className="action-icons">
-                    <Edit size={16} color="#6c757d" style={{ cursor: 'pointer' }} />
-                    <Trash2 size={16} color="#dc3545" style={{ cursor: 'pointer' }} />
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {loading ? (
+              <tr><td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>Loading...</td></tr>
+            ) : data.length === 0 ? (
+              <tr><td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>No records found</td></tr>
+            ) : (
+              data.map((row, index) => (
+                <tr key={row._id} className={index % 2 === 0 ? 'row-even' : 'row-odd'}>
+                  <td style={{ textAlign: 'center' }}>{index + 1}</td>
+                  <td>{row.type}</td>
+                  <td style={{ textAlign: 'center' }}>{row.hourly ? 'Yes' : 'No'}</td>
+                  <td style={{ textAlign: 'center' }}>{row.showEcare ? 'Yes' : 'No'}</td>
+                  <td style={{ textAlign: 'center' }}>
+                    <div className="action-icons" style={{ justifyContent: 'center' }}>
+                      <Edit size={16} color="#6c757d" style={{ cursor: 'pointer' }} onClick={() => { setEditingId(row._id); setFormData(row); setShowModal(true); }} />
+                      <Trash2 size={16} color="#dc3545" style={{ cursor: 'pointer' }} onClick={() => setDeleteConfirm(row._id)} />
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', fontSize: '13px' }}>
-        <div className="mail-pagination" style={{ margin: 0 }}>
-          Show 
-          <select defaultValue="10" className="entries-select">
-            <option value="10">10</option>
-          </select>
-          entries
+      {showModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '8px', padding: '24px', width: '400px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0 }}>{editingId ? 'Edit Staff Type' : 'Add Staff Type'}</h3>
+              <X size={20} style={{ cursor: 'pointer' }} onClick={() => setShowModal(false)} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label>Staff Type</label>
+                <input type="text" value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})} style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
+              </div>
+              <div style={{ display: 'flex', gap: '20px' }}>
+                <label><input type="checkbox" checked={formData.hourly} onChange={(e) => setFormData({...formData, hourly: e.target.checked})} /> Hourly</label>
+                <label><input type="checkbox" checked={formData.showEcare} onChange={(e) => setFormData({...formData, showEcare: e.target.checked})} /> Show E-care</label>
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+              <button onClick={() => setShowModal(false)} style={{ padding: '8px 16px', borderRadius: '4px' }}>Cancel</button>
+              <button onClick={handleSave} style={{ padding: '8px 16px', borderRadius: '4px', backgroundColor: '#4a90d9', color: '#fff' }}>Save</button>
+            </div>
+          </div>
         </div>
-        <div>Showing 1 to 10 of 13 entries</div>
-        <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-          <span style={{ color: '#6c757d', cursor: 'pointer' }}>Previous</span>
-          <div style={{ backgroundColor: '#159BD7', color: 'white', padding: '4px 10px', borderRadius: '4px' }}>1</div>
-          <div style={{ color: '#495057', padding: '4px 10px', cursor: 'pointer' }}>2</div>
-          <span style={{ color: '#495057', cursor: 'pointer' }}>Next</span>
+      )}
+
+      {deleteConfirm && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '8px', padding: '24px', textAlign: 'center' }}>
+            <h3>Delete Record?</h3>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '20px' }}>
+              <button onClick={() => setDeleteConfirm(null)}>Cancel</button>
+              <button onClick={() => handleDelete(deleteConfirm)} style={{ backgroundColor: '#dc3545', color: '#fff', padding: '8px 16px' }}>Delete</button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

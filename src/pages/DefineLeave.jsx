@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaDownload,
@@ -15,27 +15,163 @@ function DefineLeave() {
   const [pageSize, setPageSize] = useState("10");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  
+  const [leaves, setLeaves] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Form State
+  const [editId, setEditId] = useState(null);
+  const [leaveName, setLeaveName] = useState("");
+  const [leaveAbbr, setLeaveAbbr] = useState("");
+  const [leaveType, setLeaveType] = useState("CL");
+  const [maxLimit, setMaxLimit] = useState(0);
+  const [lifetimeServiceMaxLimit, setLifetimeServiceMaxLimit] = useState(0);
+  const [payDeductionPerLeave, setPayDeductionPerLeave] = useState(0);
+  const [maxAcceptableInMonth, setMaxAcceptableInMonth] = useState(0);
+  const [maxAcceptableInContinuation, setMaxAcceptableInContinuation] = useState(0);
+  const [applyBeforeDays, setApplyBeforeDays] = useState(0);
+  const [lateDaysForLwp, setLateDaysForLwp] = useState(0);
+  const [applyBeforeEmploymentDays, setApplyBeforeEmploymentDays] = useState(0);
+  const [carryForward, setCarryForward] = useState(false);
+  const [prefixSuffixOnly, setPrefixSuffixOnly] = useState(false);
+  const [enableUploadFile, setEnableUploadFile] = useState(false);
+  const [allowPreviousMonthCL, setAllowPreviousMonthCL] = useState(false);
+  const [autoAssigning, setAutoAssigning] = useState(false);
+  const [showOnEcare, setShowOnEcare] = useState(true);
+
+  const fetchLeaves = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/leave-types`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setLeaves(data);
+      }
+    } catch (error) {
+      console.error("Error fetching leaves:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLeaves();
+  }, []);
+
+  const resetForm = () => {
+    setEditId(null);
+    setLeaveName("");
+    setLeaveAbbr("");
+    setLeaveType("CL");
+    setMaxLimit(0);
+    setLifetimeServiceMaxLimit(0);
+    setPayDeductionPerLeave(0);
+    setMaxAcceptableInMonth(0);
+    setMaxAcceptableInContinuation(0);
+    setApplyBeforeDays(0);
+    setLateDaysForLwp(0);
+    setApplyBeforeEmploymentDays(0);
+    setCarryForward(false);
+    setPrefixSuffixOnly(false);
+    setEnableUploadFile(false);
+    setAllowPreviousMonthCL(false);
+    setAutoAssigning(false);
+    setShowOnEcare(true);
+  };
+
+  const openEdit = (leave) => {
+    setIsEditMode(true);
+    setEditId(leave._id);
+    setLeaveName(leave.leaveName || "");
+    setLeaveAbbr(leave.leaveAbbr || "");
+    setLeaveType(leave.leaveType || "CL");
+    setMaxLimit(leave.maxLimit || 0);
+    setLifetimeServiceMaxLimit(leave.lifetimeServiceMaxLimit || 0);
+    setPayDeductionPerLeave(leave.payDeductionPerLeave || 0);
+    setMaxAcceptableInMonth(leave.maxAcceptableInMonth || 0);
+    setMaxAcceptableInContinuation(leave.maxAcceptableInContinuation || 0);
+    setApplyBeforeDays(leave.applyBeforeDays || 0);
+    setLateDaysForLwp(leave.lateDaysForLwp || 0);
+    setApplyBeforeEmploymentDays(leave.applyBeforeEmploymentDays || 0);
+    setCarryForward(leave.carryForward || false);
+    setPrefixSuffixOnly(leave.prefixSuffixOnly || false);
+    setEnableUploadFile(leave.enableUploadFile || false);
+    setAllowPreviousMonthCL(leave.allowPreviousMonthCL || false);
+    setAutoAssigning(leave.autoAssigning || false);
+    setShowOnEcare(leave.showOnEcare !== undefined ? leave.showOnEcare : true);
+    setIsModalOpen(true);
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+    const payload = {
+      leaveName, leaveAbbr, leaveType, maxLimit, lifetimeServiceMaxLimit,
+      payDeductionPerLeave, maxAcceptableInMonth, maxAcceptableInContinuation,
+      applyBeforeDays, lateDaysForLwp, applyBeforeEmploymentDays,
+      carryForward, prefixSuffixOnly, enableUploadFile, allowPreviousMonthCL,
+      autoAssigning, showOnEcare
+    };
+
+    try {
+      const url = isEditMode 
+        ? `${import.meta.env.VITE_API_BASE_URL || ''}/api/leave-types/${editId}`
+        : `${import.meta.env.VITE_API_BASE_URL || ''}/api/leave-types`;
+      
+      const response = await fetch(url, {
+        method: isEditMode ? "PUT" : "POST",
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (response.ok) {
+        setIsModalOpen(false);
+        resetForm();
+        fetchLeaves();
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || "Failed to save leave type");
+      }
+    } catch (error) {
+      console.error("Error saving leave:", error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if(!window.confirm("Are you sure you want to delete this leave type?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/leave-types/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (response.ok) {
+        fetchLeaves();
+      }
+    } catch (error) {
+      console.error("Error deleting leave:", error);
+    }
+  };
+
+  const filteredLeaves = leaves.filter(l => l.leaveName?.toLowerCase().includes(search.toLowerCase()) || l.leaveAbbr?.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <section className="holiday-page leave-page">
       <div className="holiday-tabs">
-        <div className="holiday-tab previous-tab">
+        <div className="holiday-tab previous-tab" onClick={() => navigate("/attendance/define-holiday")}>
           <span>Define Holiday</span>
-          <button
-            aria-label="Close Define Holiday"
-            title="Close"
-            onClick={() => navigate("/attendance/define-holiday")}
-          >
+          <button aria-label="Close Define Holiday" title="Close" onClick={(e) => { e.stopPropagation(); navigate("/attendance/define-holiday"); }}>
             <FaTimes />
           </button>
         </div>
         <div className="holiday-tab current-tab">
           <span>Define Leave</span>
-          <button
-            aria-label="Close Define Leave"
-            title="Close"
-            onClick={() => navigate("/attendance")}
-          >
+          <button aria-label="Close Define Leave" title="Close" onClick={() => navigate("/attendance")}>
             <FaTimes />
           </button>
         </div>
@@ -56,6 +192,7 @@ function DefineLeave() {
             className="holiday-action"
             onClick={() => {
               setIsEditMode(false);
+              resetForm();
               setIsModalOpen(true);
             }}
           >
@@ -72,61 +209,42 @@ function DefineLeave() {
           <thead>
             <tr>
               {[
-                "Sl No.",
-                "Leave Name",
-                "Leave Abbr.",
-                "Leave Type",
-                "Max Limit",
-                "Service Limit",
-                "Deduction",
-                "Max Leave",
-                "Max Continuation",
-                "Max Acceptable",
-                "LWP on late day",
-                "Carry Forward",
-                "Auto Assign",
-                "Show On Ecare",
-                "Leave Calculation Date",
-                "Action",
+                "Sl No.", "Leave Name", "Leave Abbr.", "Leave Type", "Max Limit",
+                "Service Limit", "Deduction", "Max Acceptable", "Continuation",
+                "Late LWP", "Carry Forward", "Auto Assign", "Show On Ecare", "Action"
               ].map((heading) => (
-                <th key={heading}>
-                  {heading} <span>◆</span>
-                </th>
+                <th key={heading}>{heading} <span>◆</span></th>
               ))}
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>1</td>
-              <td>
-                Casual
-                <br />
-                Leave
-              </td>
-              <td>CL</td>
-              <td>CL</td>
-              <td>12</td>
-              <td>0.00</td>
-              <td>0.00</td>
-              <td>0.00</td>
-              <td>0.00</td>
-              <td>0.00</td>
-              <td>0.00</td>
-              <td>No</td>
-              <td>False</td>
-              <td>True</td>
-              <td>-</td>
-              <td className="leave-actions">
-                <FaEdit
-                  onClick={() => {
-                    setIsEditMode(true);
-                    setIsModalOpen(true);
-                  }}
-                  title="Edit Leave"
-                />
-                <FaTrash />
-              </td>
-            </tr>
+            {loading ? (
+              <tr><td colSpan="14">Loading...</td></tr>
+            ) : filteredLeaves.length === 0 ? (
+              <tr><td colSpan="14">No data available in table</td></tr>
+            ) : (
+              filteredLeaves.map((leave, index) => (
+                <tr key={leave._id}>
+                  <td>{index + 1}</td>
+                  <td>{leave.leaveName}</td>
+                  <td>{leave.leaveAbbr}</td>
+                  <td>{leave.leaveType}</td>
+                  <td>{leave.maxLimit}</td>
+                  <td>{leave.lifetimeServiceMaxLimit}</td>
+                  <td>{leave.payDeductionPerLeave}</td>
+                  <td>{leave.maxAcceptableInMonth}</td>
+                  <td>{leave.maxAcceptableInContinuation}</td>
+                  <td>{leave.lateDaysForLwp}</td>
+                  <td>{leave.carryForward ? "Yes" : "No"}</td>
+                  <td>{leave.autoAssigning ? "True" : "False"}</td>
+                  <td>{leave.showOnEcare ? "True" : "False"}</td>
+                  <td className="leave-actions">
+                    <FaEdit onClick={() => openEdit(leave)} title="Edit Leave" />
+                    <FaTrash onClick={() => handleDelete(leave._id)} title="Delete Leave" />
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -134,21 +252,17 @@ function DefineLeave() {
       <div className="holiday-pagination">
         <label>
           <strong>Show</strong>
-          <select
-            value={pageSize}
-            onChange={(event) => setPageSize(event.target.value)}
-          >
+          <select value={pageSize} onChange={(event) => setPageSize(event.target.value)}>
             <option value="10">10</option>
             <option value="25">25</option>
             <option value="50">50</option>
           </select>
           <strong>entries</strong>
-          <span>Showing 1 to 1 of 1 entries</span>
+          <span>Showing {filteredLeaves.length > 0 ? 1 : 0} to {filteredLeaves.length} of {filteredLeaves.length} entries</span>
         </label>
         <div>
-          <button>Previous</button>
-          <button className="page-number">1</button>
-          <button>Next</button>
+          <button disabled>Previous</button>
+          <button disabled>Next</button>
         </div>
       </div>
 
@@ -177,77 +291,36 @@ function DefineLeave() {
                 <FaTimes />
               </button>
             </div>
-            <form
-              onSubmit={(event) => {
-                event.preventDefault();
-                setIsModalOpen(false);
-              }}
-            >
-              <select defaultValue={isEditMode ? "CL" : ""}>
+            <form onSubmit={handleSave}>
+              <select value={leaveType} onChange={e => setLeaveType(e.target.value)}>
                 <option value="">Select Leave Type</option>
                 <option value="CL">CL</option>
-                <option>Paid Leave</option>
-                <option>Unpaid Leave</option>
+                <option value="SL">SL</option>
+                <option value="EL">EL</option>
+                <option value="ML">ML</option>
+                <option value="LOP">LOP</option>
+                <option value="Paid Leave">Paid Leave</option>
+                <option value="Unpaid Leave">Unpaid Leave</option>
               </select>
               <div className="leave-form-grid">
-                {[
-                  "Leave Name",
-                  "Leave Abbr.",
-                  "Max Limit",
-                  "Lifetime Service Max Limit",
-                  "Pay Deduction Per Leave (%)",
-                  "Max. Acceptable In Month",
-                  "Max. Acceptable in Continuation",
-                  "Able to apply for leave before",
-                  "No of Late Days to be counted for 1 LWP",
-                  "No Employee should be able to apply before",
-                ].map((label) => (
-                  <label key={label}>
-                    {label}
-                    <input
-                      type={
-                        label === "Leave Name" || label === "Leave Abbr."
-                          ? "text"
-                          : "number"
-                      }
-                      defaultValue={
-                        isEditMode && label === "Leave Name"
-                          ? "Casual Leave"
-                          : isEditMode && label === "Leave Abbr."
-                            ? "CL"
-                            : isEditMode && label === "Max Limit"
-                              ? "12"
-                              : isEditMode &&
-                                  label !== "Leave Name" &&
-                                  label !== "Leave Abbr."
-                                ? "0.00"
-                                : label.includes("Limit") ||
-                                    label.includes("Deduction") ||
-                                    label.includes("Month") ||
-                                    label.includes("Continuation") ||
-                                    label.includes("before") ||
-                                    label.includes("LWP")
-                                  ? "0"
-                                  : undefined
-                      }
-                    />
-                  </label>
-                ))}
+                <label>Leave Name <input type="text" required value={leaveName} onChange={e => setLeaveName(e.target.value)} /></label>
+                <label>Leave Abbr. <input type="text" required value={leaveAbbr} onChange={e => setLeaveAbbr(e.target.value)} /></label>
+                <label>Max Limit <input type="number" required value={maxLimit} onChange={e => setMaxLimit(e.target.value)} /></label>
+                <label>Lifetime Service Max Limit <input type="number" value={lifetimeServiceMaxLimit} onChange={e => setLifetimeServiceMaxLimit(e.target.value)} /></label>
+                <label>Pay Deduction Per Leave (%) <input type="number" value={payDeductionPerLeave} onChange={e => setPayDeductionPerLeave(e.target.value)} /></label>
+                <label>Max. Acceptable In Month <input type="number" value={maxAcceptableInMonth} onChange={e => setMaxAcceptableInMonth(e.target.value)} /></label>
+                <label>Max. Acceptable in Continuation <input type="number" value={maxAcceptableInContinuation} onChange={e => setMaxAcceptableInContinuation(e.target.value)} /></label>
+                <label>Able to apply for leave before <input type="number" value={applyBeforeDays} onChange={e => setApplyBeforeDays(e.target.value)} /></label>
+                <label>No of Late Days for 1 LWP <input type="number" value={lateDaysForLwp} onChange={e => setLateDaysForLwp(e.target.value)} /></label>
+                <label>No Employee able to apply before <input type="number" value={applyBeforeEmploymentDays} onChange={e => setApplyBeforeEmploymentDays(e.target.value)} /></label>
               </div>
               <div className="leave-options">
-                {[
-                  "Carry Forward",
-                  "Either Prefix or Suffix of holidays IS ONLY allowed",
-                  "Enable Upload File",
-                  "Allow to Add Previous Month CL",
-                  "Auto assigning",
-                  "Show On E-care",
-                ].map((label, index) => (
-                  <label key={label}>
-                    <input type="checkbox" defaultChecked={index === 5} />
-                    {label}
-                  </label>
-                ))}
+                <label><input type="checkbox" checked={carryForward} onChange={e => setCarryForward(e.target.checked)} /> Carry Forward</label>
+                <label><input type="checkbox" checked={prefixSuffixOnly} onChange={e => setPrefixSuffixOnly(e.target.checked)} /> Either Prefix or Suffix of holidays IS ONLY allowed</label>
+                <label><input type="checkbox" checked={enableUploadFile} onChange={e => setEnableUploadFile(e.target.checked)} /> Enable Upload File</label>
+                <label><input type="checkbox" checked={allowPreviousMonthCL} onChange={e => setAllowPreviousMonthCL(e.target.checked)} /> Allow to Add Previous Month CL</label>
+                <label><input type="checkbox" checked={autoAssigning} onChange={e => setAutoAssigning(e.target.checked)} /> Auto assigning</label>
+                <label><input type="checkbox" checked={showOnEcare} onChange={e => setShowOnEcare(e.target.checked)} /> Show On E-care</label>
               </div>
               <button className="shift-save" type="submit">
                 {isEditMode ? "Update" : "Save"}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DefineHoliday from "./DefineHoliday";
 import DefineLeave from "./DefineLeave";
@@ -50,26 +50,6 @@ import {
   YAxis,
 } from "recharts";
 
-const departmentData = [
-  { name: "ADMINISTRATION DEPT.", value: 2, color: "#e76f51" },
-  { name: "OFFICE STAFF", value: 2, color: "#ff6b6b" },
-  { name: "PRE-PRIMARY TEACHERS", value: 4, color: "#ffd166" },
-  { name: "PRIMARY TEACHERS", value: 7, color: "#49dcb1" },
-  { name: "SENIOR TEACHERS", value: 7, color: "#69a8ed" },
-];
-const shiftData = [
-  { name: "Teacher's Timing", value: 18, color: "#e76f51" },
-  { name: "Office Staff Timing", value: 4, color: "#ff6b6b" },
-];
-const departments = departmentData.map((item) => ({
-  name: item.name,
-  staff: item.value,
-}));
-const days = Array.from({ length: 31 }, (_, index) => ({
-  day: index + 1,
-  staff: 22,
-}));
-
 function AttendanceDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -92,6 +72,50 @@ function AttendanceDashboard() {
   const [range, setRange] = useState("TODAY'S");
   const [academicYear, setAcademicYear] = useState("2026-2027");
   const [financialYear, setFinancialYear] = useState("2026-2027");
+
+  const [dashboardData, setDashboardData] = useState({
+    headCount: { total: 0, male: 0, female: 0 },
+    authStats: { manual: 0, biometric: 0 },
+    averageAttendance: {
+      todayPresent: 0,
+      todayAbsent: 0,
+      yesterdayPresent: 0,
+      yesterdayAbsent: 0
+    },
+    departmentData: [],
+    shiftData: [],
+    dailyLineChart: [],
+    monthlyHolidays: []
+  });
+  const [loadingDashboard, setLoadingDashboard] = useState(true);
+
+  useEffect(() => {
+    if (location.pathname !== "/attendance") return;
+    
+    const fetchDashboard = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/staff-attendance/dashboard-summary`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setDashboardData({
+            ...data,
+            departmentData: data.departmentData || [],
+            shiftData: data.shiftData || [],
+            dailyLineChart: data.dailyLineChart || [],
+            monthlyHolidays: data.monthlyHolidays || []
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+      } finally {
+        setLoadingDashboard(false);
+      }
+    };
+    fetchDashboard();
+  }, [location.pathname]);
 
   // ==================== THEME CUSTOMIZER SYSTEM ====================
   const [isThemeDrawerOpen, setIsThemeDrawerOpen] = useState(false);
@@ -437,49 +461,66 @@ function AttendanceDashboard() {
           <QuickLink />
         ) : (
           <div className="attendance-content">
-            <section className="attendance-card-grid">
-              <SummaryCard
-                title="STAFF HEAD COUNT (REG./TOTAL)"
-                value="0/22"
-                rows={[
-                  [<FaMars />, "Male", "0/13", "#9aa8b4"],
-                  [<FaVenus />, "Female", "0/9", "#ff6b73"],
-                ]}
-              />
-              <SummaryCard
-                title="ATTENDANCE AUTHENTICATION STATISTICS"
-                rows={[
-                  [<FaFingerprint />, "Through Biometric", "0 (0%)", "#28a9e2"],
-                  [<FaCheckSquare />, "Manually", "0 (0%)", "#42d992"],
-                ]}
-              />
-              <SummaryCard
-                title="AVERAGE ATTENDANCE"
-                subtitle="(COMPARISON WITH LAST WORKING DAY)"
-                rows={[
-                  [
-                    <FaUserCheck />,
-                    "Present",
-                    "TODAY 0 (0%)   YESTERDAY 0",
-                    "#43db9a",
-                  ],
-                  [
-                    <FaUserCheck />,
-                    "Absent",
-                    "TODAY 0 (0%)   YESTERDAY 0",
-                    "#ff6b73",
-                  ],
-                ]}
-              />
-              <div className="summary-card holiday-card">
-                <h3>THIS MONTH’S HOLIDAY(S) LIST</h3>
-                <a href="#holidays">◉&nbsp; View All</a>
-                <div className="holiday-arrows">
-                  <FaArrowLeft />
-                  <FaArrowRight />
-                </div>
-              </div>
-            </section>
+            {loadingDashboard ? (
+              <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading dashboard data...</div>
+            ) : (
+              <>
+                <section className="attendance-card-grid">
+                  <SummaryCard
+                    title="STAFF HEAD COUNT (REG./TOTAL)"
+                    value={`0/${dashboardData.headCount.total}`}
+                    rows={[
+                      [<FaMars />, "Male", `0/${dashboardData.headCount.male}`, "#9aa8b4"],
+                      [<FaVenus />, "Female", `0/${dashboardData.headCount.female}`, "#ff6b73"],
+                    ]}
+                  />
+                  <SummaryCard
+                    title="ATTENDANCE AUTHENTICATION STATISTICS"
+                    rows={[
+                      [<FaFingerprint />, "Through Biometric", `${dashboardData.authStats.biometric} (${dashboardData.authStats.biometric > 0 ? Math.round((dashboardData.authStats.biometric/(dashboardData.authStats.biometric+dashboardData.authStats.manual))*100) : 0}%)`, "#28a9e2"],
+                      [<FaCheckSquare />, "Manually", `${dashboardData.authStats.manual} (${dashboardData.authStats.manual > 0 ? Math.round((dashboardData.authStats.manual/(dashboardData.authStats.biometric+dashboardData.authStats.manual))*100) : 0}%)`, "#42d992"],
+                    ]}
+                  />
+                  <SummaryCard
+                    title="AVERAGE ATTENDANCE"
+                    subtitle="(COMPARISON WITH LAST WORKING DAY)"
+                    rows={[
+                      [
+                        <FaUserCheck />,
+                        "Present",
+                        `TODAY ${dashboardData.averageAttendance.todayPresent} (${dashboardData.headCount.total > 0 ? Math.round((dashboardData.averageAttendance.todayPresent/dashboardData.headCount.total)*100) : 0}%)   YESTERDAY ${dashboardData.averageAttendance.yesterdayPresent}`,
+                        "#43db9a",
+                      ],
+                      [
+                        <FaUserCheck />,
+                        "Absent",
+                        `TODAY ${dashboardData.averageAttendance.todayAbsent} (${dashboardData.headCount.total > 0 ? Math.round((dashboardData.averageAttendance.todayAbsent/dashboardData.headCount.total)*100) : 0}%)   YESTERDAY ${dashboardData.averageAttendance.yesterdayAbsent}`,
+                        "#ff6b73",
+                      ],
+                    ]}
+                  />
+                  <div className="summary-card holiday-card">
+                    <h3>THIS MONTH’S HOLIDAY(S) LIST</h3>
+                    <div style={{ marginTop: '10px', fontSize: '13px', color: '#495057' }}>
+                      {dashboardData.monthlyHolidays.length > 0 ? (
+                        <ul style={{ listStyleType: 'none', padding: 0 }}>
+                          {dashboardData.monthlyHolidays.slice(0, 3).map((h, i) => (
+                            <li key={i} style={{ marginBottom: 4 }}>
+                              <strong>{new Date(h.holidayDate).getDate()}</strong> - {h.holidayName}
+                            </li>
+                          ))}
+                          {dashboardData.monthlyHolidays.length > 3 && <li><a href="#holidays">◉&nbsp; View All</a></li>}
+                        </ul>
+                      ) : (
+                        <p>No holidays this month.</p>
+                      )}
+                    </div>
+                    <div className="holiday-arrows">
+                      <FaArrowLeft />
+                      <FaArrowRight />
+                    </div>
+                  </div>
+                </section>
 
             <ChartPanel
               title="ATTENDANCE FOR"
@@ -492,10 +533,7 @@ function AttendanceDashboard() {
                   <p>As on 26-Aug-2026</p>
                   <ResponsiveContainer width="100%" height={310}>
                     <BarChart
-                      data={[
-                        { name: "Teacher's Timing", value: 18 },
-                        { name: "Office Staff Timing", value: 4 },
-                      ]}
+                      data={dashboardData.shiftData}
                       margin={{ top: 15, right: 10, left: 20, bottom: 25 }}
                     >
                       <CartesianGrid stroke="#e5e7eb" vertical={false} />
@@ -527,7 +565,7 @@ function AttendanceDashboard() {
                   <p>As on 26-Aug-2026</p>
                   <ResponsiveContainer width="100%" height={310}>
                     <BarChart
-                      data={departments}
+                      data={dashboardData.departmentData.map(item => ({ name: item.name, staff: item.value }))}
                       margin={{ top: 15, right: 10, left: 20, bottom: 45 }}
                     >
                       <CartesianGrid stroke="#e5e7eb" vertical={false} />
@@ -560,9 +598,9 @@ function AttendanceDashboard() {
             <section className="attendance-two-column">
               <PiePanel
                 title="DEPARTMENT WISE HEAD COUNT"
-                data={departmentData}
+                data={dashboardData.departmentData}
               />
-              <PiePanel title="SHIFT WISE HEAD COUNT" data={shiftData} />
+              <PiePanel title="SHIFT WISE HEAD COUNT" data={dashboardData.shiftData} />
             </section>
 
             <ChartPanel
@@ -574,7 +612,7 @@ function AttendanceDashboard() {
               <div className="attendance-line-chart">
                 <ResponsiveContainer width="100%" height={360}>
                   <BarChart
-                    data={days}
+                    data={dashboardData.dailyLineChart}
                     margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
                   >
                     <CartesianGrid stroke="#e5e7eb" vertical={false} />
@@ -600,6 +638,8 @@ function AttendanceDashboard() {
                 </ResponsiveContainer>
               </div>
             </ChartPanel>
+              </>
+            )}
           </div>
         )}
       </main>
