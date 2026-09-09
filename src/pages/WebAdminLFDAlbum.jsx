@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FaImages, FaCog, FaCheckSquare, FaRegSquare, FaInfoCircle, FaEye
 } from 'react-icons/fa';
@@ -6,16 +6,58 @@ import {
 export default function WebAdminLFDAlbum() {
   const [albumMethod, setAlbumMethod] = useState('latest');
   const [selectedPhotos, setSelectedPhotos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
   
-  // Dummy photos (using placeholders)
+  // Dummy photos (using placeholders) for now since we haven't implemented actual photos yet
   const photos = Array.from({ length: 12 }).map((_, i) => ({
     id: i + 1,
-    url: 'https://placehold.co/400x250/e2e8f0/64748b?text=Sports+Event',
+    url: `https://placehold.co/400x250/e2e8f0/64748b?text=Sports+Event+${i+1}`,
     selected: false
   }));
 
-  const toggleSelectAll = () => {
-    // In a real app, this would toggle all photos
+  useEffect(() => {
+    fetchConfig();
+  }, []);
+
+  const fetchConfig = async () => {
+    try {
+      const res = await fetch('/api/web-admin/lfd/album-config');
+      const data = await res.json();
+      if (data.success && data.data) {
+        setAlbumMethod(data.data.method || 'latest');
+      }
+    } catch (err) {
+      console.error('Error fetching config:', err);
+    }
+  };
+
+  const handleSaveConfig = async () => {
+    setLoading(true);
+    setSuccess('');
+    setError('');
+    
+    try {
+      const res = await fetch('/api/web-admin/lfd/album-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: albumMethod
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSuccess('Album configuration saved successfully!');
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(data.message || 'Failed to save configuration');
+      }
+    } catch (err) {
+      setError('An error occurred while saving.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -26,6 +68,17 @@ export default function WebAdminLFDAlbum() {
           Home <span className="mx-1">&gt;</span> Website <span className="mx-1">&gt;</span> LFD <span className="mx-1">&gt;</span> Photo Album
         </div>
       </div>
+
+      {success && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          {success}
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
 
       {/* Select Photo Album Section */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 overflow-hidden">
@@ -125,8 +178,14 @@ export default function WebAdminLFDAlbum() {
           </div>
 
           <div className="flex justify-end items-center gap-4 border-t border-gray-100 pt-5 mt-2">
-            <button className="bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium py-2 px-6 rounded transition">Reset</button>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-6 rounded transition shadow-sm">Save Configuration</button>
+            <button className="bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium py-2 px-6 rounded transition" onClick={() => setAlbumMethod('latest')}>Reset</button>
+            <button 
+              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-6 rounded transition shadow-sm disabled:opacity-50"
+              onClick={handleSaveConfig}
+              disabled={loading}
+            >
+              {loading ? 'Saving...' : 'Save Configuration'}
+            </button>
           </div>
         </div>
       </div>

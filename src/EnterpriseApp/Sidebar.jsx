@@ -1,7 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './styles.css';
 
 export default function Sidebar({ activeTab, onNavigate }) {
+  const [openMenus, setOpenMenus] = useState({});
+
+  const toggleMenu = (menuName) => {
+    setOpenMenus(prev => ({ ...prev, [menuName]: !prev[menuName] }));
+  };
+
+  const globalMasters = [
+    'Wing', 'Caste', 'Religion', 'Category', 'Section', 'School Class',
+    'Stream', 'Remark', 'Reason', 'Sub Caste', 'Parish', 'Academic Year',
+    'Financial Year', 'School Board', 'Profession', 'Parents Status',
+    'Student Classification', 'Club', 'Committee'
+  ];
+
   return (
     <div className="erp-sidebar">
       <div className="erp-sidebar-top">
@@ -11,9 +24,18 @@ export default function Sidebar({ activeTab, onNavigate }) {
         <input type="text" placeholder="Search Menu" />
       </div>
       <div className="erp-nav">
-        <div className="erp-nav-item">
-          <span className="erp-nav-icon">📁</span> Global Masters
+        <div className="erp-nav-item parent" onClick={() => toggleMenu('globalMasters')}>
+          <span className="erp-nav-icon">{openMenus.globalMasters ? '▼' : '▶'}</span> Global Masters
         </div>
+        {openMenus.globalMasters && globalMasters.map(master => (
+          <div 
+            key={master}
+            className={`erp-nav-item child ${activeTab === master ? 'active' : ''}`}
+            onClick={() => onNavigate(master)}
+          >
+            {master}
+          </div>
+        ))}
         <div className="erp-nav-item">
           <span className="erp-nav-icon">⚙️</span> Master Settings
         </div>

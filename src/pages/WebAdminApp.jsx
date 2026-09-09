@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   FaImages, FaVideo, FaBell, FaTrophy,
   FaCamera, FaPlay, FaFilm, FaChild,
   FaCalendarAlt, FaRunning, FaRss, FaComments,
   FaBars, FaSearch, FaDesktop, FaGlobe, FaBook, FaCommentDots, FaArrowLeft, FaAngleUp,
   FaThLarge, FaEnvelope, FaRegClock, FaHourglassHalf, FaFileAlt, FaStar, FaAngleRight, FaAngleDown, FaListOl,
-  FaTh, FaHome, FaUserTie, FaFileUpload, FaCertificate, FaPen, FaGraduationCap, FaFutbol, FaQuoteLeft, FaEdit, FaUser
+  FaTh, FaHome, FaUserTie, FaFileUpload, FaCertificate, FaPen, FaGraduationCap, FaFutbol, FaQuoteLeft, FaEdit, FaUser,
+  FaSyncAlt
 } from 'react-icons/fa';
 import WebAdminPhotoAlbums from './WebAdminPhotoAlbums';
 import WebAdminVideoAlbums from './WebAdminVideoAlbums';
@@ -56,7 +57,11 @@ class LocalErrorBoundary extends React.Component {
   }
   render() {
     if (this.state.hasError) {
-      return <div className="p-10 text-red-500 font-bold text-xl bg-white min-h-screen">APP CRASH: {this.state.error.message} <br /><br /> {this.state.error.stack}</div>;
+      return (
+        <div className="p-10 text-red-500 font-bold text-xl bg-white min-h-screen">
+          APP CRASH: {this.state.error.message} <br /><br /> {this.state.error.stack}
+        </div>
+      );
     }
     return this.props.children;
   }
@@ -72,10 +77,78 @@ export default function WebAdminAppWrapper() {
 
 function WebAdminApp() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Detect base URL path: /web-admin or /webadmin
+  const basePath = location.pathname.startsWith('/webadmin') ? '/webadmin' : '/web-admin';
+
+  // Extract current view from URL route
+  // e.g. "/web-admin/photo-albums" -> "photo-albums"
+  // e.g. "/web-admin" -> "dashboard"
+  const rawSubpath = location.pathname
+    .replace(/^\/(web-admin|webadmin)\/?/, '')
+    .split('/')[0]
+    .trim()
+    .toLowerCase();
+
+  const currentView = rawSubpath || 'dashboard';
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-  const [currentView, setCurrentView] = useState('dashboard');
-  const [expandedMenu, setExpandedMenu] = useState('LFD');
+  const [expandedMenu, setExpandedMenu] = useState('Website');
+  const [stats, setStats] = useState({
+    photoAlbums: 0,
+    videoAlbums: 0,
+    notices: 0,
+    achievements: 0,
+    mediaAlbums: 0,
+    kidsAlbums: 0,
+    events: 0,
+    sports: 0,
+    blogs: 0,
+    guestbook: 0
+  });
+  const [loadingStats, setLoadingStats] = useState(false);
+
+  // Auto-expand appropriate accordion based on active URL
+  useEffect(() => {
+    if (currentView.startsWith('lfd-')) {
+      setExpandedMenu('LFD');
+    } else if (currentView.startsWith('feedback-')) {
+      setExpandedMenu('Feedback');
+    } else if (currentView.startsWith('e-diar')) {
+      setExpandedMenu('e-Diary');
+    } else if (currentView !== 'dashboard') {
+      setExpandedMenu('Website');
+    }
+  }, [currentView]);
+
+  const navigateToView = (viewKey) => {
+    if (!viewKey || viewKey === 'dashboard') {
+      navigate(basePath);
+    } else {
+      navigate(`${basePath}/${viewKey}`);
+    }
+  };
+
+  const fetchStats = async () => {
+    setLoadingStats(true);
+    try {
+      const res = await fetch('http://localhost:5005/api/web-admin/dashboard-stats');
+      const data = await res.json();
+      if (data.success && data.data) {
+        setStats(data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching Web Admin stats:', err);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
   return (
     <div className="flex h-screen w-full bg-[#f4f5f7] font-sans overflow-hidden">
@@ -83,7 +156,10 @@ function WebAdminApp() {
       {/* Sidebar */}
       <div className={`${isSidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 overflow-hidden`}>
         {/* Logo area */}
-        <div className="h-16 flex items-center px-4 border-b border-gray-200 gap-2 cursor-pointer" onClick={() => navigate('/dashboard')}>
+        <div 
+          className="h-16 flex items-center px-4 border-b border-gray-200 gap-2 cursor-pointer" 
+          onClick={() => navigateToView('dashboard')}
+        >
           <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center text-white font-bold text-xl">
             F
           </div>
@@ -97,13 +173,14 @@ function WebAdminApp() {
           <div className="text-xs text-gray-400 font-semibold mb-2 px-2 uppercase tracking-wider">Main Menu</div>
           <div className="flex flex-col gap-1">
             <div
-              className={`flex items-center gap-3 px-3 py-2.5 rounded cursor-pointer ${currentView === 'dashboard' ? 'bg-[#6d5cae] text-white' : 'text-gray-600 hover:bg-gray-50'}`}
-              onClick={() => setCurrentView('dashboard')}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded cursor-pointer transition ${currentView === 'dashboard' ? 'bg-[#6d5cae] text-white shadow-xs' : 'text-gray-600 hover:bg-gray-50'}`}
+              onClick={() => navigateToView('dashboard')}
             >
-              <FaThLarge className={`text-sm ${currentView === 'dashboard' ? '' : 'text-gray-400'}`} />
+              <FaThLarge className={`text-sm ${currentView === 'dashboard' ? 'text-white' : 'text-gray-400'}`} />
               <span className="text-sm font-medium">Dashboard</span>
             </div>
 
+            {/* LFD Accordion */}
             <div className="flex flex-col">
               <div
                 className={`flex items-center justify-between px-3 py-2.5 cursor-pointer transition-colors ${expandedMenu === 'LFD' ? 'bg-[#0d6efd] text-white rounded-t shadow-sm z-10' : 'text-gray-600 hover:bg-gray-50 rounded'}`}
@@ -119,64 +196,64 @@ function WebAdminApp() {
               {expandedMenu === 'LFD' && (
                 <div className="flex flex-col bg-white rounded-b shadow-sm mb-1 pb-1">
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-letterhead' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('lfd-letterhead')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-letterhead' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('lfd-letterhead')}
                   >
                     <FaEnvelope className={`text-xs ${currentView === 'lfd-letterhead' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">LFD Letterhead</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-notice-display-time' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('lfd-notice-display-time')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-notice-display-time' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('lfd-notice-display-time')}
                   >
                     <FaRegClock className={`text-xs ${currentView === 'lfd-notice-display-time' ? 'text-blue-600' : 'text-gray-400'}`} />
-                    <span className="text-xs font-medium">LFD Notice Display Time and Order</span>
+                    <span className="text-xs font-medium">LFD Notice Display Time & Order</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-display-time' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('lfd-display-time')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-display-time' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('lfd-display-time')}
                   >
                     <FaHourglassHalf className={`text-xs ${currentView === 'lfd-display-time' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">LFD Display Time</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-notice' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('lfd-notice')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-notice' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('lfd-notice')}
                   >
                     <FaBell className={`text-xs ${currentView === 'lfd-notice' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">LFD Notice</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-notice-order' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('lfd-notice-order')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-notice-order' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('lfd-notice-order')}
                   >
                     <FaListOl className={`text-xs ${currentView === 'lfd-notice-order' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">LFD Notice Order</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-achievement' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('lfd-achievement')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-achievement' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('lfd-achievement')}
                   >
                     <FaTrophy className={`text-xs ${currentView === 'lfd-achievement' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">LFD Achievement</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-flyer' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('lfd-flyer')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-flyer' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('lfd-flyer')}
                   >
                     <FaFileAlt className={`text-xs ${currentView === 'lfd-flyer' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">LFD Flyer</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-toppers' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('lfd-toppers')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-toppers' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('lfd-toppers')}
                   >
                     <FaStar className={`text-xs ${currentView === 'lfd-toppers' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">LFD Toppers</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-album' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('lfd-album')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'lfd-album' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('lfd-album')}
                   >
                     <FaImages className={`text-xs ${currentView === 'lfd-album' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">LFD Album</span>
@@ -185,6 +262,7 @@ function WebAdminApp() {
               )}
             </div>
 
+            {/* Website Accordion */}
             <div className="flex flex-col">
               <div
                 className={`flex items-center justify-between px-3 py-2.5 cursor-pointer transition-colors ${expandedMenu === 'Website' ? 'bg-[#0d6efd] text-white rounded-t shadow-sm z-10' : 'text-gray-600 hover:bg-gray-50 rounded'}`}
@@ -200,141 +278,148 @@ function WebAdminApp() {
               {expandedMenu === 'Website' && (
                 <div className="flex flex-col bg-white rounded-b shadow-sm mb-1 pb-1">
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'photo-albums' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('photo-albums')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'photo-albums' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('photo-albums')}
                   >
                     <FaCamera className={`text-xs ${currentView === 'photo-albums' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">Photo Gallery</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'video-albums' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('video-albums')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'video-albums' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('video-albums')}
                   >
                     <FaVideo className={`text-xs ${currentView === 'video-albums' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">Video Gallery</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'media-albums' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('media-albums')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'media-albums' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('media-albums')}
                   >
                     <FaFilm className={`text-xs ${currentView === 'media-albums' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">Media Gallery</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'achievements' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('achievements')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'achievements' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('achievements')}
                   >
                     <FaTrophy className={`text-xs ${currentView === 'achievements' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">Achievements</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'notices' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('notices')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'notices' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('notices')}
                   >
                     <FaBell className={`text-xs ${currentView === 'notices' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">Notice</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'magazine' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('magazine')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'events' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('events')}
                   >
-                    <FaTh className={`text-xs ${currentView === 'magazine' ? 'text-blue-600' : 'text-gray-400'}`} />
-                    <span className="text-xs font-medium">Magazine</span>
+                    <FaCalendarAlt className={`text-xs ${currentView === 'events' ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <span className="text-xs font-medium">Events</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'kids-corner' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('kids-corner')}
-                  >
-                    <FaChild className={`text-xs ${currentView === 'kids-corner' ? 'text-blue-600' : 'text-gray-400'}`} />
-                    <span className="text-xs font-medium">KidsCorner</span>
-                  </div>
-                  <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'homepage-main-slider' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('homepage-main-slider')}
-                  >
-                    <FaHome className={`text-xs ${currentView === 'homepage-main-slider' ? 'text-blue-600' : 'text-gray-400'}`} />
-                    <span className="text-xs font-medium">Homepage Main Slider</span>
-                  </div>
-                  <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'career' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('career')}
-                  >
-                    <FaUserTie className={`text-xs ${currentView === 'career' ? 'text-blue-600' : 'text-gray-400'}`} />
-                    <span className="text-xs font-medium">Career</span>
-                  </div>
-                  <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'upload-tc' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('upload-tc')}
-                  >
-                    <FaFileAlt className={`text-xs ${currentView === 'upload-tc' ? 'text-blue-600' : 'text-gray-400'}`} />
-                    <span className="text-xs font-medium">Upload TC</span>
-                  </div>
-                  <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'holiday-homework' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('holiday-homework')}
-                  >
-                    <FaHome className={`text-xs ${currentView === 'holiday-homework' ? 'text-blue-600' : 'text-gray-400'}`} />
-                    <span className="text-xs font-medium">Holiday Homework</span>
-                  </div>
-                  <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'blog' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('blog')}
-                  >
-                    <FaPen className={`text-xs ${currentView === 'blog' ? 'text-blue-600' : 'text-gray-400'}`} />
-                    <span className="text-xs font-medium">Blog</span>
-                  </div>
-                  <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'website-toppers' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('website-toppers')}
-                  >
-                    <FaGraduationCap className={`text-xs ${currentView === 'website-toppers' ? 'text-blue-600' : 'text-gray-400'}`} />
-                    <span className="text-xs font-medium">Toppers</span>
-                  </div>
-                  <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'sports' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('sports')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'sports' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('sports')}
                   >
                     <FaFutbol className={`text-xs ${currentView === 'sports' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">Sports</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'photos-homepage' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('photos-homepage')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'magazine' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('magazine')}
+                  >
+                    <FaTh className={`text-xs ${currentView === 'magazine' ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <span className="text-xs font-medium">Magazine</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'kids-corner' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('kids-corner')}
+                  >
+                    <FaChild className={`text-xs ${currentView === 'kids-corner' ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <span className="text-xs font-medium">KidsCorner</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'homepage-main-slider' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('homepage-main-slider')}
+                  >
+                    <FaHome className={`text-xs ${currentView === 'homepage-main-slider' ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <span className="text-xs font-medium">Homepage Main Slider</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'career' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('career')}
+                  >
+                    <FaUserTie className={`text-xs ${currentView === 'career' ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <span className="text-xs font-medium">Career</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'upload-tc' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('upload-tc')}
+                  >
+                    <FaFileAlt className={`text-xs ${currentView === 'upload-tc' ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <span className="text-xs font-medium">Upload TC</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'holiday-homework' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('holiday-homework')}
+                  >
+                    <FaHome className={`text-xs ${currentView === 'holiday-homework' ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <span className="text-xs font-medium">Holiday Homework</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'blogs' || currentView === 'blog' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('blogs')}
+                  >
+                    <FaPen className={`text-xs ${currentView === 'blogs' || currentView === 'blog' ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <span className="text-xs font-medium">Blog</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'website-toppers' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('website-toppers')}
+                  >
+                    <FaGraduationCap className={`text-xs ${currentView === 'website-toppers' ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <span className="text-xs font-medium">Toppers</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'photos-homepage' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('photos-homepage')}
                   >
                     <FaCamera className={`text-xs ${currentView === 'photos-homepage' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">Photos on Homepage</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'website-thoughts' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('website-thoughts')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'website-thoughts' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('website-thoughts')}
                   >
                     <FaQuoteLeft className={`text-xs ${currentView === 'website-thoughts' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">Website Thoughts</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'guest-book' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('guest-book')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'guestbook' || currentView === 'guest-book' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('guestbook')}
                   >
-                    <FaBook className={`text-xs ${currentView === 'guest-book' ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <FaBook className={`text-xs ${currentView === 'guestbook' || currentView === 'guest-book' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">Guest Book</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'mandatory-disclosure' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('mandatory-disclosure')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'mandatory-disclosure' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('mandatory-disclosure')}
                   >
                     <FaEdit className={`text-xs ${currentView === 'mandatory-disclosure' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">Mandatory Public Disclosure</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'staff-visibility' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('staff-visibility')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'staff-visibility' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('staff-visibility')}
                   >
                     <FaUser className={`text-xs ${currentView === 'staff-visibility' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">Manage Staff Visibility</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'e-bulletin' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('e-bulletin')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'e-bulletin' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('e-bulletin')}
                   >
                     <FaEnvelope className={`text-xs ${currentView === 'e-bulletin' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-xs font-medium">E-Bulletin</span>
@@ -342,6 +427,8 @@ function WebAdminApp() {
                 </div>
               )}
             </div>
+
+            {/* e-Diary Accordion */}
             <div className="flex flex-col">
               <div
                 className={`flex items-center justify-between px-3 py-2.5 cursor-pointer transition-colors ${expandedMenu === 'e-Diary' ? 'bg-[#0d6efd] text-white rounded-t shadow-sm z-10' : 'text-gray-600 hover:bg-gray-50 rounded'}`}
@@ -357,8 +444,8 @@ function WebAdminApp() {
               {expandedMenu === 'e-Diary' && (
                 <div className="flex flex-col bg-white rounded-b shadow-sm mb-1 pb-1">
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'e-diaries' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('e-diaries')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'e-diaries' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('e-diaries')}
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-gray-400 ml-1"></div>
                     <span className="text-xs font-medium">e-Diaries</span>
@@ -366,6 +453,8 @@ function WebAdminApp() {
                 </div>
               )}
             </div>
+
+            {/* Feedback Accordion */}
             <div className="flex flex-col">
               <div
                 className={`flex items-center justify-between px-3 py-2.5 cursor-pointer transition-colors ${expandedMenu === 'Feedback' ? 'bg-[#0d6efd] text-white rounded-t shadow-sm z-10' : 'text-gray-600 hover:bg-gray-50 rounded'}`}
@@ -381,29 +470,29 @@ function WebAdminApp() {
               {expandedMenu === 'Feedback' && (
                 <div className="flex flex-col bg-white rounded-b shadow-sm mb-1 pb-1">
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'feedback-subject-class' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('feedback-subject-class')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'feedback-subject-class' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('feedback-subject-class')}
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-gray-400 ml-1"></div>
                     <span className="text-xs font-medium">Relate Subject to Class</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'feedback-subject-teacher' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('feedback-subject-teacher')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'feedback-subject-teacher' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('feedback-subject-teacher')}
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-gray-400 ml-1"></div>
                     <span className="text-xs font-medium">Relate Subject to Teacher</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'feedback-question-master' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('feedback-question-master')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'feedback-question-master' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('feedback-question-master')}
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-gray-400 ml-1"></div>
                     <span className="text-xs font-medium">Question Master</span>
                   </div>
                   <div
-                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'feedback-template' ? 'bg-gray-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-                    onClick={() => setCurrentView('feedback-template')}
+                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer ${currentView === 'feedback-template' ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                    onClick={() => navigateToView('feedback-template')}
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-gray-400 ml-1"></div>
                     <span className="text-xs font-medium">Feedback Template</span>
@@ -411,6 +500,7 @@ function WebAdminApp() {
                 </div>
               )}
             </div>
+
           </div>
         </div>
       </div>
@@ -420,12 +510,29 @@ function WebAdminApp() {
 
         {/* Top Navbar */}
         <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 flex-shrink-0 relative z-10 shadow-sm">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
-              className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#5966c5] text-white hover:bg-[#4b55a3] shadow-sm transition"
+              className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#5966c5] text-white hover:bg-[#4b55a3] shadow-sm transition cursor-pointer"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              title="Toggle Sidebar"
             >
               <FaBars className="text-lg" />
+            </button>
+            {currentView !== 'dashboard' && (
+              <button
+                onClick={() => navigateToView('dashboard')}
+                className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-xs font-bold cursor-pointer transition shadow-xs border border-gray-200"
+                title="Back to Web Admin Dashboard"
+              >
+                <FaArrowLeft className="text-xs text-[#5966c5]" /> Back to Dashboard
+              </button>
+            )}
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold cursor-pointer transition shadow-xs border border-blue-200"
+              title="Return to Main ERP Dashboard"
+            >
+              <FaHome className="text-xs" /> Main ERP
             </button>
           </div>
 
@@ -475,12 +582,56 @@ function WebAdminApp() {
           </div>
         </div>
 
+        {/* Universal Sub-view Navigation Bar */}
+        {currentView !== 'dashboard' && (
+          <div className="bg-white border-b border-gray-200 px-6 py-2.5 flex items-center justify-between shrink-0 shadow-xs z-10">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigateToView('dashboard')}
+                className="flex items-center gap-2 px-3.5 py-1.5 bg-[#5966c5] hover:bg-[#47529f] text-white rounded-md text-xs font-bold shadow-xs cursor-pointer transition"
+              >
+                <FaArrowLeft className="text-[11px]" /> Back to Dashboard
+              </button>
+              <span className="text-gray-300">|</span>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-xs font-semibold cursor-pointer transition border border-gray-200"
+              >
+                <FaHome className="text-xs text-gray-600" /> Back to Main ERP
+              </button>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
+              <span
+                onClick={() => navigateToView('dashboard')}
+                className="cursor-pointer text-[#5966c5] hover:underline font-semibold"
+              >
+                Dashboard
+              </span>
+              <span>&gt;</span>
+              <span className="text-gray-800 font-bold capitalize">
+                {currentView.replace(/-/g, ' ')}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Dashboard Content */}
         {currentView === 'dashboard' ? (
           <div className="flex-1 overflow-y-auto p-6">
 
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-xl font-bold text-[#1f2937]">Website Management Dashboard</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl font-bold text-[#1f2937]">Website Management Dashboard</h1>
+                <button
+                  onClick={fetchStats}
+                  disabled={loadingStats}
+                  className="flex items-center gap-1.5 px-3 py-1 bg-white border border-gray-200 text-gray-600 rounded text-xs font-semibold hover:bg-gray-50 shadow-xs cursor-pointer transition disabled:opacity-50"
+                  title="Reload live counts from backend"
+                >
+                  <FaSyncAlt className={`text-xs text-[#5966c5] ${loadingStats ? 'animate-spin' : ''}`} />
+                  <span>{loadingStats ? 'Refreshing...' : 'Refresh'}</span>
+                </button>
+              </div>
               <div className="text-xs text-gray-500 font-medium">
                 Home <span className="mx-1">&gt;</span> Dashboard
               </div>
@@ -490,11 +641,11 @@ function WebAdminApp() {
             <div className="grid grid-cols-4 gap-4 mb-6">
               <div
                 className="bg-white rounded-lg p-5 flex justify-between items-center shadow-sm border border-gray-100 cursor-pointer hover:shadow transition"
-                onClick={() => setCurrentView('photo-albums')}
+                onClick={() => navigateToView('photo-albums')}
               >
                 <div>
                   <div className="text-xs text-gray-400 mb-1">Photo Albums</div>
-                  <div className="text-2xl font-bold text-gray-800 mb-1">4</div>
+                  <div className="text-2xl font-bold text-gray-800 mb-1">{loadingStats ? '...' : (stats.photoAlbums ?? 0)}</div>
                   <div className="text-xs text-gray-400">Total Albums</div>
                 </div>
                 <div className="w-14 h-14 rounded-xl bg-[#eef2fa] text-[#4a81d4] flex justify-center items-center text-3xl">
@@ -503,11 +654,11 @@ function WebAdminApp() {
               </div>
               <div
                 className="bg-white rounded-lg p-5 flex justify-between items-center shadow-sm border border-gray-100 cursor-pointer hover:shadow transition"
-                onClick={() => setCurrentView('video-albums')}
+                onClick={() => navigateToView('video-albums')}
               >
                 <div>
                   <div className="text-xs text-gray-400 mb-1">Video Albums</div>
-                  <div className="text-2xl font-bold text-gray-800 mb-1">0</div>
+                  <div className="text-2xl font-bold text-gray-800 mb-1">{loadingStats ? '...' : (stats.videoAlbums ?? 0)}</div>
                   <div className="text-xs text-gray-400">Video Content</div>
                 </div>
                 <div className="w-14 h-14 rounded-xl bg-[#eef8ef] text-[#31b131] flex justify-center items-center text-3xl">
@@ -516,11 +667,11 @@ function WebAdminApp() {
               </div>
               <div
                 className="bg-white rounded-lg p-5 flex justify-between items-center shadow-sm border border-gray-100 cursor-pointer hover:shadow transition"
-                onClick={() => setCurrentView('notices')}
+                onClick={() => navigateToView('notices')}
               >
                 <div>
                   <div className="text-xs text-gray-400 mb-1">Active Notices</div>
-                  <div className="text-2xl font-bold text-gray-800 mb-1">4</div>
+                  <div className="text-2xl font-bold text-gray-800 mb-1">{loadingStats ? '...' : (stats.notices ?? 0)}</div>
                   <div className="text-xs text-gray-400">Published</div>
                 </div>
                 <div className="w-14 h-14 rounded-xl bg-[#fdf6ea] text-[#f3b23e] flex justify-center items-center text-3xl">
@@ -529,11 +680,11 @@ function WebAdminApp() {
               </div>
               <div
                 className="bg-white rounded-lg p-5 flex justify-between items-center shadow-sm border border-gray-100 cursor-pointer hover:shadow transition"
-                onClick={() => setCurrentView('achievements')}
+                onClick={() => navigateToView('achievements')}
               >
                 <div>
                   <div className="text-xs text-gray-400 mb-1">Achievements</div>
-                  <div className="text-2xl font-bold text-gray-800 mb-1">0</div>
+                  <div className="text-2xl font-bold text-gray-800 mb-1">{loadingStats ? '...' : (stats.achievements ?? 0)}</div>
                   <div className="text-xs text-gray-400">Published</div>
                 </div>
                 <div className="w-14 h-14 rounded-xl bg-[#fdf6ea] text-[#f3b23e] flex justify-center items-center text-3xl">
@@ -542,7 +693,7 @@ function WebAdminApp() {
               </div>
             </div>
 
-            {/* Section 1 */}
+            {/* Section 1 - Gallery & Media Management */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-100 mb-6 overflow-hidden">
               <div className="bg-[#f8f9fb] px-5 py-3 border-b border-gray-100">
                 <h2 className="text-sm font-bold text-gray-700">Gallery & Media Management</h2>
@@ -550,48 +701,48 @@ function WebAdminApp() {
               <div className="p-6 flex flex-wrap gap-5">
                 <div
                   className="bg-[#f8f9fa] border border-gray-200 rounded-lg w-36 h-32 flex flex-col justify-center items-center relative shadow-sm cursor-pointer hover:shadow-md transition"
-                  onClick={() => setCurrentView('photo-albums')}
+                  onClick={() => navigateToView('photo-albums')}
                 >
-                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">4</div>
+                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">{stats.photoAlbums ?? 0}</div>
                   <div className="w-12 h-12 rounded-xl bg-[#1976d2] text-white flex items-center justify-center text-2xl mb-3"><FaCamera /></div>
                   <div className="text-xs font-semibold text-gray-600">Photo Albums</div>
                 </div>
                 <div
                   className="bg-[#f8f9fa] border border-gray-200 rounded-lg w-36 h-32 flex flex-col justify-center items-center relative shadow-sm cursor-pointer hover:shadow-md transition"
-                  onClick={() => setCurrentView('video-albums')}
+                  onClick={() => navigateToView('video-albums')}
                 >
-                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">0</div>
+                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">{stats.videoAlbums ?? 0}</div>
                   <div className="w-12 h-12 rounded-xl bg-[#2e7d32] text-white flex items-center justify-center text-2xl mb-3"><FaPlay /></div>
                   <div className="text-xs font-semibold text-gray-600">Video Albums</div>
                 </div>
                 <div
                   className="bg-[#f8f9fa] border border-gray-200 rounded-lg w-36 h-32 flex flex-col justify-center items-center relative shadow-sm cursor-pointer hover:shadow-md transition"
-                  onClick={() => setCurrentView('media-albums')}
+                  onClick={() => navigateToView('media-albums')}
                 >
-                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">1</div>
+                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">{stats.mediaAlbums ?? 0}</div>
                   <div className="w-12 h-12 rounded-xl bg-[#00838f] text-white flex items-center justify-center text-2xl mb-3"><FaFilm /></div>
                   <div className="text-xs font-semibold text-gray-600">Media Albums</div>
                 </div>
                 <div
                   className="bg-[#f8f9fa] border border-gray-200 rounded-lg w-36 h-32 flex flex-col justify-center items-center relative shadow-sm cursor-pointer hover:shadow-md transition"
-                  onClick={() => setCurrentView('achievements')}
+                  onClick={() => navigateToView('achievements')}
                 >
-                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">0</div>
+                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">{stats.achievements ?? 0}</div>
                   <div className="w-12 h-12 rounded-xl bg-[#fbc02d] text-white flex items-center justify-center text-2xl mb-3"><FaTrophy /></div>
                   <div className="text-xs font-semibold text-gray-600">Achievements</div>
                 </div>
                 <div
                   className="bg-[#f8f9fa] border border-gray-200 rounded-lg w-36 h-32 flex flex-col justify-center items-center relative shadow-sm cursor-pointer hover:shadow-md transition"
-                  onClick={() => setCurrentView('kids-corner')}
+                  onClick={() => navigateToView('kids-corner')}
                 >
-                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">0</div>
+                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">{stats.kidsAlbums ?? 0}</div>
                   <div className="w-12 h-12 rounded-xl bg-[#c62828] text-white flex items-center justify-center text-2xl mb-3"><FaChild /></div>
                   <div className="text-xs font-semibold text-gray-600">Kids Corner</div>
                 </div>
               </div>
             </div>
 
-            {/* Section 2 */}
+            {/* Section 2 - Website Content Management */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-100 mb-6 overflow-hidden">
               <div className="bg-[#f8f9fb] px-5 py-3 border-b border-gray-100">
                 <h2 className="text-sm font-bold text-gray-700">Website Content Management</h2>
@@ -599,41 +750,41 @@ function WebAdminApp() {
               <div className="p-6 flex flex-wrap gap-5">
                 <div
                   className="bg-[#f8f9fa] border border-gray-200 rounded-lg w-36 h-32 flex flex-col justify-center items-center relative shadow-sm cursor-pointer hover:shadow-md transition"
-                  onClick={() => setCurrentView('notices')}
+                  onClick={() => navigateToView('notices')}
                 >
-                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">4</div>
+                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">{stats.notices ?? 0}</div>
                   <div className="w-12 h-12 rounded-xl bg-[#fbc02d] text-white flex items-center justify-center text-2xl mb-3"><FaBell /></div>
                   <div className="text-xs font-semibold text-gray-600">Notice Board</div>
                 </div>
                 <div
                   className="bg-[#f8f9fa] border border-gray-200 rounded-lg w-36 h-32 flex flex-col justify-center items-center relative shadow-sm cursor-pointer hover:shadow-md transition"
-                  onClick={() => setCurrentView('events')}
+                  onClick={() => navigateToView('events')}
                 >
-                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">0</div>
+                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">{stats.events ?? 0}</div>
                   <div className="w-12 h-12 rounded-xl bg-[#2e7d32] text-white flex items-center justify-center text-2xl mb-3"><FaCalendarAlt /></div>
                   <div className="text-xs font-semibold text-gray-600">Events</div>
                 </div>
                 <div
                   className="bg-[#f8f9fa] border border-gray-200 rounded-lg w-36 h-32 flex flex-col justify-center items-center relative shadow-sm cursor-pointer hover:shadow-md transition"
-                  onClick={() => setCurrentView('sports')}
+                  onClick={() => navigateToView('sports')}
                 >
-                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">0</div>
+                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">{stats.sports ?? 0}</div>
                   <div className="w-12 h-12 rounded-xl bg-[#00838f] text-white flex items-center justify-center text-2xl mb-3"><FaRunning /></div>
                   <div className="text-xs font-semibold text-gray-600">Sports</div>
                 </div>
                 <div
                   className="bg-[#f8f9fa] border border-gray-200 rounded-lg w-36 h-32 flex flex-col justify-center items-center relative shadow-sm cursor-pointer hover:shadow-md transition"
-                  onClick={() => setCurrentView('blogs')}
+                  onClick={() => navigateToView('blogs')}
                 >
-                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">0</div>
+                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">{stats.blogs ?? 0}</div>
                   <div className="w-12 h-12 rounded-xl bg-[#546e7a] text-white flex items-center justify-center text-2xl mb-3"><FaRss /></div>
                   <div className="text-xs font-semibold text-gray-600">Blog Posts</div>
                 </div>
                 <div
                   className="bg-[#f8f9fa] border border-gray-200 rounded-lg w-36 h-32 flex flex-col justify-center items-center relative shadow-sm cursor-pointer hover:shadow-md transition"
-                  onClick={() => setCurrentView('guestbook')}
+                  onClick={() => navigateToView('guestbook')}
                 >
-                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">0</div>
+                  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">{stats.guestbook ?? 0}</div>
                   <div className="w-12 h-12 rounded-xl bg-[#212121] text-white flex items-center justify-center text-2xl mb-3"><FaComments /></div>
                   <div className="text-xs font-semibold text-gray-600">Guestbook</div>
                 </div>
@@ -641,19 +792,25 @@ function WebAdminApp() {
             </div>
 
           </div>
-        ) : currentView === 'video-albums' ? (
+        ) : (currentView === 'photo-albums' || currentView === 'photo-album' || currentView === 'photos' || currentView === 'photo-gallery') ? (
+          <WebAdminPhotoAlbums />
+        ) : (currentView === 'video-albums' || currentView === 'video-album' || currentView === 'videos' || currentView === 'video-gallery') ? (
           <WebAdminVideoAlbums />
-        ) : currentView === 'media-albums' ? (
+        ) : (currentView === 'media-albums' || currentView === 'media-album' || currentView === 'media' || currentView === 'media-gallery') ? (
           <WebAdminMediaAlbums />
-        ) : currentView === 'kids-corner' ? (
+        ) : (currentView === 'achievements' || currentView === 'achievement') ? (
+          <WebAdminAchievements />
+        ) : (currentView === 'kids-corner' || currentView === 'kids-albums' || currentView === 'kids') ? (
           <WebAdminKidsAlbums />
-        ) : currentView === 'events' ? (
+        ) : (currentView === 'notices' || currentView === 'notice' || currentView === 'notice-board') ? (
+          <WebAdminNotices />
+        ) : (currentView === 'events' || currentView === 'event') ? (
           <WebAdminEvents />
-        ) : currentView === 'sports' ? (
+        ) : (currentView === 'sports' || currentView === 'sport') ? (
           <WebAdminSports />
-        ) : currentView === 'blogs' ? (
+        ) : (currentView === 'blogs' || currentView === 'blog' || currentView === 'blog-posts') ? (
           <WebAdminBlogs />
-        ) : currentView === 'guest-book' ? (
+        ) : (currentView === 'guestbook' || currentView === 'guest-book') ? (
           <WebAdminGuestbook />
         ) : currentView === 'lfd-letterhead' ? (
           <WebAdminLFDLetterhead />
@@ -683,8 +840,6 @@ function WebAdminApp() {
           <WebAdminUploadTC />
         ) : currentView === 'holiday-homework' ? (
           <WebAdminHolidayHomework />
-        ) : currentView === 'blog' ? (
-          <WebAdminBlog />
         ) : currentView === 'website-toppers' ? (
           <WebAdminWebsiteToppers />
         ) : currentView === 'photos-homepage' ? (
@@ -707,12 +862,17 @@ function WebAdminApp() {
           <WebAdminFeedbackQuestionMaster />
         ) : currentView === 'feedback-template' ? (
           <WebAdminFeedbackTemplate />
-        ) : currentView === 'notices' ? (
-          <WebAdminNotices />
-        ) : currentView === 'achievements' ? (
-          <WebAdminAchievements />
         ) : (
-          <WebAdminPhotoAlbums />
+          <div className="flex-1 p-8 text-center text-gray-500">
+            <h2 className="text-lg font-bold text-gray-700 mb-2">Page Not Found</h2>
+            <p className="text-sm mb-4">The page "{currentView}" could not be found.</p>
+            <button
+              onClick={() => navigateToView('dashboard')}
+              className="px-4 py-2 bg-blue-600 text-white rounded text-xs font-semibold cursor-pointer"
+            >
+              Go to Dashboard
+            </button>
+          </div>
         )}
       </div>
     </div>

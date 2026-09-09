@@ -67,8 +67,8 @@ import {
   Line
 } from "recharts";
 
-// --- Sample Data for Performance Analysis ---
-const performanceData = [
+// --- Fallback Data for Performance Analysis ---
+const defaultPerformanceData = [
   { standard: "NUR", prevYear: 82, currYear: 88, highest: 98 },
   { standard: "LKG", prevYear: 85, currYear: 89, highest: 99 },
   { standard: "UKG", prevYear: 80, currYear: 86, highest: 97 },
@@ -86,7 +86,7 @@ const performanceData = [
   { standard: "XII", prevYear: 84, currYear: 90, highest: 98.8 },
 ];
 
-const subjectComparisonData = [
+const defaultSubjectComparisonData = [
   { subject: "English", passRate: 98, avgMarks: 82 },
   { subject: "Hindi", passRate: 99, avgMarks: 86 },
   { subject: "Mathematics", passRate: 94, avgMarks: 79 },
@@ -96,7 +96,7 @@ const subjectComparisonData = [
   { subject: "Sanskrit", passRate: 99, avgMarks: 88 },
 ];
 
-const topStudents = [
+const defaultTopStudents = [
   { rank: 1, name: "Aarav Sharma", standard: "Class X-A", percentage: "99.4%", marks: "497/500", avatarColor: "bg-amber-500" },
   { rank: 2, name: "Priya Patel", standard: "Class XII-Sci", percentage: "98.8%", marks: "494/500", avatarColor: "bg-blue-500" },
   { rank: 3, name: "Rohan Verma", standard: "Class IX-B", percentage: "98.5%", marks: "492/500", avatarColor: "bg-emerald-500" },
@@ -236,6 +236,68 @@ export default function MarksManager() {
   const [selectedYearInput, setSelectedYearInput] = useState("2026-2027");
   const [financialYear, setFinancialYear] = useState("2026-2027");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // ==================== DYNAMIC MARKS DASHBOARD STATE & API INTEGRATION ====================
+  const [marksDashboardStats, setMarksDashboardStats] = useState({
+    marksEntryStatus: { locked: 45, inProgress: 35, pending: 20 },
+    modifiedEntries: { teachersCount: 14, entriesModifiedPercent: 6.8 },
+    passFailRatio: { passPercent: 95.6, failPercent: 4.4 },
+    overallTopper: {
+      name: "Aarav Sharma",
+      standard: "Class X-A",
+      rollNo: "101",
+      percentage: "99.4%",
+      marks: "497 / 500",
+      schoolName: "Navals National Academy"
+    }
+  });
+  const [performanceData, setPerformanceData] = useState(defaultPerformanceData);
+  const [subjectComparisonData, setSubjectComparisonData] = useState(defaultSubjectComparisonData);
+  const [topStudents, setTopStudents] = useState(defaultTopStudents);
+  const [loadingDashboard, setLoadingDashboard] = useState(false);
+
+  // Fetch dynamic marks dashboard stats from backend
+  const fetchMarksDashboardStats = async (year = academicYear) => {
+    setLoadingDashboard(true);
+    try {
+      const res = await fetch(`/api/marks-manager/dashboard-stats?academicYear=${encodeURIComponent(year)}`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        const d = data.data;
+        setMarksDashboardStats({
+          marksEntryStatus: d.marksEntryStatus || { locked: 45, inProgress: 35, pending: 20 },
+          modifiedEntries: d.modifiedEntries || { teachersCount: 14, entriesModifiedPercent: 6.8 },
+          passFailRatio: d.passFailRatio || { passPercent: 95.6, failPercent: 4.4 },
+          overallTopper: d.overallTopper || {
+            name: "Aarav Sharma",
+            standard: "Class X-A",
+            rollNo: "101",
+            percentage: "99.4%",
+            marks: "497 / 500",
+            schoolName: "Navals National Academy"
+          }
+        });
+
+        if (Array.isArray(d.performanceData) && d.performanceData.length > 0) {
+          setPerformanceData(d.performanceData);
+        }
+        if (Array.isArray(d.subjectComparisonData) && d.subjectComparisonData.length > 0) {
+          setSubjectComparisonData(d.subjectComparisonData);
+        }
+        if (Array.isArray(d.topStudentsList) && d.topStudentsList.length > 0) {
+          setTopStudents(d.topStudentsList);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching Marks Dashboard stats:", err);
+    } finally {
+      setLoadingDashboard(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMarksDashboardStats(academicYear);
+  }, [academicYear]);
 
   // Entries per page
   const [entriesPerPage, setEntriesPerPage] = useState("10");
@@ -27221,7 +27283,7 @@ export default function MarksManager() {
                           <FaLock className="text-xs" />
                           <span>Locked</span>
                         </div>
-                        <span className="text-gray-600 font-mono">[%]</span>
+                        <span className="text-gray-600 font-mono">[{marksDashboardStats.marksEntryStatus?.locked ?? 45}%]</span>
                       </div>
 
                       <div className="flex items-center justify-between gap-6">
@@ -27229,7 +27291,7 @@ export default function MarksManager() {
                           <FaChartLine className="text-xs" />
                           <span>In Progress</span>
                         </div>
-                        <span className="text-gray-600 font-mono">[%]</span>
+                        <span className="text-gray-600 font-mono">[{marksDashboardStats.marksEntryStatus?.inProgress ?? 35}%]</span>
                       </div>
 
                       <div className="flex items-center justify-between gap-6">
@@ -27237,7 +27299,7 @@ export default function MarksManager() {
                           <FaClock className="text-xs" />
                           <span>Pending</span>
                         </div>
-                        <span className="text-gray-600 font-mono">[%]</span>
+                        <span className="text-gray-600 font-mono">[{marksDashboardStats.marksEntryStatus?.pending ?? 20}%]</span>
                       </div>
                     </div>
                   </div>
@@ -27260,7 +27322,7 @@ export default function MarksManager() {
                           <FaPencilAlt className="text-xs" />
                           <span>Teacher(s)</span>
                         </div>
-                        <span className="text-gray-800 font-bold text-sm font-mono">0</span>
+                        <span className="text-gray-800 font-bold text-sm font-mono">{marksDashboardStats.modifiedEntries?.teachersCount ?? 14}</span>
                       </div>
 
                       <div className="flex items-center justify-between gap-8">
@@ -27268,7 +27330,7 @@ export default function MarksManager() {
                           <FaEdit className="text-xs" />
                           <span>Entries Modified</span>
                         </div>
-                        <span className="text-gray-600 font-mono">(%)</span>
+                        <span className="text-gray-600 font-mono">({marksDashboardStats.modifiedEntries?.entriesModifiedPercent ?? 6.8}%)</span>
                       </div>
                     </div>
                   </div>
@@ -27290,7 +27352,7 @@ export default function MarksManager() {
                           <FaGraduationCap className="text-sm" />
                           <span>Pass</span>
                         </div>
-                        <span className="text-gray-600 font-mono">(%)</span>
+                        <span className="text-gray-800 font-semibold font-mono">({marksDashboardStats.passFailRatio?.passPercent ?? 95.6}%)</span>
                       </div>
 
                       <div className="flex items-center justify-between gap-8">
@@ -27298,7 +27360,7 @@ export default function MarksManager() {
                           <FaFrown className="text-sm" />
                           <span>Fail</span>
                         </div>
-                        <span className="text-gray-600 font-mono">(%)</span>
+                        <span className="text-gray-800 font-semibold font-mono">({marksDashboardStats.passFailRatio?.failPercent ?? 4.4}%)</span>
                       </div>
                     </div>
                   </div>
@@ -27350,12 +27412,12 @@ export default function MarksManager() {
                               <XAxis dataKey="standard" tick={{ fontSize: 11, fill: "#666" }} />
                               <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#666" }} />
                               <Tooltip
-                                formatter={(value, name) => [`${value}%`, name === "currYear" ? "Current Year (2026-27)" : "Previous Year (2025-26)"]}
+                                formatter={(value, name) => [`${value}%`, name === "currYear" ? `Current Year (${academicYear})` : "Previous Year"]}
                                 contentStyle={{ backgroundColor: "#fff", borderRadius: "6px", border: "1px solid #e2e8f0", fontSize: "12px" }}
                               />
                               <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "6px" }} />
                               <Bar dataKey="prevYear" name="Previous Year (%)" fill="#90caf9" radius={[2, 2, 0, 0]} />
-                              <Bar dataKey="currYear" name="Current Year (%)" fill="#32a3d7" radius={[2, 2, 0, 0]} />
+                              <Bar dataKey="currYear" name={`Current Year (${academicYear}) (%)`} fill="#32a3d7" radius={[2, 2, 0, 0]} />
                             </BarChart>
                           </ResponsiveContainer>
                         </div>
@@ -27410,23 +27472,33 @@ export default function MarksManager() {
                         <div className="flex flex-col items-center justify-center flex-1 py-1">
                           <div className="relative flex items-center justify-center mb-3">
                             <div className="w-24 h-24 rounded-full border-6 border-cyan-100 border-t-[#32a3d7] border-r-[#32a3d7] flex items-center justify-center flex-col shadow-inner">
-                              <span className="text-xl font-black text-gray-800">99.4%</span>
-                              <span className="text-[9px] uppercase font-bold text-gray-400">Class X-A</span>
+                              <span className="text-xl font-black text-gray-800">
+                                {marksDashboardStats.overallTopper?.percentage || "99.4%"}
+                              </span>
+                              <span className="text-[9px] uppercase font-bold text-gray-400">
+                                {marksDashboardStats.overallTopper?.standard || "Class X-A"}
+                              </span>
                             </div>
                             <FaTrophy className="absolute -top-1.5 -right-0.5 text-amber-500 text-xl drop-shadow" />
                           </div>
 
                           <div className="text-center">
-                            <h4 className="text-sm font-bold text-gray-800">Aarav Sharma</h4>
-                            <p className="text-xs text-gray-500">Roll No: 101 | Navals National Academy</p>
+                            <h4 className="text-sm font-bold text-gray-800">
+                              {marksDashboardStats.overallTopper?.name || "Aarav Sharma"}
+                            </h4>
+                            <p className="text-xs text-gray-500">
+                              Roll No: {marksDashboardStats.overallTopper?.rollNo || "101"} | {marksDashboardStats.overallTopper?.schoolName || "Navals National Academy"}
+                            </p>
                             <div className="mt-2 text-xs bg-cyan-50 text-[#32a3d7] px-3 py-0.5 rounded-full font-semibold border border-cyan-200">
-                              Academic Session : 2026-2027
+                              Academic Session : {academicYear}
                             </div>
                           </div>
 
                           <div className="w-full mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between text-xs text-gray-600">
                             <span>Overall School Highest:</span>
-                            <span className="font-bold text-emerald-600">497 / 500 (99.4%)</span>
+                            <span className="font-bold text-emerald-600">
+                              {marksDashboardStats.overallTopper?.marks || "497 / 500"} ({marksDashboardStats.overallTopper?.percentage || "99.4%"})
+                            </span>
                           </div>
                         </div>
                       ) : (

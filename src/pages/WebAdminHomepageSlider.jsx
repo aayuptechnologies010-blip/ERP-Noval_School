@@ -1,17 +1,125 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   FaImage, FaCloudUploadAlt, FaListUl, FaTrash
 } from 'react-icons/fa';
 
 export default function WebAdminHomepageSlider() {
   const [status, setStatus] = useState(true);
+  const [sliders, setSliders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  
+  const [formData, setFormData] = useState({
+    title: '',
+    displayOrder: '',
+    image: ''
+  });
 
-  // Dummy slider data
-  const sliders = [
-    { id: 1, order: 0, title: 'HOME', status: true, image: 'https://placehold.co/100x60/e2e8f0/64748b?text=School' },
-    { id: 2, order: 0, title: 'HOME', status: true, image: 'https://placehold.co/100x60/e2e8f0/64748b?text=Students' },
-    { id: 3, order: 0, title: 'HOME', status: true, image: 'https://placehold.co/100x60/e2e8f0/64748b?text=Campus' },
-  ];
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    fetchSliders();
+  }, []);
+
+  const fetchSliders = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/web-admin/slider');
+      const data = await res.json();
+      if (data.success) {
+        setSliders(data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching sliders:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, image: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.title || !formData.image) {
+      setError('Please provide a title and upload an image');
+      return;
+    }
+    
+    setSubmitting(true);
+    setError('');
+    setSuccess('');
+    
+    try {
+      const payload = {
+        ...formData,
+        displayOrder: formData.displayOrder ? parseInt(formData.displayOrder) : 0,
+        status: status ? 'Active' : 'Inactive'
+      };
+      
+      const res = await fetch('/api/web-admin/slider', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        setSuccess('Slider added successfully!');
+        handleReset();
+        fetchSliders();
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(data.message || 'Failed to add slider');
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this slider?')) return;
+    
+    try {
+      const res = await fetch(`/api/web-admin/slider/${id}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSuccess('Slider deleted successfully!');
+        fetchSliders();
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(data.message || 'Failed to delete slider');
+      }
+    } catch (err) {
+      setError('An error occurred while deleting.');
+    }
+  };
+
+  const handleReset = () => {
+    setFormData({ title: '', displayOrder: '', image: '' });
+    setStatus(true);
+    setError('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   return (
     <div className="flex-1 overflow-y-auto p-6 bg-[#f4f5f7]">
@@ -21,6 +129,17 @@ export default function WebAdminHomepageSlider() {
           Home <span className="mx-1">&gt;</span> Website <span className="mx-1">&gt;</span> Homepage Slider
         </div>
       </div>
+
+      {success && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          {success}
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
 
       {/* Add Slider Section */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 overflow-hidden">
@@ -38,11 +157,11 @@ export default function WebAdminHomepageSlider() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-[2]">
                   <label className="block text-xs font-medium text-gray-700 mb-1">Slider Title <span className="text-red-500">*</span></label>
-                  <input type="text" placeholder="Enter Slider Title" className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-600 outline-none focus:border-blue-500" />
+                  <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder="Enter Slider Title" className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-600 outline-none focus:border-blue-500" />
                 </div>
                 <div className="flex-1">
                   <label className="block text-xs font-medium text-gray-700 mb-1">Order No.</label>
-                  <input type="text" placeholder="e.g. 1" className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-600 outline-none focus:border-blue-500" />
+                  <input type="number" name="displayOrder" value={formData.displayOrder} onChange={handleInputChange} placeholder="e.g. 1" className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-600 outline-none focus:border-blue-500" />
                 </div>
               </div>
 
@@ -63,6 +182,7 @@ export default function WebAdminHomepageSlider() {
                       <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${status ? 'translate-x-5' : ''}`}></div>
                     </div>
                     {status && <span className="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Active</span>}
+                    {!status && <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Inactive</span>}
                   </div>
                 </div>
               </div>
@@ -72,20 +192,36 @@ export default function WebAdminHomepageSlider() {
             {/* Right Column - Image Upload */}
             <div className="w-full lg:w-[400px]">
               <label className="block text-xs font-medium text-gray-700 mb-1">Slider Image <span className="text-red-500">*</span></label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center bg-white relative h-[160px]">
-                <span className="absolute top-3 left-3 bg-purple-500 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">IMAGE</span>
-                <FaCloudUploadAlt className="text-gray-600 text-2xl mb-2" />
-                <div className="text-xs font-medium text-gray-700">Drag & drop <span className="font-normal">or</span> <span className="text-blue-500 cursor-pointer">browse</span></div>
-                <div className="text-[10px] text-gray-400 mt-1">JPG • JPEG • PNG | Max 5MB</div>
-                <div className="text-[10px] text-blue-500 font-medium mt-1">Recommended: 1500 x 650</div>
+              <div 
+                className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center relative h-[160px] cursor-pointer transition ${formData.image ? 'border-green-400 bg-green-50' : 'border-gray-300 bg-white hover:bg-gray-50'}`}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+                {formData.image ? (
+                  <img src={formData.image} alt="Preview" className="w-full h-full object-cover rounded" />
+                ) : (
+                  <>
+                    <span className="absolute top-3 left-3 bg-purple-500 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">IMAGE</span>
+                    <FaCloudUploadAlt className="text-gray-600 text-2xl mb-2" />
+                    <div className="text-xs font-medium text-gray-700">Drag & drop <span className="font-normal">or</span> <span className="text-blue-500">browse</span></div>
+                    <div className="text-[10px] text-gray-400 mt-1">JPG • JPEG • PNG | Max 5MB</div>
+                    <div className="text-[10px] text-blue-500 font-medium mt-1">Recommended: 1500 x 650</div>
+                  </>
+                )}
               </div>
             </div>
 
           </div>
 
           <div className="flex justify-end items-center gap-4 mt-6 pt-4">
-            <button className="bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium py-2 px-6 rounded transition">Reset</button>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-6 rounded transition">Save</button>
+            <button className="bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium py-2 px-6 rounded transition" onClick={handleReset}>Reset</button>
+            <button 
+              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-6 rounded transition disabled:opacity-50"
+              onClick={handleSubmit}
+              disabled={submitting}
+            >
+              {submitting ? 'Saving...' : 'Save'}
+            </button>
           </div>
         </div>
       </div>
@@ -99,9 +235,6 @@ export default function WebAdminHomepageSlider() {
           </div>
           
           <div className="flex items-center gap-3">
-            <button className="bg-[#8cc63f] hover:bg-[#7ab32e] text-white text-[11px] font-bold py-1.5 px-4 rounded shadow-sm">
-              Save Slider Sequence
-            </button>
             <div className="relative">
               <input type="text" placeholder="Search sliders..." className="w-48 border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-600 outline-none focus:border-blue-500" />
             </div>
@@ -109,10 +242,6 @@ export default function WebAdminHomepageSlider() {
               <option>10</option>
             </select>
           </div>
-        </div>
-
-        <div className="px-5 py-3 border-b border-gray-100 flex justify-end">
-          <input type="text" placeholder="Search..." className="w-48 border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-600 outline-none focus:border-blue-500" />
         </div>
         
         <div className="overflow-x-auto">
@@ -128,50 +257,43 @@ export default function WebAdminHomepageSlider() {
               </tr>
             </thead>
             <tbody>
-              {sliders.map((slider, index) => (
-                <tr key={slider.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition">
-                  <td className="px-4 py-6 text-center text-gray-600">{index + 1}</td>
-                  <td className="px-4 py-6 text-center">
-                    <input 
-                      type="text" 
-                      defaultValue={slider.order}
-                      className="w-16 border border-gray-300 rounded px-2 py-1 text-center text-xs outline-none focus:border-blue-500" 
-                    />
-                  </td>
-                  <td className="px-4 py-6 text-center text-gray-600 text-xs">{slider.title}</td>
-                  <td className="px-4 py-6 text-center">
-                    <img src={slider.image} alt="Slider preview" className="w-16 h-10 object-cover rounded mx-auto border border-gray-200" />
-                  </td>
-                  <td className="px-4 py-6 text-center">
-                    <span className="text-[#20c997] bg-[#e6fcf5] text-[10px] font-bold px-2 py-1 rounded-full border border-[#b2f2bb] inline-flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#20c997]"></span> Active
-                    </span>
-                  </td>
-                  <td className="px-4 py-6 text-center">
-                    <div className="flex items-center justify-center gap-3">
-                      <div className="w-8 h-4 bg-green-500 rounded-full relative cursor-pointer">
-                        <div className="absolute top-[2px] left-[18px] w-3 h-3 rounded-full bg-white"></div>
-                      </div>
-                      <button className="text-red-500 hover:text-red-700">
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="px-4 py-8 text-center text-gray-500 text-sm bg-gray-50/20">Loading...</td>
+                </tr>
+              ) : sliders.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="px-4 py-8 text-center text-gray-500 text-sm bg-gray-50/20">No sliders found</td>
+                </tr>
+              ) : (
+                sliders.map((slider, index) => (
+                  <tr key={slider._id} className="border-b border-gray-100 hover:bg-gray-50/50 transition">
+                    <td className="px-4 py-6 text-center text-gray-600">{index + 1}</td>
+                    <td className="px-4 py-6 text-center">
+                      <span className="w-16 border border-gray-300 rounded px-2 py-1 text-center text-xs text-gray-600 bg-gray-50 inline-block">{slider.displayOrder}</span>
+                    </td>
+                    <td className="px-4 py-6 text-center text-gray-600 text-xs font-medium">{slider.title}</td>
+                    <td className="px-4 py-6 text-center">
+                      <img src={slider.image} alt={slider.title} className="w-24 h-12 object-cover rounded mx-auto border border-gray-200" />
+                    </td>
+                    <td className="px-4 py-6 text-center">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${slider.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {slider.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-6 text-center">
+                      <button 
+                        onClick={() => handleDelete(slider._id)}
+                        className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded transition"
+                      >
                         <FaTrash className="text-xs" />
                       </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-        </div>
-
-        <div className="p-4 flex items-center justify-between border-t border-gray-100 bg-white">
-          <div className="text-xs text-gray-500">
-            Showing 1 to 3 of 3 entries
-          </div>
-          <div className="flex border border-gray-300 rounded overflow-hidden">
-            <button className="px-3 py-1.5 bg-gray-50 text-gray-500 hover:bg-gray-100 text-xs border-r border-gray-300">Previous</button>
-            <button className="px-3 py-1.5 bg-[#3b82f6] text-white text-xs font-medium">1</button>
-            <button className="px-3 py-1.5 bg-gray-50 text-gray-500 hover:bg-gray-100 text-xs border-l border-gray-300">Next</button>
-          </div>
         </div>
       </div>
       

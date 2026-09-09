@@ -126,6 +126,28 @@ import ManageParentsStatus from "./pages/ManageParentsStatus";
 import ManageStudentClassification from "./pages/ManageStudentClassification";
 import ManageClubMaster from "./pages/ManageClubMaster";
 import ManageCommittee from "./pages/ManageCommittee";
+import ManageSchoolGlobalDetails from "./pages/ManageSchoolGlobalDetails";
+import ManageSchoolGlobalFeeType from "./pages/ManageSchoolGlobalFeeType";
+import ManageMeetingDetail from "./pages/ManageMeetingDetail";
+import ManageLanguage from "./pages/ManageLanguage";
+import ManageTcCaste from "./pages/ManageTcCaste";
+import ManageExtraActivity from "./pages/ManageExtraActivity";
+import ManageCharacter from "./pages/ManageCharacter";
+import ManagePromotionMaster from "./pages/ManagePromotionMaster";
+import ManageLastResult from "./pages/ManageLastResult";
+import ManageTermMaster from "./pages/ManageTermMaster";
+import ManageMoral from "./pages/ManageMoral";
+import ManageMotherTongue from "./pages/ManageMotherTongue";
+import ManageUpdateAddressBlood from "./pages/ManageUpdateAddressBlood";
+import ManageReceiptCertificateSetting from "./pages/ManageReceiptCertificateSetting";
+import ManageCertificateRefNoSetting from "./pages/ManageCertificateRefNoSetting";
+import ManageAdmissionFormSettings from "./pages/ManageAdmissionFormSettings";
+import ManageSaralIdSetting from "./pages/ManageSaralIdSetting";
+import ManageStationaryDetails from "./pages/ManageStationaryDetails";
+import ManageTcSetting from "./pages/ManageTcSetting";
+import ManageImageSetting from "./pages/ManageImageSetting";
+import ManageReportLayoutSetting from "./pages/ManageReportLayoutSetting";
+import ManageDocumentType from "./pages/ManageDocumentType";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -172,11 +194,12 @@ function App() {
         {/* Marks Manager Module Routes */}
         <Route path="/marks" element={<MarksManager />} />
         <Route path="/marks/:tab" element={<MarksManager />} />
+        <Route path="/marks/:tab/:subtab" element={<MarksManager />} />
         <Route path="/marks-manager" element={<Navigate to="/marks" replace />} />
+        <Route path="/marks-manager/*" element={<Navigate to="/marks" replace />} />
 
         {/* Attendance Module Routes */}
         <Route path="/attendance" element={<AttendanceDashboard />} />
-        <Route path="/marks" element={<MarksManager />} />
         <Route
           path="/attendance/define-holiday"
           element={<AttendanceDashboard />}
@@ -229,6 +252,47 @@ function App() {
         {/* Admission Module Routes */}
         <Route path="/admission" element={<AdmissionLayout />}>
           <Route index element={<AdmissionDashboard />} />
+          
+          {/* Master Settings */}
+          <Route path="master-settings/language" element={<ManageLanguage />} />
+          <Route path="master-settings/tc-caste" element={<ManageTcCaste />} />
+          <Route path="master-settings/extra-activity" element={<ManageExtraActivity />} />
+          <Route path="master-settings/character" element={<ManageCharacter />} />
+          <Route path="master-settings/promotion-master" element={<ManagePromotionMaster />} />
+          <Route path="master-settings/last-result" element={<ManageLastResult />} />
+          <Route path="master-settings/term-master" element={<ManageTermMaster />} />
+          <Route path="master-settings/moral" element={<ManageMoral />} />
+          <Route path="master-settings/mother-tongue" element={<ManageMotherTongue />} />
+          <Route path="master-settings/update-address-blood" element={<ManageUpdateAddressBlood />} />
+          <Route path="master-settings/receipt-certificate-setting" element={<ManageReceiptCertificateSetting />} />
+          <Route path="master-settings/certificate-ref-no-setting" element={<ManageCertificateRefNoSetting />} />
+          <Route path="master-settings/admission-form-settings" element={<ManageAdmissionFormSettings />} />
+          <Route path="master-settings/saral-id-setting" element={<ManageSaralIdSetting />} />
+          <Route path="master-settings/stationary-details" element={<ManageStationaryDetails />} />
+          <Route path="master-settings/tc-setting" element={<ManageTcSetting />} />
+          <Route path="master-settings/image-setting" element={<ManageImageSetting />} />
+          <Route path="master-settings/report-layout-setting" element={<ManageReportLayoutSetting />} />
+          <Route path="master-settings/document-type" element={<ManageDocumentType />} />
+
+          {/* Global Masters */}
+          <Route path="global-masters/profession" element={<ManageProfession />} />
+          <Route path="global-masters/academic-year" element={<ManageAcademicYear />} />
+          <Route path="global-masters/financial-year" element={<ManageFinancialYear />} />
+          <Route path="global-masters/school-global-details" element={<ManageSchoolGlobalDetails />} />
+          <Route path="global-masters/school-board" element={<ManageSchoolBoard />} />
+          <Route path="global-masters/school-global-fee-type" element={<ManageSchoolGlobalFeeType />} />
+          <Route path="global-masters/wing" element={<ManageWing />} />
+          <Route path="global-masters/class" element={<ManageSchoolClass />} />
+          <Route path="global-masters/section" element={<ManageSection />} />
+          <Route path="global-masters/religion" element={<ManageReligion />} />
+          <Route path="global-masters/caste" element={<ManageCaste />} />
+          <Route path="global-masters/subcaste" element={<ManageSubCaste />} />
+          <Route path="global-masters/category" element={<ManageCategory />} />
+          <Route path="global-masters/parish" element={<ManageParish />} />
+          <Route path="global-masters/house" element={<ManageHouse />} />
+          <Route path="global-masters/committee" element={<ManageCommittee />} />
+          <Route path="global-masters/meeting-detail" element={<ManageMeetingDetail />} />
+          <Route path="global-masters/club" element={<ManageClubMaster />} />
         </Route>
 
         <Route path="/dashboard" element={<Dashboard />}>
@@ -453,7 +517,9 @@ function App() {
         <Route path="/fee" element={<FeeManagementDashboard />} />
         <Route path="/enterprise-fee" element={<EnterpriseApp />} />
         <Route path="/webadmin" element={<WebAdminApp />} />
+        <Route path="/webadmin/*" element={<WebAdminApp />} />
         <Route path="/web-admin" element={<WebAdminApp />} />
+        <Route path="/web-admin/*" element={<WebAdminApp />} />
         
         {/* Payroll Module */}
         <Route path="/payroll" element={<ErrorBoundary><PayrollDashboard /></ErrorBoundary>} />

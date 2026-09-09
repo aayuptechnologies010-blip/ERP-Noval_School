@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { HelpCircle, Info, Settings, ChevronDown, GraduationCap, Wrench } from 'lucide-react';
 import SelectDropdown from './SelectDropdown';
 
@@ -7,6 +8,16 @@ export default function FeeTopHeader() {
   const [financialYear, setFinancialYear] = useState('2026-2027');
   const [userOpen, setUserOpen] = useState(false);
   const years = ['2024-2025', '2025-2026', '2026-2027'];
+  const navigate = useNavigate();
+
+  const handleAction = (item) => {
+    if (item === 'Logout') {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      navigate("/");
+    }
+    setUserOpen(false);
+  };
 
   return (
     <div
@@ -74,7 +85,11 @@ export default function FeeTopHeader() {
           {userOpen && (
             <div className="absolute right-0 top-full mt-2 w-44 bg-white rounded shadow-xl border border-gray-100 z-50 py-1">
               {['My Profile', 'Change Password', 'Logout'].map(item => (
-                <button key={item} className="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 transition">
+                <button 
+                  key={item} 
+                  className="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 transition"
+                  onClick={() => handleAction(item)}
+                >
                   {item}
                 </button>
               ))}

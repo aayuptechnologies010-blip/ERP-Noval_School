@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Menu, Search, Settings, ChevronDown, ChevronRight,
   GraduationCap, Wallet, Bus, BarChart2, CreditCard,
@@ -622,12 +623,22 @@ function YearDropdown({ label, value, onChange }) {
 function UserDropdown() {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, []);
+
+  const handleAction = (item) => {
+    if (item === 'Logout') {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      navigate("/");
+    }
+    setOpen(false);
+  };
 
   return (
     <div style={{ position: 'relative' }} ref={ref}>
@@ -642,6 +653,7 @@ function UserDropdown() {
             <button key={item} style={{ width: '100%', textAlign: 'left', padding: '8px 14px', fontSize: 12, color: '#374151', background: 'none', border: 'none', cursor: 'pointer' }}
               onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
               onMouseLeave={e => e.currentTarget.style.background = 'none'}
+              onClick={() => handleAction(item)}
             >{item}</button>
           ))}
         </div>

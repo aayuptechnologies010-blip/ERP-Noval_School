@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { FaMale, FaFemale, FaRegBuilding, FaGlobe, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaMale, FaFemale, FaRegBuilding, FaGlobe, FaChevronLeft, FaChevronRight, FaSpinner } from 'react-icons/fa';
 
 export default function AdmissionDashboard() {
   // Active Tab for "NEW ADMISSION IN"
@@ -18,39 +18,142 @@ export default function AdmissionDashboard() {
     setSelectedClassIndex((prev) => (prev < classList.length - 1 ? prev + 1 : 0));
   };
 
-  // 1. STUDENT STRENGTH STANDARD WISE Data (Exact Match with Screenshot 2)
-  const standardWiseStrength = [
-    { name: 'NUR', total: 46, newAdm: 43 },
-    { name: 'LKG', total: 51, newAdm: 11 },
-    { name: 'UKG', total: 61, newAdm: 11 },
-    { name: '1', total: 69, newAdm: 15 },
-    { name: '2', total: 80, newAdm: 13 },
-    { name: '3', total: 54, newAdm: 9 },
-    { name: '4', total: 73, newAdm: 17 },
-    { name: '5', total: 48, newAdm: 9 },
-    { name: '6', total: 73, newAdm: 22 },
-    { name: '7', total: 69, newAdm: 13 },
-    { name: '8', total: 73, newAdm: 14 },
-    { name: '9', total: 95, newAdm: 45 },
-    { name: '10', total: 203, newAdm: 0 },
-    { name: '11', total: 123, newAdm: 66 },
-    { name: '12', total: 119, newAdm: 1 },
+  // Dynamic state loaded strictly from backend / MongoDB
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch real statistics from Express backend
+  const fetchDashboardStats = async () => {
+    try {
+      const res = await fetch(`http://localhost:5005/api/dashboard/admission-stats?days=${admissionDaysTab}&standard=${currentClass}`);
+      if (res.ok) {
+        const data = await res.json();
+        setDashboardData(data);
+      }
+    } catch (err) {
+      console.error('Failed to load real admission stats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardStats();
+  }, [admissionDaysTab, currentClass]);
+
+  // Helper function to calculate SVG donut slices
+  const getDonutSlicePath = (cx, cy, rOuter, rInner, startDeg, endDeg) => {
+    if (endDeg - startDeg >= 360) endDeg = startDeg + 359.99;
+    const toRad = (d) => ((d - 90) * Math.PI) / 180;
+    const s = toRad(startDeg);
+    const e = toRad(endDeg);
+    const x1 = cx + rOuter * Math.cos(s);
+    const y1 = cy + rOuter * Math.sin(s);
+    const x2 = cx + rOuter * Math.cos(e);
+    const y2 = cy + rOuter * Math.sin(e);
+    const x3 = cx + rInner * Math.cos(e);
+    const y3 = cy + rInner * Math.sin(e);
+    const x4 = cx + rInner * Math.cos(s);
+    const y4 = cy + rInner * Math.sin(s);
+    const largeArc = (endDeg - startDeg) > 180 ? 1 : 0;
+    return `M ${x1} ${y1} A ${rOuter} ${rOuter} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${rInner} ${rInner} 0 ${largeArc} 0 ${x4} ${y4} Z`;
+  };
+
+  // Real data strictly from backend (0 fallbacks, no hardcoded dummy counts)
+  const headCount = dashboardData?.headCount || {
+    total: 0,
+    boys: 0,
+    boysPercent: 0,
+    girls: 0,
+    girlsPercent: 0,
+  };
+
+  const newAdmStats = dashboardData?.newAdmissionStats || {
+    total: 0,
+    schoolReg: 0,
+    schoolRegPercent: 0,
+    onlineReg: 0,
+    onlineRegPercent: 0,
+  };
+
+  const newAdmRatio = dashboardData?.newAdmissionRatioVsPrevYear || {
+    boys: { current: 0, previous: 0, changePercent: '0.00' },
+    girls: { current: 0, previous: 0, changePercent: '0.00' },
+  };
+
+  const studentStatsRatio = dashboardData?.studentStatsVsPrevYear || {
+    boys: { current: 0, previous: 0, changePercent: '0.00' },
+    girls: { current: 0, previous: 0, changePercent: '0.00' },
+  };
+
+  const standardWiseStrength = dashboardData?.standardWiseStrength || classList.map(name => ({ name, total: 0, newAdm: 0 }));
+
+  const comparisonData = dashboardData?.comparisonData || [
+    { label: 'TOTAL STUDENT', curr: 0, prev: 0 },
+    { label: 'BOYS', curr: 0, prev: 0 },
+    { label: 'GIRLS', curr: 0, prev: 0 },
+    { label: 'NEW ADMISSION', curr: 0, prev: 0 },
+    { label: 'TC TAKEN', curr: 0, prev: 0 },
+    { label: 'LEFT', curr: 0, prev: 0 },
   ];
 
-  // 2. STUDENT STATISTICS COMPARISON WITH PREVIOUS YEAR (Exact Match with Screenshot 3)
-  const comparisonData = [
-    { label: 'TOTAL STUDENT', curr: 1237, prev: 1057 },
-    { label: 'BOYS', curr: 783, prev: 649 },
-    { label: 'GIRLS', curr: 454, prev: 408 },
-    { label: 'NEW ADMISSION', curr: 289, prev: 466 },
-    { label: 'TC TAKEN', curr: 0, prev: 0 },
-    { label: 'LEFT', curr: 79, prev: 105 },
-  ];
+  const newAdmissionByPeriod = dashboardData?.newAdmissionByPeriod || {
+    days: parseInt(admissionDaysTab),
+    dateRangeLabel: 'RECENT ADMISSIONS',
+    total: 0,
+    boys: 0,
+    boysPercent: 0,
+    girls: 0,
+    girlsPercent: 0,
+  };
+
+  const currentClassStats = dashboardData?.standardWiseStats || {
+    class: currentClass,
+    total: 0,
+    boys: 0,
+    girls: 0,
+    newAdmission: 0,
+    newAdmissionPercent: 0,
+    old: 0,
+    oldPercent: 0,
+    tcTaken: 0,
+  };
+
+  const religionStats = dashboardData?.religionWiseStats || [];
+  const categoryStats = dashboardData?.categoryWiseStats || [];
+
+  const tcStats = dashboardData?.tcStats || {
+    total: 0,
+    drafted: 0,
+    draftedPercent: 0,
+    generated: 0,
+    generatedPercent: 0,
+    cancelled: 0,
+    cancelledPercent: 0,
+  };
+
+  // Dynamic max scales based strictly on real values
+  const maxStandardVal = Math.max(10, ...standardWiseStrength.map((s) => Math.max(s.total, s.newAdm)));
+  const maxCompVal = Math.max(10, ...comparisonData.map((c) => Math.max(c.curr, c.prev)));
 
   return (
-    <div className="flex flex-col gap-5 pb-10 select-none font-sans text-gray-800">
+    <div className="flex flex-col gap-5 pb-10 select-none font-sans text-gray-800 relative">
       
-      {/* -------------------- ROW 1: TOP 4 STAT CARDS (SCREENSHOT 1) -------------------- */}
+      {/* Real-time Indicator banner */}
+      <div className="flex items-center justify-between px-4 py-2 bg-sky-50 border border-sky-200 rounded text-xs text-sky-800 font-medium">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
+          <span>Live Database Mode: <strong>{headCount.total} Students</strong> & <strong>{tcStats.total} TCs</strong> fetched directly from MongoDB</span>
+        </div>
+        {loading && (
+          <div className="flex items-center gap-1.5 text-sky-600">
+            <FaSpinner className="animate-spin text-xs" />
+            <span>Syncing database...</span>
+          </div>
+        )}
+      </div>
+
+      {/* -------------------- ROW 1: TOP 4 STAT CARDS -------------------- */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* Card 1: STUDENT HEAD COUNT (YTD) */}
@@ -59,27 +162,33 @@ export default function AdmissionDashboard() {
             STUDENT HEAD COUNT <span className="font-semibold text-gray-500">(YTD)</span>
           </h3>
           <div className="text-center text-gray-700 text-sm my-3">
-            Total: <span className="font-extrabold text-xl text-gray-950">1237</span>
+            Total: <span className="font-extrabold text-xl text-gray-950">{headCount.total}</span>
           </div>
           
           <div className="space-y-3">
             <div>
               <div className="flex items-center justify-between text-xs text-gray-700 font-medium mb-1">
                 <span className="flex items-center gap-1.5"><FaMale className="text-gray-400 text-base" /> Boys</span>
-                <span className="font-bold text-gray-900">783(63%)</span>
+                <span className="font-bold text-gray-900">{headCount.boys} ({headCount.boysPercent}%)</span>
               </div>
               <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                <div className="bg-[#94a3b8] h-full rounded-full transition-all duration-700" style={{ width: '63%' }}></div>
+                <div 
+                  className="bg-[#94a3b8] h-full rounded-full transition-all duration-700" 
+                  style={{ width: `${headCount.boysPercent}%` }}
+                ></div>
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between text-xs text-gray-700 font-medium mb-1">
                 <span className="flex items-center gap-1.5"><FaFemale className="text-[#ff6b6b] text-base" /> Girls</span>
-                <span className="font-bold text-gray-900">454(37%)</span>
+                <span className="font-bold text-gray-900">{headCount.girls} ({headCount.girlsPercent}%)</span>
               </div>
               <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                <div className="bg-[#ff6b6b] h-full rounded-full transition-all duration-700" style={{ width: '37%' }}></div>
+                <div 
+                  className="bg-[#ff6b6b] h-full rounded-full transition-all duration-700" 
+                  style={{ width: `${headCount.girlsPercent}%` }}
+                ></div>
               </div>
             </div>
           </div>
@@ -91,27 +200,33 @@ export default function AdmissionDashboard() {
             NEW ADMISSION STATISTICS
           </h3>
           <div className="text-center text-gray-700 text-sm my-3">
-            Total: <span className="font-extrabold text-xl text-gray-950">289</span>
+            Total: <span className="font-extrabold text-xl text-gray-950">{newAdmStats.total}</span>
           </div>
           
           <div className="space-y-3">
             <div>
               <div className="flex items-center justify-between text-xs text-gray-700 font-medium mb-1">
                 <span className="flex items-center gap-1.5 text-amber-800"><FaRegBuilding className="text-amber-500 text-sm" /> Reg. at school</span>
-                <span className="font-bold text-gray-900">289(100%)</span>
+                <span className="font-bold text-gray-900">{newAdmStats.schoolReg} ({newAdmStats.schoolRegPercent}%)</span>
               </div>
               <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                <div className="bg-[#f59e0b] h-full rounded-full transition-all duration-700" style={{ width: '100%' }}></div>
+                <div 
+                  className="bg-[#f59e0b] h-full rounded-full transition-all duration-700" 
+                  style={{ width: `${newAdmStats.schoolRegPercent}%` }}
+                ></div>
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between text-xs text-gray-700 font-medium mb-1">
                 <span className="flex items-center gap-1.5 text-blue-700"><FaGlobe className="text-[#00a2db] text-sm" /> Online Reg.</span>
-                <span className="font-bold text-gray-900">0(0%)</span>
+                <span className="font-bold text-gray-900">{newAdmStats.onlineReg} ({newAdmStats.onlineRegPercent}%)</span>
               </div>
               <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                <div className="bg-[#00a2db] h-full rounded-full" style={{ width: '0%' }}></div>
+                <div 
+                  className="bg-[#00a2db] h-full rounded-full" 
+                  style={{ width: `${newAdmStats.onlineRegPercent}%` }}
+                ></div>
               </div>
             </div>
           </div>
@@ -131,14 +246,18 @@ export default function AdmissionDashboard() {
           <div className="space-y-3 pt-1">
             <div className="flex items-center justify-between text-xs">
               <span className="flex items-center gap-1.5 text-gray-700 font-medium"><FaMale className="text-gray-400 text-base" /> Boys</span>
-              <span className="font-bold text-gray-900 text-sm">200(-31.03 %)</span>
-              <span className="font-semibold text-gray-800 text-sm w-12 text-right">290</span>
+              <span className="font-bold text-gray-900 text-sm">
+                {newAdmRatio.boys.current} ({Number(newAdmRatio.boys.changePercent) > 0 ? '+' : ''}{newAdmRatio.boys.changePercent}%)
+              </span>
+              <span className="font-semibold text-gray-800 text-sm w-12 text-right">{newAdmRatio.boys.previous}</span>
             </div>
             
             <div className="flex items-center justify-between text-xs">
               <span className="flex items-center gap-1.5 text-gray-700 font-medium"><FaFemale className="text-[#ff6b6b] text-base" /> Girls</span>
-              <span className="font-bold text-gray-900 text-sm">89(-49.43 %)</span>
-              <span className="font-semibold text-gray-800 text-sm w-12 text-right">176</span>
+              <span className="font-bold text-gray-900 text-sm">
+                {newAdmRatio.girls.current} ({Number(newAdmRatio.girls.changePercent) > 0 ? '+' : ''}{newAdmRatio.girls.changePercent}%)
+              </span>
+              <span className="font-semibold text-gray-800 text-sm w-12 text-right">{newAdmRatio.girls.previous}</span>
             </div>
           </div>
         </div>
@@ -157,21 +276,25 @@ export default function AdmissionDashboard() {
           <div className="space-y-3 pt-1">
             <div className="flex items-center justify-between text-xs">
               <span className="flex items-center gap-1.5 text-gray-700 font-medium"><FaMale className="text-gray-400 text-base" /> Boys</span>
-              <span className="font-bold text-gray-900 text-sm">783(20.65 %)</span>
-              <span className="font-semibold text-gray-800 text-sm w-12 text-right">649</span>
+              <span className="font-bold text-gray-900 text-sm">
+                {studentStatsRatio.boys.current} ({Number(studentStatsRatio.boys.changePercent) > 0 ? '+' : ''}{studentStatsRatio.boys.changePercent}%)
+              </span>
+              <span className="font-semibold text-gray-800 text-sm w-12 text-right">{studentStatsRatio.boys.previous}</span>
             </div>
             
             <div className="flex items-center justify-between text-xs">
               <span className="flex items-center gap-1.5 text-gray-700 font-medium"><FaFemale className="text-[#ff6b6b] text-base" /> Girls</span>
-              <span className="font-bold text-gray-900 text-sm">454(11.27 %)</span>
-              <span className="font-semibold text-gray-800 text-sm w-12 text-right">408</span>
+              <span className="font-bold text-gray-900 text-sm">
+                {studentStatsRatio.girls.current} ({Number(studentStatsRatio.girls.changePercent) > 0 ? '+' : ''}{studentStatsRatio.girls.changePercent}%)
+              </span>
+              <span className="font-semibold text-gray-800 text-sm w-12 text-right">{studentStatsRatio.girls.previous}</span>
             </div>
           </div>
         </div>
 
       </div>
 
-      {/* -------------------- ROW 2: STUDENT STRENGTH STANDARD WISE (DUAL BAR CHART) (SCREENSHOT 2) -------------------- */}
+      {/* -------------------- ROW 2: STUDENT STRENGTH STANDARD WISE (DUAL BAR CHART) -------------------- */}
       <div className="bg-white p-5 rounded border border-gray-200/90 shadow-2xs">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xs font-bold text-gray-800 tracking-tight uppercase">
@@ -189,7 +312,7 @@ export default function AdmissionDashboard() {
           </div>
         </div>
 
-        {/* SVG Dual Bar Chart with Exact Values on Top */}
+        {/* SVG Dual Bar Chart with Real Values on Top */}
         <div className="w-full flex justify-center items-center py-2 overflow-x-auto">
           <svg viewBox="0 0 1060 260" className="w-full min-w-[900px] h-[260px] select-none">
             {/* Y Axis Label */}
@@ -206,16 +329,16 @@ export default function AdmissionDashboard() {
               NO. OF STUDENTS
             </text>
 
-            {/* Y-Axis Grid Lines & Ticks (0, 50, 100, 150, 200, 250) */}
+            {/* Y-Axis Grid Lines & Ticks */}
             {[
-              { val: '250', y: 20 },
-              { val: '200', y: 56 },
-              { val: '150', y: 92 },
-              { val: '100', y: 128 },
-              { val: '50', y: 164 },
+              { val: String(maxStandardVal), y: 20 },
+              { val: String(Math.round(maxStandardVal * 0.8)), y: 56 },
+              { val: String(Math.round(maxStandardVal * 0.6)), y: 92 },
+              { val: String(Math.round(maxStandardVal * 0.4)), y: 128 },
+              { val: String(Math.round(maxStandardVal * 0.2)), y: 164 },
               { val: '0', y: 200 },
             ].map((tick) => (
-              <g key={tick.val}>
+              <g key={tick.y}>
                 <text x="62" y={tick.y + 4} textAnchor="end" fill="#64748b" fontSize="10" fontWeight="500">
                   {tick.val}
                 </text>
@@ -227,11 +350,9 @@ export default function AdmissionDashboard() {
             {/* Dual Bars for Each Standard */}
             {standardWiseStrength.map((item, idx) => {
               const groupX = 90 + idx * 63;
-              // Bar 1: Total Students (Height scaling based on max 250 = 180px)
-              const totalH = (item.total / 250) * 180;
+              const totalH = maxStandardVal > 0 ? Math.min(180, (item.total / maxStandardVal) * 180) : 0;
               const totalY = 200 - totalH;
-              // Bar 2: New Admission
-              const newH = (item.newAdm / 250) * 180;
+              const newH = maxStandardVal > 0 ? Math.min(180, (item.newAdm / maxStandardVal) * 180) : 0;
               const newY = 200 - newH;
 
               return (
@@ -327,7 +448,7 @@ export default function AdmissionDashboard() {
         </div>
       </div>
 
-      {/* -------------------- ROW 3: COMPARISON & NEW ADMISSION IN 7 DAYS (SCREENSHOT 3) -------------------- */}
+      {/* -------------------- ROW 3: COMPARISON & NEW ADMISSION IN PERIOD -------------------- */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         
         {/* Left: STUDENT STATISTICS COMPARISON WITH PREVIOUS YEAR */}
@@ -364,18 +485,18 @@ export default function AdmissionDashboard() {
                 NO. OF STUDENTS
               </text>
 
-              {/* Y Ticks (0 to 1400) */}
+              {/* Y Ticks */}
               {[
-                { val: '1400', y: 20 },
-                { val: '1200', y: 44 },
-                { val: '1000', y: 68 },
-                { val: '800', y: 92 },
-                { val: '600', y: 116 },
-                { val: '400', y: 140 },
-                { val: '200', y: 164 },
+                { val: String(maxCompVal), y: 20 },
+                { val: String(Math.round(maxCompVal * 0.85)), y: 44 },
+                { val: String(Math.round(maxCompVal * 0.71)), y: 68 },
+                { val: String(Math.round(maxCompVal * 0.57)), y: 92 },
+                { val: String(Math.round(maxCompVal * 0.43)), y: 116 },
+                { val: String(Math.round(maxCompVal * 0.28)), y: 140 },
+                { val: String(Math.round(maxCompVal * 0.14)), y: 164 },
                 { val: '0', y: 188 },
               ].map((tick) => (
-                <g key={tick.val}>
+                <g key={tick.y}>
                   <text x="50" y={tick.y + 4} textAnchor="end" fill="#64748b" fontSize="9" fontWeight="500">
                     {tick.val}
                   </text>
@@ -386,9 +507,9 @@ export default function AdmissionDashboard() {
               {/* Bars */}
               {comparisonData.map((item, idx) => {
                 const groupX = 70 + idx * 72;
-                const currH = (item.curr / 1400) * 168;
+                const currH = maxCompVal > 0 ? Math.min(168, (item.curr / maxCompVal) * 168) : 0;
                 const currY = 188 - currH;
-                const prevH = (item.prev / 1400) * 168;
+                const prevH = maxCompVal > 0 ? Math.min(168, (item.prev / maxCompVal) * 168) : 0;
                 const prevY = 188 - prevH;
 
                 return (
@@ -437,7 +558,7 @@ export default function AdmissionDashboard() {
             <div className="flex border border-gray-200 rounded overflow-hidden text-[11px] font-bold">
               <button
                 onClick={() => setAdmissionDaysTab('7')}
-                className={`px-3 py-1.5 transition-colors ${
+                className={`px-3 py-1.5 transition-colors cursor-pointer ${
                   admissionDaysTab === '7' ? 'bg-[#00a2db] text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -445,7 +566,7 @@ export default function AdmissionDashboard() {
               </button>
               <button
                 onClick={() => setAdmissionDaysTab('15')}
-                className={`px-3 py-1.5 transition-colors border-l border-gray-200 ${
+                className={`px-3 py-1.5 transition-colors border-l border-gray-200 cursor-pointer ${
                   admissionDaysTab === '15' ? 'bg-[#00a2db] text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -453,7 +574,7 @@ export default function AdmissionDashboard() {
               </button>
               <button
                 onClick={() => setAdmissionDaysTab('30')}
-                className={`px-3 py-1.5 transition-colors border-l border-gray-200 ${
+                className={`px-3 py-1.5 transition-colors border-l border-gray-200 cursor-pointer ${
                   admissionDaysTab === '30' ? 'bg-[#00a2db] text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -463,38 +584,61 @@ export default function AdmissionDashboard() {
           </div>
 
           <div className="text-center text-xs text-gray-600 font-semibold my-1">
-            25-AUG-2026 TO 01-SEP-2026
+            {newAdmissionByPeriod.dateRangeLabel}
           </div>
 
           <div className="flex items-center justify-between">
-            {/* SVG Donut Chart with Leader Lines & Spin Animation */}
+            {/* SVG Donut Chart with Leader Lines */}
             <div className="flex-1 flex justify-center items-center">
               <svg viewBox="0 0 280 240" className="w-[260px] h-[230px] select-none overflow-visible">
-                {/* 100% Boys Full Donut Ring */}
+                {/* Donut Ring */}
                 <g className="animate-donut-spin" style={{ transformOrigin: '140px 120px' }}>
-                  <circle cx="140" cy="120" r="75" fill="none" stroke="#00a2db" strokeWidth="36" />
+                  {newAdmissionByPeriod.total === 0 ? (
+                    <circle cx="140" cy="120" r="75" fill="none" stroke="#e2e8f0" strokeWidth="36" />
+                  ) : newAdmissionByPeriod.boysPercent === 100 ? (
+                    <circle cx="140" cy="120" r="75" fill="none" stroke="#00a2db" strokeWidth="36" />
+                  ) : newAdmissionByPeriod.girlsPercent === 100 ? (
+                    <circle cx="140" cy="120" r="75" fill="none" stroke="#ff7675" strokeWidth="36" />
+                  ) : (
+                    <>
+                      <path
+                        d={getDonutSlicePath(140, 120, 93, 57, 0, (newAdmissionByPeriod.boysPercent / 100) * 360)}
+                        fill="#00a2db"
+                        stroke="#ffffff"
+                        strokeWidth="2"
+                      />
+                      <path
+                        d={getDonutSlicePath(140, 120, 93, 57, (newAdmissionByPeriod.boysPercent / 100) * 360, 360)}
+                        fill="#ff7675"
+                        stroke="#ffffff"
+                        strokeWidth="2"
+                      />
+                    </>
+                  )}
                 </g>
 
                 {/* Center Counter */}
                 <g className="animate-center-pop" style={{ transformOrigin: '140px 120px' }}>
                   <circle cx="140" cy="120" r="54" fill="#ffffff" />
                   <text x="140" y="140" textAnchor="middle" fill="#000000" style={{ fontSize: '64px', fontWeight: '900' }}>
-                    1
+                    {newAdmissionByPeriod.total}
                   </text>
                 </g>
 
                 {/* Leader Lines & Percentages */}
-                <g className="animate-leader-lines">
-                  <line x1="140" y1="45" x2="140" y2="28" stroke="#00a2db" strokeWidth="1" />
-                  <text x="140" y="22" textAnchor="middle" fill="#000000" fontSize="13" fontWeight="600">
-                    0%
-                  </text>
+                {newAdmissionByPeriod.total > 0 && (
+                  <g className="animate-leader-lines">
+                    <line x1="140" y1="45" x2="140" y2="28" stroke="#00a2db" strokeWidth="1" />
+                    <text x="140" y="22" textAnchor="middle" fill="#000000" fontSize="13" fontWeight="600">
+                      {newAdmissionByPeriod.girlsPercent}%
+                    </text>
 
-                  <line x1="140" y1="195" x2="140" y2="212" stroke="#00a2db" strokeWidth="1" />
-                  <text x="140" y="228" textAnchor="middle" fill="#000000" fontSize="13" fontWeight="600">
-                    100%
-                  </text>
-                </g>
+                    <line x1="140" y1="195" x2="140" y2="212" stroke="#00a2db" strokeWidth="1" />
+                    <text x="140" y="228" textAnchor="middle" fill="#000000" fontSize="13" fontWeight="600">
+                      {newAdmissionByPeriod.boysPercent}%
+                    </text>
+                  </g>
+                )}
               </svg>
             </div>
 
@@ -502,11 +646,11 @@ export default function AdmissionDashboard() {
             <div className="flex flex-col gap-2.5 text-xs text-gray-700 font-medium pr-6">
               <div className="flex items-center gap-2">
                 <span className="w-3.5 h-3.5 bg-[#00a2db] inline-block rounded-2xs"></span>
-                <span>Boys</span>
+                <span>Boys ({newAdmissionByPeriod.boys})</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-3.5 h-3.5 bg-[#ff7675] inline-block rounded-2xs"></span>
-                <span>Girls</span>
+                <span>Girls ({newAdmissionByPeriod.girls})</span>
               </div>
             </div>
           </div>
@@ -514,7 +658,7 @@ export default function AdmissionDashboard() {
 
       </div>
 
-      {/* -------------------- ROW 4: STANDARD WISE & RELIGION WISE (SCREENSHOT 4) -------------------- */}
+      {/* -------------------- ROW 4: STANDARD WISE & RELIGION WISE -------------------- */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         
         {/* Left: STANDARD WISE STATISTICS (With Class Switcher & Exact Donut) */}
@@ -526,15 +670,15 @@ export default function AdmissionDashboard() {
             <div className="flex flex-col gap-1.5 text-[11px] text-gray-700 font-medium">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 bg-[#00a2db] inline-block rounded-2xs"></span>
-                <span>TC Taken</span>
+                <span>TC Taken ({currentClassStats.tcTaken || 0})</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 bg-[#fbc531] inline-block rounded-2xs"></span>
-                <span>New Admission</span>
+                <span>New Admission ({currentClassStats.newAdmission})</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 bg-[#e67e22] inline-block rounded-2xs"></span>
-                <span>Old</span>
+                <span>Old ({currentClassStats.old})</span>
               </div>
             </div>
           </div>
@@ -543,8 +687,8 @@ export default function AdmissionDashboard() {
           <div className="text-center">
             <div className="font-bold text-gray-900 text-sm">CLASS {currentClass}</div>
             <div className="flex justify-center gap-5 text-xs text-gray-700 font-medium mt-0.5">
-              <span className="flex items-center gap-1"><FaMale className="text-gray-400 text-sm" /> Boys 30</span>
-              <span className="flex items-center gap-1"><FaFemale className="text-[#ff6b6b] text-sm" /> Girls 16</span>
+              <span className="flex items-center gap-1"><FaMale className="text-gray-400 text-sm" /> Boys {currentClassStats.boys}</span>
+              <span className="flex items-center gap-1"><FaFemale className="text-[#ff6b6b] text-sm" /> Girls {currentClassStats.girls}</span>
             </div>
           </div>
 
@@ -552,7 +696,7 @@ export default function AdmissionDashboard() {
           <div className="flex items-center justify-between py-2">
             <button
               onClick={handlePrevClass}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition cursor-pointer"
               title="Previous Class"
             >
               <FaChevronLeft className="text-base" />
@@ -560,74 +704,64 @@ export default function AdmissionDashboard() {
 
             <svg viewBox="0 0 280 230" className="w-[260px] h-[220px] select-none overflow-visible">
               <g className="animate-donut-spin" style={{ transformOrigin: '140px 115px' }}>
-                {/* 1. New Admission (Yellow 93%) 0 to 334.8° */}
-                <path
-                  d={(() => {
-                    const toRad = (d) => ((d - 90) * Math.PI) / 180;
-                    const s = toRad(0);
-                    const e = toRad(334.8);
-                    const x1 = 140 + 72 * Math.cos(s);
-                    const y1 = 115 + 72 * Math.sin(s);
-                    const x2 = 140 + 72 * Math.cos(e);
-                    const y2 = 115 + 72 * Math.sin(e);
-                    const x3 = 140 + 40 * Math.cos(e);
-                    const y3 = 115 + 40 * Math.sin(e);
-                    const x4 = 140 + 40 * Math.cos(s);
-                    const y4 = 115 + 40 * Math.sin(s);
-                    return `M ${x1} ${y1} A 72 72 0 1 1 ${x2} ${y2} L ${x3} ${y3} A 40 40 0 1 0 ${x4} ${y4} Z`;
-                  })()}
-                  fill="#fbc531"
-                  stroke="#ffffff"
-                  strokeWidth="2"
-                />
+                {currentClassStats.total === 0 ? (
+                  <circle cx="140" cy="115" r="56" fill="none" stroke="#e2e8f0" strokeWidth="32" />
+                ) : (
+                  (() => {
+                    const newPercent = currentClassStats.newAdmissionPercent || 0;
+                    const newDeg = (newPercent / 100) * 360;
 
-                {/* 2. Old (Orange 7%) 334.8° to 360° */}
-                <path
-                  d={(() => {
-                    const toRad = (d) => ((d - 90) * Math.PI) / 180;
-                    const s = toRad(334.8);
-                    const e = toRad(360);
-                    const x1 = 140 + 72 * Math.cos(s);
-                    const y1 = 115 + 72 * Math.sin(s);
-                    const x2 = 140 + 72 * Math.cos(e);
-                    const y2 = 115 + 72 * Math.sin(e);
-                    const x3 = 140 + 40 * Math.cos(e);
-                    const y3 = 115 + 40 * Math.sin(e);
-                    const x4 = 140 + 40 * Math.cos(s);
-                    const y4 = 115 + 40 * Math.sin(s);
-                    return `M ${x1} ${y1} A 72 72 0 0 1 ${x2} ${y2} L ${x3} ${y3} A 40 40 0 0 0 ${x4} ${y4} Z`;
-                  })()}
-                  fill="#e67e22"
-                  stroke="#ffffff"
-                  strokeWidth="2"
-                />
+                    return (
+                      <>
+                        {newPercent > 0 && (
+                          <path
+                            d={getDonutSlicePath(140, 115, 72, 40, 0, newDeg)}
+                            fill="#fbc531"
+                            stroke="#ffffff"
+                            strokeWidth="2"
+                          />
+                        )}
+                        {newPercent < 100 && (
+                          <path
+                            d={getDonutSlicePath(140, 115, 72, 40, newDeg, 360)}
+                            fill="#e67e22"
+                            stroke="#ffffff"
+                            strokeWidth="2"
+                          />
+                        )}
+                      </>
+                    );
+                  })()
+                )}
               </g>
 
               {/* Center Counter */}
               <g className="animate-center-pop" style={{ transformOrigin: '140px 115px' }}>
                 <circle cx="140" cy="115" r="39" fill="#ffffff" />
                 <text x="140" y="132" textAnchor="middle" fill="#000000" style={{ fontSize: '48px', fontWeight: '900' }}>
-                  46
+                  {currentClassStats.total}
                 </text>
               </g>
 
               {/* Leader Lines & Percentages */}
-              <g className="animate-leader-lines">
-                <line x1="140" y1="43" x2="140" y2="28" stroke="#e67e22" strokeWidth="0.9" />
-                <text x="140" y="22" textAnchor="middle" fill="#000000" fontSize="12" fontWeight="600">
-                  7%
-                </text>
+              {currentClassStats.total > 0 && (
+                <g className="animate-leader-lines">
+                  <line x1="140" y1="43" x2="140" y2="28" stroke="#e67e22" strokeWidth="0.9" />
+                  <text x="140" y="22" textAnchor="middle" fill="#000000" fontSize="12" fontWeight="600">
+                    {currentClassStats.oldPercent}%
+                  </text>
 
-                <line x1="140" y1="187" x2="145" y2="202" stroke="#fbc531" strokeWidth="0.9" />
-                <text x="148" y="216" textAnchor="middle" fill="#000000" fontSize="12" fontWeight="600">
-                  93%
-                </text>
-              </g>
+                  <line x1="140" y1="187" x2="145" y2="202" stroke="#fbc531" strokeWidth="0.9" />
+                  <text x="148" y="216" textAnchor="middle" fill="#000000" fontSize="12" fontWeight="600">
+                    {currentClassStats.newAdmissionPercent}%
+                  </text>
+                </g>
+              )}
             </svg>
 
             <button
               onClick={handleNextClass}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition cursor-pointer"
               title="Next Class"
             >
               <FaChevronRight className="text-base" />
@@ -642,14 +776,16 @@ export default function AdmissionDashboard() {
               RELIGION WISE STUDENT STRENGTH
             </h3>
             <div className="flex flex-col gap-1 text-[10px] text-gray-700 font-medium">
-              <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#e17055] inline-block rounded-2xs"></span><span>NA</span></div>
-              <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#dfe6e9] inline-block rounded-2xs"></span><span>MUSLIM</span></div>
-              <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#fbc531] inline-block rounded-2xs"></span><span>HINDU</span></div>
-              <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#55efc4] inline-block rounded-2xs"></span><span>O.B.C.</span></div>
-              <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#74b9ff] inline-block rounded-2xs"></span><span>SELECT CASTE CATEGORY</span></div>
-              <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#0984e3] inline-block rounded-2xs"></span><span>S.C.</span></div>
-              <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#d63031] inline-block rounded-2xs"></span><span>GENERAL</span></div>
-              <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#fd79a8] inline-block rounded-2xs"></span><span>S.T.</span></div>
+              {religionStats.length === 0 ? (
+                <span className="text-gray-400">No records</span>
+              ) : (
+                religionStats.map((r) => (
+                  <div key={r.name} className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 inline-block rounded-2xs" style={{ backgroundColor: r.color }}></span>
+                    <span>{r.name} ({r.count})</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -657,151 +793,146 @@ export default function AdmissionDashboard() {
             <svg viewBox="0 0 320 240" className="w-[300px] h-[230px] select-none overflow-visible">
               {/* Donut Slices */}
               <g className="animate-donut-spin" style={{ transformOrigin: '160px 120px' }}>
-                {/* 1. General (Orange/Coral 53%) 0° to 190.8° */}
-                <path
-                  d={(() => {
-                    const toRad = (d) => ((d - 90) * Math.PI) / 180;
-                    const s = toRad(0);
-                    const e = toRad(190.8);
-                    const x1 = 160 + 75 * Math.cos(s);
-                    const y1 = 120 + 75 * Math.sin(s);
-                    const x2 = 160 + 75 * Math.cos(e);
-                    const y2 = 120 + 75 * Math.sin(e);
-                    const x3 = 160 + 42 * Math.cos(e);
-                    const y3 = 120 + 42 * Math.sin(e);
-                    const x4 = 160 + 42 * Math.cos(s);
-                    const y4 = 120 + 42 * Math.sin(s);
-                    return `M ${x1} ${y1} A 75 75 0 1 1 ${x2} ${y2} L ${x3} ${y3} A 42 42 0 1 0 ${x4} ${y4} Z`;
-                  })()}
-                  fill="#fbc531"
-                  stroke="#ffffff"
-                  strokeWidth="2"
-                />
-
-                {/* 2. OBC (Mint Green 26%) 190.8° to 284.4° */}
-                <path
-                  d={(() => {
-                    const toRad = (d) => ((d - 90) * Math.PI) / 180;
-                    const s = toRad(190.8);
-                    const e = toRad(284.4);
-                    const x1 = 160 + 75 * Math.cos(s);
-                    const y1 = 120 + 75 * Math.sin(s);
-                    const x2 = 160 + 75 * Math.cos(e);
-                    const y2 = 120 + 75 * Math.sin(e);
-                    const x3 = 160 + 42 * Math.cos(e);
-                    const y3 = 120 + 42 * Math.sin(e);
-                    const x4 = 160 + 42 * Math.cos(s);
-                    const y4 = 120 + 42 * Math.sin(s);
-                    return `M ${x1} ${y1} A 75 75 0 0 1 ${x2} ${y2} L ${x3} ${y3} A 42 42 0 0 0 ${x4} ${y4} Z`;
-                  })()}
-                  fill="#55efc4"
-                  stroke="#ffffff"
-                  strokeWidth="2"
-                />
-
-                {/* 3. SC / ST (Silver 12%) 284.4° to 327.6° */}
-                <path
-                  d={(() => {
-                    const toRad = (d) => ((d - 90) * Math.PI) / 180;
-                    const s = toRad(284.4);
-                    const e = toRad(327.6);
-                    const x1 = 160 + 75 * Math.cos(s);
-                    const y1 = 120 + 75 * Math.sin(s);
-                    const x2 = 160 + 75 * Math.cos(e);
-                    const y2 = 120 + 75 * Math.sin(e);
-                    const x3 = 160 + 42 * Math.cos(e);
-                    const y3 = 120 + 42 * Math.sin(e);
-                    const x4 = 160 + 42 * Math.cos(s);
-                    const y4 = 120 + 42 * Math.sin(s);
-                    return `M ${x1} ${y1} A 75 75 0 0 1 ${x2} ${y2} L ${x3} ${y3} A 42 42 0 0 0 ${x4} ${y4} Z`;
-                  })()}
-                  fill="#dfe6e9"
-                  stroke="#ffffff"
-                  strokeWidth="2"
-                />
-
-                {/* 4. NA (Terracotta 8%) 327.6° to 360° */}
-                <path
-                  d={(() => {
-                    const toRad = (d) => ((d - 90) * Math.PI) / 180;
-                    const s = toRad(327.6);
-                    const e = toRad(360);
-                    const x1 = 160 + 75 * Math.cos(s);
-                    const y1 = 120 + 75 * Math.sin(s);
-                    const x2 = 160 + 75 * Math.cos(e);
-                    const y2 = 120 + 75 * Math.sin(e);
-                    const x3 = 160 + 42 * Math.cos(e);
-                    const y3 = 120 + 42 * Math.sin(e);
-                    const x4 = 160 + 42 * Math.cos(s);
-                    const y4 = 120 + 42 * Math.sin(s);
-                    return `M ${x1} ${y1} A 75 75 0 0 1 ${x2} ${y2} L ${x3} ${y3} A 42 42 0 0 0 ${x4} ${y4} Z`;
-                  })()}
-                  fill="#e17055"
-                  stroke="#ffffff"
-                  strokeWidth="2"
-                />
+                {religionStats.length === 0 ? (
+                  <circle cx="160" cy="120" r="58" fill="none" stroke="#e2e8f0" strokeWidth="33" />
+                ) : (
+                  (() => {
+                    let currentAngle = 0;
+                    return religionStats.map((r) => {
+                      const sliceAngle = (r.percent / 100) * 360;
+                      if (sliceAngle <= 0) return null;
+                      const path = getDonutSlicePath(160, 120, 75, 42, currentAngle, currentAngle + sliceAngle);
+                      currentAngle += sliceAngle;
+                      return (
+                        <path
+                          key={r.name}
+                          d={path}
+                          fill={r.color}
+                          stroke="#ffffff"
+                          strokeWidth="2"
+                        />
+                      );
+                    });
+                  })()
+                )}
               </g>
 
               {/* Center Counter */}
               <g className="animate-center-pop" style={{ transformOrigin: '160px 120px' }}>
                 <circle cx="160" cy="120" r="41" fill="#ffffff" />
                 <text x="160" y="137" textAnchor="middle" fill="#000000" style={{ fontSize: '46px', fontWeight: '900' }}>
-                  1237
+                  {headCount.total}
                 </text>
               </g>
 
-              {/* Leader Lines */}
-              <g className="animate-leader-lines">
-                <line x1="160" y1="195" x2="152" y2="210" stroke="#fbc531" strokeWidth="0.9" />
-                <text x="148" y="224" textAnchor="middle" fill="#000000" fontSize="12" fontWeight="600">
-                  53%
-                </text>
+              {/* Leader Lines for top religion items */}
+              {religionStats.length > 0 && (
+                <g className="animate-leader-lines">
+                  <line x1="160" y1="195" x2="152" y2="210" stroke="#fbc531" strokeWidth="0.9" />
+                  <text x="148" y="224" textAnchor="middle" fill="#000000" fontSize="12" fontWeight="600">
+                    {religionStats[0]?.percent || 0}%
+                  </text>
 
-                <line x1="102" y1="168" x2="88" y2="178" stroke="#55efc4" strokeWidth="0.9" />
-                <text x="82" y="184" textAnchor="end" fill="#000000" fontSize="12" fontWeight="600">
-                  12%
-                </text>
-
-                <line x1="230" y1="150" x2="248" y2="156" stroke="#74b9ff" strokeWidth="0.9" />
-                <text x="254" y="160" textAnchor="start" fill="#000000" fontSize="12" fontWeight="600">
-                  26%
-                </text>
-
-                <line x1="232" y1="185" x2="248" y2="190" stroke="#fd79a8" strokeWidth="0.9" />
-                <text x="254" y="195" textAnchor="start" fill="#000000" fontSize="12" fontWeight="600">
-                  1%
-                </text>
-
-                <line x1="160" y1="45" x2="160" y2="30" stroke="#e17055" strokeWidth="0.9" />
-                <text x="160" y="24" textAnchor="middle" fill="#000000" fontSize="12" fontWeight="600">
-                  0%
-                </text>
-              </g>
+                  {religionStats[1] && (
+                    <>
+                      <line x1="102" y1="168" x2="88" y2="178" stroke={religionStats[1].color} strokeWidth="0.9" />
+                      <text x="82" y="184" textAnchor="end" fill="#000000" fontSize="12" fontWeight="600">
+                        {religionStats[1].percent}%
+                      </text>
+                    </>
+                  )}
+                </g>
+              )}
             </svg>
           </div>
         </div>
 
       </div>
 
-      {/* -------------------- ROW 5: TC & CATEGORY (SCREENSHOT 5) -------------------- */}
+      {/* -------------------- ROW 5: TC & CATEGORY -------------------- */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         
         {/* Left: TRANSFER CERTIFICATE STATISTICS */}
         <div className="bg-white p-5 rounded border border-gray-200/90 shadow-2xs flex flex-col justify-between">
-          <div className="flex justify-between items-start mb-6">
+          <div className="flex justify-between items-start mb-2">
             <h3 className="text-xs font-bold text-gray-800 tracking-tight uppercase">
               TRANSFER CERTIFICATE STATISTICS
             </h3>
             <div className="flex flex-col gap-1.5 text-[11px] text-gray-700 font-medium">
-              <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 bg-[#00a2db] inline-block rounded-2xs"></span><span>Drafted</span></div>
-              <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 bg-[#ff7675] inline-block rounded-2xs"></span><span>Generated</span></div>
-              <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 bg-[#fbc531] inline-block rounded-2xs"></span><span>Cancelled</span></div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-[#00a2db] inline-block rounded-2xs"></span>
+                <span>Drafted ({tcStats.drafted}) - {tcStats.draftedPercent}%</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-[#ff7675] inline-block rounded-2xs"></span>
+                <span>Generated ({tcStats.generated}) - {tcStats.generatedPercent}%</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-[#fbc531] inline-block rounded-2xs"></span>
+                <span>Cancelled ({tcStats.cancelled}) - {tcStats.cancelledPercent}%</span>
+              </div>
             </div>
           </div>
 
-          <div className="h-44 flex flex-col items-center justify-center">
-            <span className="text-base font-bold text-gray-700 tracking-wider">NaN%</span>
-            <div className="w-24 h-0.5 bg-gray-300 mt-1"></div>
+          <div className="flex justify-center items-center py-2">
+            <svg viewBox="0 0 280 230" className="w-[260px] h-[220px] select-none overflow-visible">
+              <g className="animate-donut-spin" style={{ transformOrigin: '140px 115px' }}>
+                {tcStats.total === 0 ? (
+                  <circle cx="140" cy="115" r="56" fill="none" stroke="#e2e8f0" strokeWidth="24" />
+                ) : (
+                  (() => {
+                    let currentAngle = 0;
+                    const slices = [
+                      { percent: tcStats.generatedPercent, color: '#ff7675' },
+                      { percent: tcStats.draftedPercent, color: '#00a2db' },
+                      { percent: tcStats.cancelledPercent, color: '#fbc531' },
+                    ];
+
+                    return slices.map((s, idx) => {
+                      const sliceAngle = (s.percent / 100) * 360;
+                      if (sliceAngle <= 0) return null;
+                      const path = getDonutSlicePath(140, 115, 72, 40, currentAngle, currentAngle + sliceAngle);
+                      currentAngle += sliceAngle;
+                      return (
+                        <path
+                          key={idx}
+                          d={path}
+                          fill={s.color}
+                          stroke="#ffffff"
+                          strokeWidth="2"
+                        />
+                      );
+                    });
+                  })()
+                )}
+              </g>
+
+              {/* Center Counter */}
+              <g className="animate-center-pop" style={{ transformOrigin: '140px 115px' }}>
+                <circle cx="140" cy="115" r="39" fill="#ffffff" />
+                <text x="140" y="128" textAnchor="middle" fill="#000000" style={{ fontSize: '42px', fontWeight: '900' }}>
+                  {tcStats.total}
+                </text>
+                <text x="140" y="142" textAnchor="middle" fill="#64748b" style={{ fontSize: '10px', fontWeight: '600' }}>
+                  TOTAL TCs
+                </text>
+              </g>
+
+              {/* Leader Lines */}
+              {tcStats.total > 0 && (
+                <g className="animate-leader-lines">
+                  <line x1="140" y1="43" x2="140" y2="28" stroke="#ff7675" strokeWidth="0.9" />
+                  <text x="140" y="22" textAnchor="middle" fill="#000000" fontSize="12" fontWeight="600">
+                    {tcStats.generatedPercent}%
+                  </text>
+
+                  <line x1="140" y1="187" x2="140" y2="202" stroke="#00a2db" strokeWidth="0.9" />
+                  <text x="140" y="216" textAnchor="middle" fill="#000000" fontSize="12" fontWeight="600">
+                    {tcStats.draftedPercent}%
+                  </text>
+                </g>
+              )}
+            </svg>
           </div>
         </div>
 
@@ -812,80 +943,73 @@ export default function AdmissionDashboard() {
               CATEGORY WISE STUDENT STATISTICS
             </h3>
             <div className="flex flex-col gap-1.5 text-[11px] text-gray-700 font-medium">
-              <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 bg-[#e17055] inline-block rounded-2xs"></span><span>NA</span></div>
-              <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 bg-[#d35400] inline-block rounded-2xs"></span><span>Gen</span></div>
-              <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 bg-[#fbc531] inline-block rounded-2xs"></span><span>OBC</span></div>
-              <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 bg-[#55efc4] inline-block rounded-2xs"></span><span>SC</span></div>
+              {categoryStats.length === 0 ? (
+                <span className="text-gray-400">No records</span>
+              ) : (
+                categoryStats.map((c) => (
+                  <div key={c.name} className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 inline-block rounded-2xs" style={{ backgroundColor: c.color }}></span>
+                    <span>{c.name} ({c.count}) - {c.percent}%</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
           <div className="flex justify-center items-center py-2">
             <svg viewBox="0 0 280 230" className="w-[260px] h-[220px] select-none overflow-visible">
-              {/* Donut Ring with 96% General */}
+              {/* Donut Slices */}
               <g className="animate-donut-spin" style={{ transformOrigin: '140px 115px' }}>
-                {/* 96% Gen (Deep Terracotta) */}
-                <path
-                  d={(() => {
-                    const toRad = (d) => ((d - 90) * Math.PI) / 180;
-                    const s = toRad(0);
-                    const e = toRad(345.6);
-                    const x1 = 140 + 72 * Math.cos(s);
-                    const y1 = 115 + 72 * Math.sin(s);
-                    const x2 = 140 + 72 * Math.cos(e);
-                    const y2 = 115 + 72 * Math.sin(e);
-                    const x3 = 140 + 40 * Math.cos(e);
-                    const y3 = 115 + 40 * Math.sin(e);
-                    const x4 = 140 + 40 * Math.cos(s);
-                    const y4 = 115 + 40 * Math.sin(s);
-                    return `M ${x1} ${y1} A 72 72 0 1 1 ${x2} ${y2} L ${x3} ${y3} A 40 40 0 1 0 ${x4} ${y4} Z`;
-                  })()}
-                  fill="#d35400"
-                  stroke="#ffffff"
-                  strokeWidth="2"
-                />
-
-                {/* 4% OBC/SC */}
-                <path
-                  d={(() => {
-                    const toRad = (d) => ((d - 90) * Math.PI) / 180;
-                    const s = toRad(345.6);
-                    const e = toRad(360);
-                    const x1 = 140 + 72 * Math.cos(s);
-                    const y1 = 115 + 72 * Math.sin(s);
-                    const x2 = 140 + 72 * Math.cos(e);
-                    const y2 = 115 + 72 * Math.sin(e);
-                    const x3 = 140 + 40 * Math.cos(e);
-                    const y3 = 115 + 40 * Math.sin(e);
-                    const x4 = 140 + 40 * Math.cos(s);
-                    const y4 = 115 + 40 * Math.sin(s);
-                    return `M ${x1} ${y1} A 72 72 0 0 1 ${x2} ${y2} L ${x3} ${y3} A 40 40 0 0 0 ${x4} ${y4} Z`;
-                  })()}
-                  fill="#fbc531"
-                  stroke="#ffffff"
-                  strokeWidth="2"
-                />
+                {categoryStats.length === 0 ? (
+                  <circle cx="140" cy="115" r="56" fill="none" stroke="#e2e8f0" strokeWidth="32" />
+                ) : (
+                  (() => {
+                    let currentAngle = 0;
+                    return categoryStats.map((c) => {
+                      const sliceAngle = (c.percent / 100) * 360;
+                      if (sliceAngle <= 0) return null;
+                      const path = getDonutSlicePath(140, 115, 72, 40, currentAngle, currentAngle + sliceAngle);
+                      currentAngle += sliceAngle;
+                      return (
+                        <path
+                          key={c.name}
+                          d={path}
+                          fill={c.color}
+                          stroke="#ffffff"
+                          strokeWidth="2"
+                        />
+                      );
+                    });
+                  })()
+                )}
               </g>
 
               {/* Center Counter */}
               <g className="animate-center-pop" style={{ transformOrigin: '140px 115px' }}>
                 <circle cx="140" cy="115" r="39" fill="#ffffff" />
                 <text x="140" y="132" textAnchor="middle" fill="#000000" style={{ fontSize: '46px', fontWeight: '900' }}>
-                  1237
+                  {headCount.total}
                 </text>
               </g>
 
               {/* Leader Lines */}
-              <g className="animate-leader-lines">
-                <line x1="140" y1="187" x2="140" y2="202" stroke="#d35400" strokeWidth="0.9" />
-                <text x="140" y="216" textAnchor="middle" fill="#000000" fontSize="12" fontWeight="600">
-                  96%
-                </text>
+              {categoryStats.length > 0 && (
+                <g className="animate-leader-lines">
+                  <line x1="140" y1="187" x2="140" y2="202" stroke="#d35400" strokeWidth="0.9" />
+                  <text x="140" y="216" textAnchor="middle" fill="#000000" fontSize="12" fontWeight="600">
+                    {categoryStats[0]?.percent || 0}%
+                  </text>
 
-                <line x1="135" y1="43" x2="135" y2="28" stroke="#fbc531" strokeWidth="0.9" />
-                <text x="135" y="22" textAnchor="middle" fill="#000000" fontSize="12" fontWeight="600">
-                  1%
-                </text>
-              </g>
+                  {categoryStats[1] && (
+                    <>
+                      <line x1="135" y1="43" x2="135" y2="28" stroke={categoryStats[1].color} strokeWidth="0.9" />
+                      <text x="135" y="22" textAnchor="middle" fill="#000000" fontSize="12" fontWeight="600">
+                        {categoryStats[1].percent}%
+                      </text>
+                    </>
+                  )}
+                </g>
+              )}
             </svg>
           </div>
         </div>
