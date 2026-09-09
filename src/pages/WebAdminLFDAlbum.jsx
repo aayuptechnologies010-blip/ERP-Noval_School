@@ -3,6 +3,8 @@ import {
   FaImages, FaCog, FaCheckSquare, FaRegSquare, FaInfoCircle, FaEye
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminLFDAlbum() {
   const [albumMethod, setAlbumMethod] = useState('latest');
   const [selectedPhotos, setSelectedPhotos] = useState([]);

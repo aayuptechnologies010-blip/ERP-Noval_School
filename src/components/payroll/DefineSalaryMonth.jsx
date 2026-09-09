@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Download, Edit, Trash2, X, Save } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function DefineSalaryMonth() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);

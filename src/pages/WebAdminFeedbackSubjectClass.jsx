@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaFilter, FaInfoCircle, FaPlus, FaTrash, FaCheckCircle, FaTimesCircle, FaBookOpen } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminFeedbackSubjectClass() {
   const [selectedClass, setSelectedClass] = useState('NUR A');
   const [relations, setRelations] = useState([]);

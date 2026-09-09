@@ -3,6 +3,8 @@ import {
   FaBookOpen, FaCalendarAlt, FaCloudUploadAlt, FaListUl, FaTrash
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminMagazine() {
   const [status, setStatus] = useState(true);
   const [magazines, setMagazines] = useState([]);

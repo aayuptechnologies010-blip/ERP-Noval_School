@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, XCircle, Play, Download, RefreshCw, Lock, CheckCircle, AlertCircle, Sparkles, DollarSign, Users, ShieldCheck, FileText, X } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function SalaryGeneration() {
   const [payrolls, setPayrolls] = useState([]);
   const [salaryAccounts, setSalaryAccounts] = useState([]);

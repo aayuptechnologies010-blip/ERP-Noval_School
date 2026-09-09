@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, ShieldAlert, ShieldCheck, Upload, Trash2, CheckCircle2, AlertCircle, RefreshCw, Sparkles, FileText, Image as ImageIcon, ExternalLink, Download, Check, X, User } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function UploadStaffDocument() {
   const [staffList, setStaffList] = useState([]);
   const [selectedStaffId, setSelectedStaffId] = useState('');

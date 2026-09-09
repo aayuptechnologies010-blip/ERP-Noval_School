@@ -6,6 +6,8 @@ import {
   FaSyncAlt, FaFilePdf, FaImage, FaTimes
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminNotices() {
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);

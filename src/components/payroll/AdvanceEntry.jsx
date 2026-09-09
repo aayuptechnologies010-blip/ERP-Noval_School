@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Download, RefreshCw, Search, Edit, Trash2, CheckCircle, AlertCircle, Sparkles, User, Calendar, CreditCard, DollarSign, X, CheckCircle2 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function AdvanceEntry() {
   const [entries, setEntries] = useState([]);
   const [staffList, setStaffList] = useState([]);

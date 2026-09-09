@@ -3,6 +3,8 @@ import {
   FaInfoCircle, FaFilePdf, FaGraduationCap, FaUserTie, FaEye, FaTrash, FaPlus, FaBuilding, FaYoutube, FaFolder
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminMandatoryDisclosure() {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);

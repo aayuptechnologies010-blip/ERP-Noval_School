@@ -3,6 +3,8 @@ import {
   FaLightbulb, FaCalendarAlt, FaQuoteLeft, FaListUl, FaEye, FaTrash
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminWebsiteThoughts() {
   const [thoughts, setThoughts] = useState([]);
   const [loading, setLoading] = useState(false);

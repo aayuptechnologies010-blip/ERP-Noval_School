@@ -6,6 +6,8 @@ import {
   FaEye, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminVideoAlbums() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);

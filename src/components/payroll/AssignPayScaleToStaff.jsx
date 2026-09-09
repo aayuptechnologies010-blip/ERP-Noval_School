@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, X, Search, CheckSquare, Save, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function AssignPayScaleToStaff() {
   // Dropdown options
   const [bankAccounts, setBankAccounts] = useState([]);

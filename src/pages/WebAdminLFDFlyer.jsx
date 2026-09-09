@@ -3,6 +3,8 @@ import {
   FaImage, FaCalendarAlt, FaCloudUploadAlt, FaListUl, FaInfoCircle, FaExclamationTriangle, FaArrowsAltV, FaCheckCircle, FaTrash
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminLFDFlyer() {
   const [status, setStatus] = useState(true);
   const [flyers, setFlyers] = useState([]);

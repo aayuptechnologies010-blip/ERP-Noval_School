@@ -6,8 +6,7 @@ import {
   Users, Award, TrendingUp
 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function ComparisonReport() {
   const [data, setData] = useState({ summary: {}, benchmarks: [], employeeRows: [] });
   const [loading, setLoading] = useState(false);

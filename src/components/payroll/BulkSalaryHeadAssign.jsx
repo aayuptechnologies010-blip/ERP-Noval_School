@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, X, CheckSquare, RefreshCw, AlertCircle, CheckCircle, Save } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function BulkSalaryHeadAssign() {
   // Dropdown options
   const [bankAccounts, setBankAccounts] = useState([]);

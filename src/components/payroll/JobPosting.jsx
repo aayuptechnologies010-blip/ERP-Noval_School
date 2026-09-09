@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Save, X, Italic, Bold, Underline, Search, Download, Edit, Trash2, CheckCircle, AlertCircle, RefreshCw, Sparkles, Briefcase, Plus } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
 const DEPARTMENTS = [
   'Information Technology',
   'Academics',
@@ -23,6 +20,8 @@ const QUALIFICATIONS = [
   'Any Bachelor / Master Degree'
 ];
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function JobPosting() {
   const [activeTab, setActiveTab] = useState('form'); // 'form' or 'list'
   const [jobs, setJobs] = useState([]);

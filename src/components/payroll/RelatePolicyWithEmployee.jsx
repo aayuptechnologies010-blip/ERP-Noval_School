@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, X, Plus, Search, Download, Trash2, Edit, CheckCircle, AlertCircle, RefreshCw, ShieldCheck, UserCheck, CreditCard, Sparkles, Filter, Calendar } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function RelatePolicyWithEmployee() {
   const [policies, setPolicies] = useState([]);
   const [vendors, setVendors] = useState([]);

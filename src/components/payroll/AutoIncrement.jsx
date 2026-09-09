@@ -5,8 +5,7 @@ import {
   Calendar, Check, X, ShieldAlert, ArrowUpRight
 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function AutoIncrement() {
   const [increments, setIncrements] = useState([]);
   const [salaryAccounts, setSalaryAccounts] = useState([]);

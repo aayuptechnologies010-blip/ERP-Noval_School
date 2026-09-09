@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function ChangeAcademicYear() {
   const [academicYears, setAcademicYears] = useState([]);
   const [financialYears, setFinancialYears] = useState([]);

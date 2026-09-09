@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Plus, Search, Download, Trash2, Edit, CheckCircle, XCircle, AlertCircle, RefreshCw, Plane, Calendar, MapPin, DollarSign, Filter, Sparkles, X } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function TravelPlanApproval() {
   const [travelPlans, setTravelPlans] = useState([]);
   const [loading, setLoading] = useState(false);

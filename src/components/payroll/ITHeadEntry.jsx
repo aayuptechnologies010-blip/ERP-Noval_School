@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, XCircle, Download, Plus, X, CheckCircle, AlertCircle, Sparkles, BookOpen, DollarSign, Users, ShieldCheck, Edit3 } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
 const IT_SECTIONS = [
   { section: 'Section 80C', description: 'PF, PPF, ELSS, LIC, NSC, Tuition Fees', limit: 150000 },
   { section: 'Section 80D', description: 'Health Insurance Premium (Self & Family)', limit: 25000 },
@@ -14,6 +11,8 @@ const IT_SECTIONS = [
   { section: 'Section 80TTA', description: 'Interest on Savings Account', limit: 10000 },
 ];
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function ITHeadEntry() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(false);

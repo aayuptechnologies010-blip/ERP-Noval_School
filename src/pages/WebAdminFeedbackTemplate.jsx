@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaClipboardList, FaPlus, FaTrash, FaCalendarAlt, FaLink, FaCheckCircle, FaTimesCircle, FaUsers } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminFeedbackTemplate() {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(false);

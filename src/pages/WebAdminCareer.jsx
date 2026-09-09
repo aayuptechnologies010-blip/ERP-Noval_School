@@ -6,6 +6,8 @@ import {
   FaLink, FaImage, FaCaretDown, FaTrash
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminCareer() {
   const [status, setStatus] = useState(true);
   const [careers, setCareers] = useState([]);

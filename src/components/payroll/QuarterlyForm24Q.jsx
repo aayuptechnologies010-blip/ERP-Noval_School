@@ -5,8 +5,7 @@ import {
   ChevronLeft, ChevronRight, ShieldCheck, Layers, Award, Check, X
 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function QuarterlyForm24Q() {
   const [data, setData] = useState({ challans: [], deductees: [], summary: {} });
   const [activeTab, setActiveTab] = useState('annexure2'); // 'annexure1' or 'annexure2'

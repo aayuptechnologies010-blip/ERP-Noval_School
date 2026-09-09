@@ -6,6 +6,8 @@ import {
   FaCaretDown, FaCaretUp, FaSearch, FaSyncAlt
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminPhotoAlbums() {
   const [albums, setAlbums] = useState([]);
   const [loading, setLoading] = useState(true);

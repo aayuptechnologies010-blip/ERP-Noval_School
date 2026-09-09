@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Plus, Trash2, X, Search, Download, Printer, CheckCircle, AlertCircle, RefreshCw, Calendar, Sparkles, ShieldCheck, DollarSign, Users, Edit } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
 const DEFAULT_MONTHS = [
   'April-2026', 'May-2026', 'June-2026', 'July-2026', 'August-2026',
   'September-2026', 'October-2026', 'November-2026', 'December-2026',
   'January-2027', 'February-2027', 'March-2027'
 ];
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function RelatedPoliciesWithMonth() {
   const [monthOptions, setMonthOptions] = useState(DEFAULT_MONTHS);
   const [selectedMonth, setSelectedMonth] = useState('September-2026');

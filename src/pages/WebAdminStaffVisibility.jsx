@@ -3,6 +3,8 @@ import {
   FaSitemap, FaInfoCircle, FaBars, FaArrowUp, FaArrowDown, FaFilter, FaUsers, FaSearch
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminStaffVisibility() {
   const [activeTab, setActiveTab] = useState(1);
   const [loading, setLoading] = useState(false);

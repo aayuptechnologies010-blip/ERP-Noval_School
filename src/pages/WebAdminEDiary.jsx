@@ -3,6 +3,8 @@ import {
   FaMinusSquare, FaCloudUploadAlt, FaListUl, FaSearch, FaFolderOpen, FaTrash, FaEye, FaDownload, FaCheckCircle, FaTimesCircle
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminEDiary() {
   const [diaries, setDiaries] = useState([]);
   const [loading, setLoading] = useState(false);

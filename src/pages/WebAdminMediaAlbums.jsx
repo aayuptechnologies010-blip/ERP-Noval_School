@@ -5,6 +5,8 @@ import {
   FaEye, FaEdit, FaTrash, FaTable, FaSyncAlt, FaCalendarAlt, FaCloudUploadAlt, FaFilePdf, FaVideo
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminMediaAlbums() {
   const [albums, setAlbums] = useState([]);
   const [loading, setLoading] = useState(true);

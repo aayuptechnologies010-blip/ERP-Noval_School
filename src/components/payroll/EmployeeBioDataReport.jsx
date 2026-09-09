@@ -6,8 +6,7 @@ import {
   GraduationCap, Building2, FileText, Calendar
 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function EmployeeBioDataReport() {
   const [bioData, setBioData] = useState(null);
   const [loading, setLoading] = useState(false);

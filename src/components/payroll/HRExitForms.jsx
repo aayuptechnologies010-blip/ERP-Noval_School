@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Printer, FileCheck, CheckCircle2, AlertCircle, RefreshCw, User, Building, Briefcase, Calendar, ShieldCheck, CheckSquare, Edit3 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function HRExitForms() {
   const [activeFormType, setActiveFormType] = useState('exit'); // 'exit' or 'nodues'
   const [staffList, setStaffList] = useState([]);

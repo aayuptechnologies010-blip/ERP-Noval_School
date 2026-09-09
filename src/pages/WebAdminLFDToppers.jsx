@@ -3,6 +3,8 @@ import {
   FaMedal, FaListUl, FaInfoCircle, FaUserGraduate, FaUser, FaArrowsAltV, FaRibbon, FaTrash, FaCheckCircle, FaCloudUploadAlt
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminLFDToppers() {
   const [status, setStatus] = useState(true);
   const [toppers, setToppers] = useState([]);

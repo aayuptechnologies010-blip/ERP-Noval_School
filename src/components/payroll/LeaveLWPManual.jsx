@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, XCircle, Save, Download, RefreshCw, Search, CheckCircle, AlertCircle, Sparkles, Calendar, Clock, DollarSign } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function LeaveLWPManual() {
   const [records, setRecords] = useState([]);
   const [salaryAccounts, setSalaryAccounts] = useState([]);

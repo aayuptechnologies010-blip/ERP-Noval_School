@@ -5,8 +5,7 @@ import {
   ChevronLeft, ChevronRight, Filter, Building2, BookOpen, Percent
 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function PFStatement() {
   const [data, setData] = useState({ staffList: [], ledger: [], employee: {}, openingBalance: {}, closingBalance: {}, summary: {} });
   const [loading, setLoading] = useState(false);

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, CreditCard, BadgeDollarSign, GraduationCap } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function SessionTransfer() {
   const [activeModule, setActiveModule] = useState(null);
   const [academicYears, setAcademicYears] = useState([]);

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Download } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function DownloadStaffPhotos() {
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);

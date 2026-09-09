@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Save, AlertCircle, CheckCircle } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function SalaryCalculation() {
   const [calcBase, setCalcBase] = useState('monthly_gross');
   const [loading, setLoading] = useState(true);

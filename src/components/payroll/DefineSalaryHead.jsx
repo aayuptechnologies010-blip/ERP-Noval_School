@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Download, Edit, Trash2, X, Save } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function DefineSalaryHead() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);

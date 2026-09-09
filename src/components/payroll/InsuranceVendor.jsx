@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Download, Edit, Trash2, Search, X, CheckCircle, AlertCircle, RefreshCw, ShieldCheck } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function InsuranceVendor() {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(false);

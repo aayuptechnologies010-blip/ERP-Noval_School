@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, XCircle, Download, Printer, Building2, CreditCard, Users, DollarSign, CheckCircle, Sparkles, X, FileText } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function BankStatement() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);

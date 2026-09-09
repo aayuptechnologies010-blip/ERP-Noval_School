@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Plus, Download, Edit, Trash2, Search, X, CheckCircle, AlertCircle, RefreshCw, Sparkles, Calendar, Clock, UserCheck } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function SlotAssigning() {
   const [assignments, setAssignments] = useState([]);
   const [candidates, setCandidates] = useState([]);

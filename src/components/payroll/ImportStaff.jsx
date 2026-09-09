@@ -2,8 +2,8 @@ import React, { useState, useRef } from 'react';
 import { Download, Save, Upload, FileSpreadsheet, AlertCircle, CheckCircle } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function ImportStaff() {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState('');

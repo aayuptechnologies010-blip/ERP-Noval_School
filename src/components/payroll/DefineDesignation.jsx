@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Trash2, Plus, Download, X, Save } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function DefineDesignation() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);

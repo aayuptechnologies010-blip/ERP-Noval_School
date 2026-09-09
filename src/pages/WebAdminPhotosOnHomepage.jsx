@@ -3,6 +3,8 @@ import {
   FaImage, FaImages, FaTrash, FaCloudUploadAlt, FaEye
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminPhotosOnHomepage() {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);

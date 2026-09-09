@@ -3,6 +3,8 @@ import {
   FaBookOpen, FaCalendarAlt, FaCloudUploadAlt, FaFilePdf, FaListUl, FaEye, FaTrash
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminEBulletin() {
   const [bulletins, setBulletins] = useState([]);
   const [loading, setLoading] = useState(false);

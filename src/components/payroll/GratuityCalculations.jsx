@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, XCircle, Download, Search, X, CheckCircle, AlertCircle, Sparkles, Award, DollarSign, Users, Calendar, Printer, RefreshCw } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function GratuityCalculations() {
   const [calculations, setCalculations] = useState([]);
   const [loading, setLoading] = useState(false);

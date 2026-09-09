@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Send, CheckCircle2, AlertCircle, RefreshCw, User, Mail, Phone, MapPin, GraduationCap, DollarSign, Clock, FileText, Sparkles, Award } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function EmploymentForm() {
   const [jobPostings, setJobPostings] = useState([]);
   const [recentApplications, setRecentApplications] = useState([]);

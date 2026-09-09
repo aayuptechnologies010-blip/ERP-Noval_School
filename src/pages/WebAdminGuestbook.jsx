@@ -4,6 +4,8 @@ import {
   FaCloudUploadAlt, FaTimes, FaUser, FaCheckCircle
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminGuestbook() {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);

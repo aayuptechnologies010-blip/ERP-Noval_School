@@ -3,6 +3,8 @@ import {
   FaBook, FaCalendarAlt, FaCloudUploadAlt, FaListUl, FaTrash, FaEye
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminHolidayHomework() {
   const [status, setStatus] = useState(true);
   const [homeworks, setHomeworks] = useState([]);

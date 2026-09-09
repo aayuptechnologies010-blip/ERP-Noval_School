@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Eye, X, Search, Plus, Trash2, Edit } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
 const initialSalaryHeads = [
   { id: 1, name: 'Dearness Allowance', val: '95.00', type: 'Percentage', selected: true },
   { id: 2, name: 'House Rent Allowance', val: '5.00', type: 'Percentage', selected: true },
@@ -141,6 +138,8 @@ const defaultFormState = {
   otherInformation: ''
 };
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function StaffRegistration() {
   const [activeTab, setActiveTab] = useState('registration');
   const [formData, setFormData] = useState(defaultFormState);

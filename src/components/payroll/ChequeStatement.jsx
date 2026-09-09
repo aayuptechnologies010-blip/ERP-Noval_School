@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, XCircle, Download, Printer, FileText, CheckCircle, Sparkles, X, DollarSign, Users, Hash } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function ChequeStatement() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);

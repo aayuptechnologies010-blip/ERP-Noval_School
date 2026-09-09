@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, X, RefreshCw, AlertCircle, CheckCircle, CheckSquare } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function RelateITSlabToStaff() {
   const [staffList, setStaffList] = useState([]);
   const [staffTypes, setStaffTypes] = useState([]);

@@ -10,8 +10,6 @@ import ManageLastResult from '../pages/ManageLastResult';
 import ManageTermMaster from '../pages/ManageTermMaster';
 import ManageMoral from '../pages/ManageMoral';
 import ManageMotherTongue from '../pages/ManageMotherTongue';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 import { 
   FaBook, FaGraduationCap, FaChartPie, FaQuestionCircle, 
   FaInfoCircle, FaCog, FaAngleDown, FaAngleUp, FaSearch, FaBars,
@@ -27384,4 +27382,6 @@ function AdmissionLayout() {
   );
 }
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default AdmissionLayout;

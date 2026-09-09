@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, XCircle, Download, Plus, X, CheckCircle, AlertCircle, Sparkles, FileText, DollarSign, Users, Hash, Calendar } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function TDSEntry() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);

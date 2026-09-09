@@ -47,6 +47,8 @@ import WebAdminFeedbackQuestionMaster from './WebAdminFeedbackQuestionMaster';
 import WebAdminFeedbackTemplate from './WebAdminFeedbackTemplate';
 import logo from '../assets/logo.png';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 class LocalErrorBoundary extends React.Component {
   constructor(props) {
     super(props);

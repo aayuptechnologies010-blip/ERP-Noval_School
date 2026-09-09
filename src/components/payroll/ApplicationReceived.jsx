@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Download, Trash2, CheckCircle, AlertCircle, RefreshCw, Sparkles, FileText, Check, Award, Eye, X } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function ApplicationReceived() {
   const [applications, setApplications] = useState([]);
   const [jobPostings, setJobPostings] = useState([]);

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Save, AlertCircle, CheckCircle } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function DefineGlobalSettings() {
   const [activeTab, setActiveTab] = useState('main');
   const [loading, setLoading] = useState(true);

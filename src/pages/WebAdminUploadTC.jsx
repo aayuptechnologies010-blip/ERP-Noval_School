@@ -3,6 +3,8 @@ import {
   FaCertificate, FaCloudUploadAlt, FaListUl, FaTrash, FaEye
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminUploadTC() {
   const [status, setStatus] = useState(true);
   const [certificates, setCertificates] = useState([]);

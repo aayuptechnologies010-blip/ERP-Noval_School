@@ -3,6 +3,8 @@ import {
   FaDesktop, FaCalendarAlt, FaHeading, FaAlignLeft, FaEye, FaListUl, FaInfoCircle, FaTrash
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminLFDNotice() {
   const [status, setStatus] = useState(true);
   const [showOnFooter, setShowOnFooter] = useState(false);

@@ -5,8 +5,7 @@ import {
   ShieldCheck, FileText, ChevronLeft, ChevronRight, Award, Check, X, AlertTriangle
 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function Form16() {
   const [certData, setCertData] = useState(null);
   const [staffList, setStaffList] = useState([]);

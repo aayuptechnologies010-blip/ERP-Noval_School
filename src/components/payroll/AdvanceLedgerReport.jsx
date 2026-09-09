@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Printer, Download, RefreshCw, FileText, Sparkles, User, Calendar, DollarSign, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function AdvanceLedgerReport() {
   const [ledgerData, setLedgerData] = useState({
     summary: { totalDebit: 0, totalCredit: 0, currentOutstanding: 0, activeAdvancesCount: 0, repaymentsCount: 0 },

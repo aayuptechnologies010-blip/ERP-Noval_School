@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, XCircle, Download, Plus, X, CheckCircle, AlertCircle, Sparkles, Gift, DollarSign, Users, Calendar, Percent, RefreshCw } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
 const MONTHS = ['Jan-2026', 'Feb-2026', 'Mar-2026', 'Apr-2026', 'May-2026', 'Jun-2026', 'Jul-2026', 'Aug-2026', 'Sep-2026', 'Oct-2026', 'Nov-2026', 'Dec-2026'];
 const STAFF_TYPES = ['All', 'Teaching', 'Non-Teaching', 'Administrative', 'Support', 'Contract'];
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function BonusCalculations() {
   const [bonuses, setBonuses] = useState([]);
   const [loading, setLoading] = useState(false);

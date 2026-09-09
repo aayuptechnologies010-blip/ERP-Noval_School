@@ -5,8 +5,7 @@ import {
   ChevronLeft, ChevronRight, User, Calendar, ShieldCheck
 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function ExperienceCertificateReport() {
   const [certData, setCertData] = useState(null);
   const [loading, setLoading] = useState(false);

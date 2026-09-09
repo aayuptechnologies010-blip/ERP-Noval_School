@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaInbox, FaPlus, FaTrash, FaQuestionCircle, FaTag } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminFeedbackQuestionMaster() {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);

@@ -5,8 +5,7 @@ import {
   ShieldCheck, Check, X
 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function SalarySlip() {
   const [payrolls, setPayrolls] = useState([]);
   const [selectedStaff, setSelectedStaff] = useState(null);

@@ -5,8 +5,7 @@ import {
   Filter, Award, ShieldCheck, FileCheck, CheckCircle2
 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function SalaryCertificateReport() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);

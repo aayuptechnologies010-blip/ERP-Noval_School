@@ -3,6 +3,8 @@ import {
   FaTrophy, FaListUl, FaUser, FaTrash, FaCloudUploadAlt
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminWebsiteToppers() {
   const [status, setStatus] = useState(true);
   const [toppers, setToppers] = useState([]);

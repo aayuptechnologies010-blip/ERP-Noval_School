@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Printer, FileText, Download, CheckCircle, AlertCircle, RefreshCw, User, Building, Briefcase, Calendar, Sparkles, Send, Edit3 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function HREntryForms() {
   const [activeFormType, setActiveFormType] = useState('offer'); // 'offer' or 'appointment'
   const [staffList, setStaffList] = useState([]);

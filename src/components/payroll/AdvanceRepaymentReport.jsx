@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Printer, Download, RefreshCw, FileText, Sparkles, CheckCircle2, DollarSign } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function AdvanceRepaymentReport() {
   const [repayments, setRepayments] = useState([]);
   const [staffList, setStaffList] = useState([]);

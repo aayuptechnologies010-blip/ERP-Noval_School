@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaFilter, FaInfoCircle, FaPlus, FaTrash, FaChalkboardTeacher, FaEdit } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminFeedbackSubjectTeacher() {
   const [selectedClass, setSelectedClass] = useState('Class 10');
   const [mappings, setMappings] = useState([]);

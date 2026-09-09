@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Eye, X, Printer, Download, RefreshCw, AlertCircle, CheckCircle, Barcode, CheckSquare } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
 // Visual SVG Barcode Generator (Code 128 style pattern)
 function VisualBarcode({ value, height = 36, width = 140 }) {
   if (!value) return <span style={{ color: '#94a3b8', fontSize: '11px' }}>No Barcode</span>;
@@ -33,6 +30,8 @@ function VisualBarcode({ value, height = 36, width = 140 }) {
   );
 }
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function GenerateBarcode() {
   const [bankAccounts, setBankAccounts] = useState([]);
   const [employeeTypes, setEmployeeTypes] = useState([]);
