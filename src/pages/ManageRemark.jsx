@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaVideo, FaTrash, FaEdit } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt, FaSave } from 'react-icons/fa';
+
+const fields = [
+  { label: 'Remark Name', key: 'remarkName', type: 'text', required: true }
+];
 
 function ManageRemark() {
-  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [remarkName, setRemarkName] = useState('');
-  const [editId, setEditId] = useState(null);
+  
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editItem, setEditItem] = useState(null);
+  const [modalInput, setModalInput] = useState({});
 
   useEffect(() => { fetchItems(); }, []);
 
@@ -19,111 +23,172 @@ function ManageRemark() {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/remarks`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (res.ok) { const data = await res.json(); setItems(data || []); }
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+      if (res.ok) { 
+        const data = await res.json(); 
+        setItems(data || []); 
+      }
+    } catch (e) { 
+      console.error(e); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!remarkName.trim()) return;
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      const url = editId
-        ? `${import.meta.env.VITE_API_BASE_URL}/api/remarks/${editId}`
+      const url = editItem 
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/remarks/${editItem._id}`
         : `${import.meta.env.VITE_API_BASE_URL}/api/remarks`;
+      
       const res = await fetch(url, {
-        method: editId ? 'PUT' : 'POST',
+        method: editItem ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ remarkName })
+        body: JSON.stringify(modalInput)
       });
-      if (res.ok) { setRemarkName(''); setEditId(null); fetchItems(); }
-      else { const err = await res.json(); alert(err.message || 'Failed to save'); }
-    } catch (e) { alert('Error saving remark'); }
-    finally { setSaving(false); }
+      if (res.ok) { 
+        setModalInput({}); 
+        setIsAddModalOpen(false);
+        setEditItem(null); 
+        fetchItems(); 
+      } else { 
+        const err = await res.json(); 
+        alert(err.message || 'Failed to save'); 
+      }
+    } catch (e) { 
+      alert('Error saving details'); 
+    } finally { 
+      setSaving(false); 
+    }
   };
 
-  const handleEdit = (item) => { setRemarkName(item.remarkName); setEditId(item._id); };
+  const openAddModal = () => {
+    setModalInput({ isActive: true });
+    setEditItem(null);
+    setIsAddModalOpen(true);
+  };
+
+  const openEditModal = (item) => { 
+    // Format dates for date inputs if any
+    const formattedItem = { ...item };
+    fields.forEach(f => {
+      if (f.type === 'date' && formattedItem[f.key]) {
+        formattedItem[f.key] = new Date(formattedItem[f.key]).toISOString().split('T')[0];
+      }
+    });
+    setModalInput(formattedItem);
+    setEditItem(item);
+    setIsAddModalOpen(true);
+  };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this remark?')) return;
+    if (!window.confirm('Are you sure you want to delete this record?')) return;
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/remarks/${id}`, {
         method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) fetchItems();
-      else alert('Failed to delete remark');
-    } catch (e) { alert('Error deleting remark'); }
+      else alert('Failed to delete');
+    } catch (e) { alert('Error deleting record'); }
   };
 
   return (
-    <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <div style={{ padding: '24px 32px 12px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#2b3674', margin: 0 }}>Manage Remark</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#22c55e', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}><FaVideo /> Video Tutorial</span>
-          <button onClick={() => navigate(-1)} style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#475569', fontSize: 14, fontWeight: 600, cursor: 'pointer', background: 'none', border: 'none' }}>
-            <FaArrowLeft style={{ fontSize: 12 }} /> Go Back
-          </button>
-        </div>
+    <div style={{ flex: 1, background: '#f8f9fc', borderRadius: '12px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: '#2b3674', margin: 0 }}>Remark</h2>
+        <button 
+          onClick={openAddModal}
+          className="bg-[#32a3d7] text-white px-4 py-1.5 rounded flex items-center gap-2 text-sm hover:bg-[#288ebf]"
+        >
+          Add Record
+        </button>
       </div>
-      <div style={{ padding: '0 32px 32px 32px', display: 'flex', gap: 24, flex: 1, overflow: 'hidden' }}>
-        <div style={{ width: 350, background: '#fff', borderRadius: 12, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', height: 'fit-content' }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#334155', marginBottom: 20 }}>{editId ? 'Edit Remark' : 'Add New Remark'}</h2>
-          <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div>
-              <label style={{ display: 'block', fontSize: 13, color: '#475569', fontWeight: 600, marginBottom: 8 }}>Remark</label>
-              <input type="text" value={remarkName} onChange={e => setRemarkName(e.target.value)} placeholder="Enter remark"
-                style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 6, padding: '10px 14px', fontSize: 14, outline: 'none' }} required />
-            </div>
-            <div style={{ display: 'flex', gap: 12, marginTop: 10 }}>
-              <button type="submit" disabled={saving} style={{ flex: 1, background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 6, padding: 10, fontSize: 14, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer' }}>
-                {saving ? 'Saving...' : (editId ? 'Update Remark' : 'Save Remark')}
-              </button>
-              {editId && <button type="button" onClick={() => { setEditId(null); setRemarkName(''); }} style={{ background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: 6, padding: '10px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>}
-            </div>
-          </form>
-        </div>
-        <div style={{ flex: 1, background: '#fff', borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1, overflow: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: '#f8fafc' }}>
-                  <th style={thStyle}>Sl. No.</th><th style={thStyle}>Remark</th><th style={thStyle}>Status</th><th style={thStyle} width="120">Actions</th>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 16px 16px' }}>
+        <table className="w-full text-sm text-left text-gray-700">
+          <thead className="text-xs uppercase bg-white border-b border-gray-200">
+            <tr>
+              <th className="px-6 py-3">Sr. No.</th>
+              {fields.map(f => <th key={f.key} className="px-6 py-3">{f.label}</th>)}
+              <th className="px-6 py-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={fields.length + 2} className="text-center py-4">Loading...</td></tr>
+            ) : items.length === 0 ? (
+              <tr><td colSpan={fields.length + 2} className="text-center py-4">No data available in table</td></tr>
+            ) : (
+              items.map((row, idx) => (
+                <tr key={row._id} className="bg-white border-b hover:bg-gray-50">
+                  <td className="px-6 py-3">{idx + 1}</td>
+                  {fields.map(f => <td key={f.key} className="px-6 py-3">{f.type === 'date' ? new Date(row[f.key]).toLocaleDateString() : row[f.key]}</td>)}
+                  <td className="px-6 py-3 flex justify-end gap-3 mt-1.5">
+                    <FaEdit onClick={() => openEditModal(row)} className="text-gray-400 hover:text-[#32a3d7] cursor-pointer text-lg" title="Edit" />
+                    <FaTrashAlt onClick={() => handleDelete(row._id)} className="text-red-400 hover:text-red-600 cursor-pointer text-lg" title="Delete" />
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {loading && <tr><td colSpan="4" style={{ padding: 20, textAlign: 'center', color: '#64748b' }}>Loading...</td></tr>}
-                {!loading && items.map((item, idx) => (
-                  <tr key={item._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={tdStyle}>{idx + 1}</td>
-                    <td style={{ ...tdStyle, fontWeight: 600, color: '#334155' }}>{item.remarkName}</td>
-                    <td style={tdStyle}>
-                      <span style={{ padding: '4px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600, background: item.isActive !== false ? '#dcfce7' : '#fee2e2', color: item.isActive !== false ? '#166534' : '#991b1b' }}>
-                        {item.isActive !== false ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td style={tdStyle}>
-                      <div style={{ display: 'flex', gap: 12 }}>
-                        <button onClick={() => handleEdit(item)} style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', padding: 4 }}><FaEdit size={15} /></button>
-                        <button onClick={() => handleDelete(item._id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 4 }}><FaTrash size={15} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {!loading && items.length === 0 && <tr><td colSpan="4" style={{ padding: 20, textAlign: 'center', color: '#64748b' }}>No remarks found.</td></tr>}
-              </tbody>
-            </table>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {isAddModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded w-[90%] max-w-2xl shadow-lg flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200">
+              <h3 className="text-gray-600 font-medium text-lg">{editItem ? 'Edit Remark' : 'Add New Remark'}</h3>
+              <button onClick={() => { setIsAddModalOpen(false); setEditItem(null); }} className="text-gray-400 hover:text-gray-600 text-lg">&times;</button>
+            </div>
+            <form onSubmit={handleSave} className="flex flex-col overflow-hidden">
+              <div className="p-6 overflow-y-auto">
+                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                  {fields.map(f => (
+                    <div key={f.key} className="flex flex-col gap-1">
+                      <label className="text-xs font-bold text-gray-700">
+                        {f.label} {f.required && <span className="text-red-500">*</span>}
+                      </label>
+                      <input 
+                        type={f.type || 'text'} 
+                        value={modalInput[f.key] || ''}
+                        onChange={(e) => setModalInput({...modalInput, [f.key]: e.target.value})}
+                        className="border border-gray-300 rounded px-2 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" 
+                        required={f.required}
+                      />
+                    </div>
+                  ))}
+                  <div className="flex flex-col gap-1 justify-end pb-1.5">
+                    <label className="flex items-center gap-2 cursor-pointer text-sm font-bold text-gray-700">
+                      <input 
+                        type="checkbox" 
+                        checked={modalInput.isActive !== false}
+                        onChange={(e) => setModalInput({...modalInput, isActive: e.target.checked})}
+                        className="w-4 h-4 cursor-pointer" 
+                      />
+                      Is Active?
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 flex justify-center border-t border-gray-100">
+                <button 
+                  type="submit"
+                  disabled={saving}
+                  className="bg-[#4ade80] hover:bg-[#3bcf6d] text-white px-8 py-2 rounded font-medium flex items-center gap-2 text-sm disabled:opacity-50"
+                >
+                  <FaSave /> {saving ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
-
-const thStyle = { padding: '16px 20px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', borderBottom: '2px solid #e2e8f0' };
-const tdStyle = { padding: '12px 20px', fontSize: 13, color: '#475569', whiteSpace: 'nowrap' };
 
 export default ManageRemark;

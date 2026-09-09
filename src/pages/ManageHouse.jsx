@@ -1,253 +1,191 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaVideo, FaSave, FaHome } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt, FaSave } from 'react-icons/fa';
+
+const fields = [
+  {
+    label: 'House Name',
+    key: 'houseName',
+    required: true
+  }
+];
 
 function ManageHouse() {
-  const navigate = useNavigate();
-  const [students, setStudents] = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   
-  const [availableClasses, setAvailableClasses] = useState([]);
-  const [selectedClass, setSelectedClass] = useState('');
-  const [selectedSection, setSelectedSection] = useState('All');
-  const [houseUpdates, setHouseUpdates] = useState({});
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editItem, setEditItem] = useState(null);
+  const [modalInput, setModalInput] = useState({});
 
-  useEffect(() => {
-    const fetchClasses = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/promotions/classes`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setAvailableClasses(data.classes || []);
-          if (data.classes?.length > 0) {
-             setSelectedClass(data.classes[0].class);
-             setSelectedSection('All');
-          }
-        }
-      } catch (e) {
-        console.error("Error fetching classes", e);
-      }
-    };
-    fetchClasses();
-  }, []);
+  useEffect(() => { fetchItems(); }, []);
 
-  const handleFetchStudents = async () => {
+  const fetchItems = async () => {
     setLoading(true);
-    setHouseUpdates({}); // Reset pending changes on new fetch
     try {
       const token = localStorage.getItem('token');
-      const url = selectedSection === 'All' 
-        ? `${import.meta.env.VITE_API_BASE_URL}/api/promotions/eligible?class=${selectedClass}` 
-        : `${import.meta.env.VITE_API_BASE_URL}/api/promotions/eligible?class=${selectedClass}&section=${selectedSection}`;
-      const res = await fetch(url, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/houses`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (res.ok) {
-        const data = await res.json();
-        setStudents(data.students || []);
-      } else {
-        alert("Failed to fetch students");
+      if (res.ok) { 
+        const data = await res.json(); 
+        setItems(data || []); 
       }
-    } catch (err) {
-      console.error(err);
-      alert("Error fetching students");
-    } finally {
-      setLoading(false);
+    } catch (e) { 
+      console.error(e); 
+    } finally { 
+      setLoading(false); 
     }
   };
 
-  const handleHouseChange = (id, newHouse) => {
-    setHouseUpdates(prev => ({
-      ...prev,
-      [id]: newHouse
-    }));
-  };
-
-  const handleSave = async () => {
-    const updates = Object.keys(houseUpdates).map(id => ({
-      studentId: id,
-      houseName: houseUpdates[id]
-    }));
-
-    if (updates.length === 0) return;
-
+  const handleSave = async (e) => {
+    e.preventDefault();
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/students/bulk/house-names`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
-        },
-        body: JSON.stringify({ updates })
+      const url = editItem 
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/houses/${editItem._id}`
+        : `${import.meta.env.VITE_API_BASE_URL}/api/houses`;
+      
+      const res = await fetch(url, {
+        method: editItem ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(modalInput)
       });
-      if (res.ok) {
-        alert("House allocations updated successfully");
-        setHouseUpdates({});
-        handleFetchStudents(); // Refresh data
-      } else {
-        alert("Failed to update house allocations");
+      if (res.ok) { 
+        setModalInput({}); 
+        setIsAddModalOpen(false);
+        setEditItem(null); 
+        fetchItems(); 
+      } else { 
+        const err = await res.json(); 
+        alert(err.message || 'Failed to save'); 
       }
-    } catch (e) {
-      console.error(e);
-      alert("Error updating house allocations");
-    } finally {
-      setSaving(false);
+    } catch (e) { 
+      alert('Error saving details'); 
+    } finally { 
+      setSaving(false); 
     }
   };
 
+  const openAddModal = () => {
+    setModalInput({ isActive: true });
+    setEditItem(null);
+    setIsAddModalOpen(true);
+  };
+
+  const openEditModal = (item) => { 
+    setModalInput({ ...item });
+    setEditItem(item);
+    setIsAddModalOpen(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this record?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/houses/${id}`, {
+        method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) fetchItems();
+      else alert('Failed to delete');
+    } catch (e) { alert('Error deleting record'); }
+  };
+
   return (
-    <div style={{ flex: 1, background: '#f8f9fc', borderTopLeftRadius: '2rem', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      
-      {/* Header Bar */}
-      <div style={{ padding: '24px 32px 12px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#2b3674', margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
-          <FaHome size={20} color="#eab308" /> Manage Student House
-        </h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#22c55e', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-            <FaVideo /> Video Tutorial
-          </div>
-          <button 
-            onClick={() => navigate(-1)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#475569', fontSize: 14, fontWeight: 600, cursor: 'pointer', background: 'none', border: 'none' }}
-          >
-            <FaArrowLeft style={{ fontSize: 12 }} /> Go Back
-          </button>
-        </div>
+    <div style={{ flex: 1, background: '#f8f9fc', borderRadius: '12px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: '#2b3674', margin: 0 }}>Define House</h2>
+        <button 
+          onClick={openAddModal}
+          className="bg-[#32a3d7] text-white px-4 py-1.5 rounded flex items-center gap-2 text-sm hover:bg-[#288ebf]"
+        >
+          Add Record
+        </button>
       </div>
 
-      {/* Filter Card */}
-      <div style={{ padding: '0 32px 16px 32px' }}>
-        <div style={{ background: '#fff', borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', padding: '20px 24px', display: 'flex', alignItems: 'flex-end', gap: 16, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 150 }}>
-            <label style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>Class</label>
-            <select 
-              value={selectedClass} 
-              onChange={e => setSelectedClass(e.target.value)}
-              style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '9px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#fff' }}
-            >
-              {availableClasses.map(c => <option key={c.class} value={c.class}>{c.class}</option>)}
-            </select>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 150 }}>
-            <label style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>Section</label>
-            <select 
-              value={selectedSection} 
-              onChange={e => setSelectedSection(e.target.value)}
-              style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '9px 12px', fontSize: 14, color: '#334155', outline: 'none', background: '#fff' }}
-            >
-              <option value="All">All</option>
-              {availableClasses.find(c => c.class === selectedClass)?.sections.map(s => (
-                <option key={s.section} value={s.section}>{s.section}</option>
-              ))}
-            </select>
-          </div>
-          <button 
-            onClick={handleFetchStudents} 
-            disabled={loading}
-            style={{ background: '#65c466', color: '#fff', border: 'none', borderRadius: 6, padding: '9px 22px', fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer' }}
-          >
-            Fetch Students
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content Card */}
-      <div style={{ padding: '0 32px 32px 32px', flex: 1, overflow: 'hidden' }}>
-        <div style={{ background: '#fff', borderRadius: 12, height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-           
-          <div style={{ flex: 1, overflow: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: '#f8fafc' }}>
-                  <th style={thStyle}>Sl. No.</th>
-                  <th style={thStyle}>Student Name</th>
-                  <th style={thStyle}>Admission No</th>
-                  <th style={thStyle}>Class & Section</th>
-                  <th style={thStyle}>House Allocation</th>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 16px 16px' }}>
+        <table className="w-full text-sm text-left text-gray-700">
+          <thead className="text-xs uppercase bg-white border-b border-gray-200">
+            <tr>
+              <th className="px-6 py-3">Sr. No.</th>
+              {fields.map(f => <th key={f.key} className="px-6 py-3">{f.label}</th>)}
+              <th className="px-6 py-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={fields.length + 2} className="text-center py-4">Loading...</td></tr>
+            ) : items.length === 0 ? (
+              <tr><td colSpan={fields.length + 2} className="text-center py-4">No data available in table</td></tr>
+            ) : (
+              items.map((row, idx) => (
+                <tr key={row._id} className="bg-white border-b hover:bg-gray-50">
+                  <td className="px-6 py-3">{idx + 1}</td>
+                  {fields.map(f => <td key={f.key} className="px-6 py-3">{row[f.key]}</td>)}
+                  <td className="px-6 py-3 flex justify-end gap-3 mt-1.5">
+                    <FaEdit onClick={() => openEditModal(row)} className="text-gray-400 hover:text-[#32a3d7] cursor-pointer text-lg" title="Edit" />
+                    <FaTrashAlt onClick={() => handleDelete(row._id)} className="text-red-400 hover:text-red-600 cursor-pointer text-lg" title="Delete" />
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {loading && <tr><td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>Fetching students...</td></tr>}
-                {!loading && students.map((student, idx) => {
-                  // If house update is pending, use it, else use existing houseName
-                  const currentHouseVal = houseUpdates[student._id] !== undefined ? houseUpdates[student._id] : (student.personalDetails?.houseNames || '');
-                  return (
-                    <tr key={student._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={tdStyle}>{idx + 1}</td>
-                      <td style={{ ...tdStyle, fontWeight: 600, color: '#334155' }}>
-                        {student.personalDetails?.firstName} {student.personalDetails?.lastName}
-                      </td>
-                      <td style={tdStyle}>{student.academicDetails?.admissionNumber}</td>
-                      <td style={{ ...tdStyle, fontWeight: 600 }}>
-                        {student.academicDetails?.class} {student.academicDetails?.section}
-                      </td>
-                      <td style={tdStyle}>
-                        <select 
-                          value={currentHouseVal} 
-                          onChange={(e) => handleHouseChange(student._id, e.target.value)}
-                          style={{ border: '1px solid #cbd5e1', borderRadius: 6, padding: '8px 12px', minWidth: '150px', fontSize: 13, outline: 'none', color: '#0f172a', fontWeight: 500 }}
-                        >
-                          <option value="">-- Select House --</option>
-                          <option value="Red House">Red House</option>
-                          <option value="Blue House">Blue House</option>
-                          <option value="Green House">Green House</option>
-                          <option value="Yellow House">Yellow House</option>
-                        </select>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Save Button Footer */}
-          <div style={{ padding: '16px 24px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 13, color: '#64748b', fontWeight: 600 }}>Total: {students.length}</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              {Object.keys(houseUpdates).length > 0 && (
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#f59e0b' }}>
-                  {Object.keys(houseUpdates).length} unsaved changes
-                </span>
-              )}
-              <button 
-                onClick={handleSave}
-                disabled={saving || Object.keys(houseUpdates).length === 0}
-                style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 24px', fontSize: 14, fontWeight: 700, cursor: (saving || Object.keys(houseUpdates).length === 0) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 8, opacity: (saving || Object.keys(houseUpdates).length === 0) ? 0.7 : 1 }}
-              >
-                <FaSave /> {saving ? 'Saving...' : 'Save Changes'}
-              </button>
-            </div>
-          </div>
-
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
+
+      {isAddModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded w-[90%] max-w-2xl shadow-lg flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200">
+              <h3 className="text-gray-600 font-medium text-lg">{editItem ? 'Edit Define House' : 'Add New Define House'}</h3>
+              <button onClick={() => { setIsAddModalOpen(false); setEditItem(null); }} className="text-gray-400 hover:text-gray-600 text-lg">&times;</button>
+            </div>
+            <form onSubmit={handleSave} className="flex flex-col overflow-hidden">
+              <div className="p-6 overflow-y-auto">
+                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                  {fields.map(f => (
+                    <div key={f.key} className="flex flex-col gap-1">
+                      <label className="text-xs font-bold text-gray-700">
+                        {f.label} {f.required && <span className="text-red-500">*</span>}
+                      </label>
+                      <input 
+                        type={f.type || 'text'} 
+                        value={modalInput[f.key] || ''}
+                        onChange={(e) => setModalInput({...modalInput, [f.key]: e.target.value})}
+                        className="border border-gray-300 rounded px-2 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" 
+                        required={f.required}
+                      />
+                    </div>
+                  ))}
+                  <div className="flex flex-col gap-1 justify-end pb-1.5">
+                    <label className="flex items-center gap-2 cursor-pointer text-sm font-bold text-gray-700">
+                      <input 
+                        type="checkbox" 
+                        checked={modalInput.isActive !== false}
+                        onChange={(e) => setModalInput({...modalInput, isActive: e.target.checked})}
+                        className="w-4 h-4 cursor-pointer" 
+                      />
+                      Is Active?
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 flex justify-center border-t border-gray-100">
+                <button 
+                  type="submit"
+                  disabled={saving}
+                  className="bg-[#4ade80] hover:bg-[#3bcf6d] text-white px-8 py-2 rounded font-medium flex items-center gap-2 text-sm disabled:opacity-50"
+                >
+                  <FaSave /> {saving ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-const thStyle = {
-  padding: '16px 20px',
-  textAlign: 'left',
-  fontSize: 13,
-  fontWeight: 700,
-  color: '#0f172a',
-  whiteSpace: 'nowrap',
-  borderBottom: '2px solid #e2e8f0',
-};
-
-const tdStyle = {
-  padding: '12px 20px',
-  fontSize: 13,
-  color: '#475569',
-  whiteSpace: 'nowrap',
-};
 
 export default ManageHouse;

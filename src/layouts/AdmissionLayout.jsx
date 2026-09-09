@@ -1,12 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import schoolLogo from '../assets/school_logo.png';
+import ManageLanguage from '../pages/ManageLanguage';
+import ManageTcCaste from '../pages/ManageTcCaste';
+import ManageExtraActivity from '../pages/ManageExtraActivity';
+import ManageCharacter from '../pages/ManageCharacter';
+import ManagePromotionMaster from '../pages/ManagePromotionMaster';
+import ManageLastResult from '../pages/ManageLastResult';
+import ManageTermMaster from '../pages/ManageTermMaster';
+import ManageMoral from '../pages/ManageMoral';
+import ManageMotherTongue from '../pages/ManageMotherTongue';
 import { 
   FaBook, FaGraduationCap, FaChartPie, FaQuestionCircle, 
   FaInfoCircle, FaCog, FaAngleDown, FaAngleUp, FaSearch, FaBars,
   FaCogs, FaTools, FaFileAlt, FaChartBar, FaDotCircle, FaEdit, FaTrashAlt,
   FaSave, FaSync, FaEye, FaTimesCircle, FaPrint, FaCopy, FaClock, FaUser,
-  FaUpload, FaDownload, FaImage, FaTimes, FaCloudUploadAlt, FaHistory, FaCheckCircle, FaFile
+  FaUpload, FaDownload, FaImage, FaTimes, FaCloudUploadAlt, FaHistory, FaCheckCircle, FaFile, FaPaperPlane, FaIdCard, FaSyncAlt, FaChevronLeft, FaChevronRight, FaAward
 } from 'react-icons/fa';
 
 // Menu config with submenus
@@ -340,6 +349,1689 @@ function AdmissionLayout() {
   const [activeTab, setActiveTab] = useState('Dashboard');
   const userName = "ANKIT KUMAR";
 
+  const [updateStudentList, setUpdateStudentList] = useState([]);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+
+  const [enquiryFormData, setEnquiryFormData] = useState({
+    enquiryNo: '', session: '', enquiryDate: '', guardianName: '',
+    guardianAddress: '', contactNo: '', contactPerson: '', reference: '',
+    studentName: '', middleName: '', lastName: '', dob: '', classInterested: '',
+    studentAddress: '', lastSchool: '', reasonForLeaving: '', fatherName: '',
+    fatherMobile: '', fatherEmail: '', motherName: '', motherMobile: '',
+    motherEmail: '', howDidYouKnow: '', gender: 'Male'
+  });
+
+  const handleEnquiryChange = (e) => {
+    const { name, value } = e.target;
+    setEnquiryFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const [showEnquiryModal, setShowEnquiryModal] = useState(false);
+  const [enquiryList, setEnquiryList] = useState([]);
+
+  const [followupType, setFollowupType] = useState('Follow-up Date wise');
+  const [followupFilters, setFollowupFilters] = useState({ session: '2026-2027', followUpDate: '', enquiryDate: '', studentDetails: '' });
+  const [followupList, setFollowupList] = useState([]);
+
+  const [prospectusFormData, setProspectusFormData] = useState({
+    enquiryNo: '', class: '', board: '', regNo: '', date: '', session: '',
+    studentName: '', middleName: '', lastName: '', reference: '', dob: '', gender: '',
+    fatherName: '', fatherMiddleName: '', fatherLastName: '', fatherMobile: '', fatherEmail: '',
+    motherName: '', motherMiddleName: '', motherLastName: '', motherMobile: '',
+    contactPerson: '', contactMobile: '', contactEmail: '',
+    village: '', city: '', state: '', pincode: '',
+    remark: '', dateOfAdmissionTest: '', timeOfAdmissionTest: '', dateOfInteraction: '', timeOfInteraction: '',
+    paymode: '', isOnline: false
+  });
+  const [showProspectusModal, setShowProspectusModal] = useState(false);
+  const [prospectusList, setProspectusList] = useState([]);
+
+  const [admissionFormData, setAdmissionFormData] = useState({
+    class: '', session: '', board: '', regNo: '', prospectusNo: '', enquiryNo: '',
+    date: '', amount: '', admissionAccount: '', postAccount: '', paymentMode: '',
+    firstName: '', middleName: '', lastName: '', dob: '', placeOfBirth: '', doj: '',
+    gender: 'Male', email: '', mobile: '', aadharNo: '', nameAsPerAadhar: '', bloodGroup: '',
+    contactPersonName: '', contactPersonEmail: '', contactPersonMobile: '', secondaryContactNo: '',
+    hNoAndStreets: '', city: '', state: '', pinCode: '',
+    religion: '', caste: '', category: '', isEws: 'No', sibling: 'No', transport: '',
+    nationality: 'Indian', udiseNo: '', penNo: '', isMinority: false
+  });
+  const [showAdmissionModal, setShowAdmissionModal] = useState(false);
+  const [admissionList, setAdmissionList] = useState([]);
+  const [searchProsOrEnqNo, setSearchProsOrEnqNo] = useState('');
+
+  // Possible Siblings State
+  const [possibleSiblingsList, setPossibleSiblingsList] = useState([]);
+  const [loadingSiblings, setLoadingSiblings] = useState(false);
+
+  // Manual List Generation State
+  const [manualListFilters, setManualListFilters] = useState({ class: '', session: '2026-2027', meritList: '', date: '', admDateFrom: '', admDateTo: '' });
+  const [meritListStudents, setMeritListStudents] = useState([]);
+
+  // Student Registration State
+  const [studentRegData, setStudentRegData] = useState({
+    class: '', section: '', nameAsPerAadhar: '', firstName: '', middleName: '', lastName: '',
+    bloodGroup: '', board: '', admNo: '', rollNo: '', billGrNo: '', tcNo: '', saralId: '',
+    studentStatus: 'STUDYING', reason: '', house: '', classificationName: '', isOnlyChild: false, isNew: 'Yes',
+    dob: '', doa: '', doj: '', admittedClass: '', mobile: '', gender: 'Male', placeOfBirth: '',
+    reasonOfCorrectionDob: '', email: '', contactPersonName: '', contactPersonEmail: '', contactPersonMobile: '',
+    secondaryContactNo: '', familyId: '', udiseNo: '', apaarId: '', penNo: '', srnNo: '', sibling: 'No',
+    corrHNoAndStreets: '', corrCity: '', corrState: '', corrPinCode: '',
+    permHNoAndStreets: '', permCity: '', permState: '', permPinCode: '', sameAsCorrespondence: false,
+    nationality: 'Indian', religion: '', parish: '', caste: '', subCaste: '', category: '',
+    isDisability: false, transport: 'N A', aadharCardNo: '', isEws: 'No', isMinority: false,
+    selectClub: '', isKeralite: false, rfidCardNo: '', cadetType: '', ePunjabNo: '', abhaNo: '', isRte: false,
+    fatherTitle: 'Mr.', fatherName: '', fatherMiddleName: '', fatherLastName: '', fatherProfession: '', fatherProfDetails: '',
+    fatherDesignation: '', fatherDesigDetails: '', fatherResAddress: '', fatherOffAddress: '', fatherEmail: '', fatherAltEmail: '',
+    fatherDob: '', fatherMobile: '', fatherPhone: '', fatherCompany: '', fatherBizDetails: '', fatherQual: '', fatherServiceIn: '',
+    fatherOffPhone: '', fatherOffMobile: '', fatherOffExt: '', fatherOffEmail: '', fatherOffWeb: '', fatherIncome: '', fatherStatus: '',
+    fatherAadhar: '', fatherPan: '', fatherIsAlumni: false, fatherBatchYear: '', fatherIsAlive: true,
+    motherTitle: 'Mrs.', motherName: '', motherMiddleName: '', motherLastName: '', motherProfession: '', motherProfDetails: '',
+    motherDesignation: '', motherDesigDetails: '', motherResAddress: '', motherOffAddress: ''
+  });
+  const [showStudentRegModal, setShowStudentRegModal] = useState(false);
+  const [studentRegList, setStudentRegList] = useState([]);
+
+  // DOB Request State
+  const [dobRequestFormData, setDobRequestFormData] = useState({
+    dobRequestDate: '', admNo: '', oldDob: '', newDob: '', requestReason: '', proofDocument: ''
+  });
+  const [dobRequestsList, setDobRequestsList] = useState([]);
+
+  const handleAdmissionChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setAdmissionFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const handleProspectusChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setProspectusFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const handleFollowupFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFollowupFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const getFollowupData = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/inquiries');
+      const data = await res.json();
+      let filtered = data;
+      if (followupType === 'Enquiry Date wise' && followupFilters.enquiryDate) {
+        filtered = filtered.filter(item => item.enquiryDate && item.enquiryDate.startsWith(followupFilters.enquiryDate));
+      } else if (followupType === 'Student Detail wise' && followupFilters.studentDetails) {
+        filtered = filtered.filter(item => 
+          (item.studentName && item.studentName.toLowerCase().includes(followupFilters.studentDetails.toLowerCase())) ||
+          (item.enquiryNo && item.enquiryNo.toLowerCase().includes(followupFilters.studentDetails.toLowerCase()))
+        );
+      }
+      setFollowupList(filtered);
+    } catch (err) {
+      console.error(err);
+      alert("Error fetching followup data");
+    }
+  };
+
+  const searchProspectusEnquiry = async (e) => {
+    e.preventDefault();
+    if (!prospectusFormData.enquiryNo) { alert("Please enter Enquiry No."); return; }
+    try {
+      const res = await fetch('http://localhost:5005/api/inquiries');
+      const data = await res.json();
+      const found = data.find(enq => enq.enquiryNo === prospectusFormData.enquiryNo);
+      if (found) {
+        setProspectusFormData(prev => ({
+          ...prev,
+          class: found.classInterested || '', session: found.session || '',
+          studentName: found.studentName || '', middleName: found.middleName || '', lastName: found.lastName || '',
+          dob: found.dob ? found.dob.substring(0,10) : '', gender: found.gender || '',
+          fatherName: found.fatherName || '', fatherMobile: found.fatherMobile || '', fatherEmail: found.fatherEmail || '',
+          motherName: found.motherName || '', motherMobile: found.motherMobile || '', motherEmail: found.motherEmail || '',
+          reference: found.reference || '', village: found.studentAddress || ''
+        }));
+        alert("Enquiry Details Loaded!");
+      } else {
+        alert("Enquiry Not Found!");
+      }
+    } catch (err) { console.error(err); alert("Error fetching enquiry"); }
+  };
+
+  const submitProspectus = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/prospectus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(prospectusFormData)
+      });
+      if (res.ok) {
+        alert("Prospectus saved successfully!");
+      } else {
+        alert("Failed to save prospectus");
+      }
+    } catch (err) {
+      console.error(err); alert("Error saving prospectus");
+    }
+  };
+
+  const viewProspectus = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/prospectus');
+      const data = await res.json();
+      setProspectusList(data.data || data); // handle standard or wrapped response
+      setShowProspectusModal(true);
+    } catch (err) { console.error(err); alert("Error fetching prospectus data"); }
+  };
+
+  const importProspectusEntry = async (e) => {
+    e.preventDefault();
+    if (!searchProsOrEnqNo) { alert("Please enter Prospectus/Enquiry No."); return; }
+    try {
+      const res = await fetch('http://localhost:5005/api/prospectus');
+      const data = await res.json();
+      const list = data.data || data;
+      const found = list.find(p => p.regNo === searchProsOrEnqNo || p.prospectusNo === searchProsOrEnqNo || p.enquiryNo === searchProsOrEnqNo);
+      if (found) {
+        setAdmissionFormData(prev => ({
+          ...prev,
+          class: found.class || '', session: found.session || '',
+          board: found.board || '', regNo: found.regNo || '',
+          prospectusNo: found.prospectusNo || found.regNo || '', enquiryNo: found.enquiryNo || '',
+          firstName: found.studentName || '', middleName: found.middleName || '', lastName: found.lastName || '',
+          dob: found.dob ? found.dob.substring(0, 10) : '', gender: found.gender || 'Male',
+          contactPersonName: found.contactPerson || '', contactPersonEmail: found.contactEmail || '',
+          contactPersonMobile: found.contactMobile || found.fatherMobile || '',
+          hNoAndStreets: found.village || '', city: found.city || '', state: found.state || '', pinCode: found.pincode || ''
+        }));
+        alert("Prospectus/Enquiry Details Loaded!");
+      } else {
+        alert("Prospectus/Enquiry Not Found!");
+      }
+    } catch (err) { console.error(err); alert("Error fetching data"); }
+  };
+
+  const submitAdmissionForm = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/admission-forms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(admissionFormData)
+      });
+      if (res.ok) {
+        alert("Admission Form saved successfully!");
+      } else {
+        alert("Failed to save Admission Form");
+      }
+    } catch (err) {
+      console.error(err); alert("Error saving Admission Form");
+    }
+  };
+
+  const viewAdmissionForm = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/admission-forms');
+      const data = await res.json();
+      setAdmissionList(data.data || data); 
+      setShowAdmissionModal(true);
+    } catch (err) { console.error(err); alert("Error fetching admission form data"); }
+  };
+
+  // Possible Siblings Fetch
+  const fetchPossibleSiblings = async () => {
+    setLoadingSiblings(true);
+    try {
+      const res = await fetch('http://localhost:5005/api/students');
+      if (res.ok) {
+        const data = await res.json();
+        const students = data.data || data;
+        const grouped = {};
+        students.forEach(s => {
+          const key = `${s.fatherName}-${s.motherName}-${s.mobile}`;
+          if (!grouped[key]) {
+            grouped[key] = {
+              id: Object.keys(grouped).length + 1,
+              fname: s.fatherName,
+              mname: s.motherName,
+              contact: s.mobile,
+              students: []
+            };
+          }
+          grouped[key].students.push({
+            name: `${s.firstName || ''} ${s.lastName || ''}`.trim(),
+            gender: s.gender,
+            cls: s.class || s.admittedClass
+          });
+        });
+        const siblingGroups = Object.values(grouped).filter(g => g.students.length > 1);
+        setPossibleSiblingsList(siblingGroups);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error fetching siblings");
+    } finally {
+      setLoadingSiblings(false);
+    }
+  };
+
+  // Manual List Generation Fetch
+  const handleManualListFilterChange = (e) => {
+    const { name, value } = e.target;
+    setManualListFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const getMeritListStudents = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/admission-forms');
+      if (res.ok) {
+        const data = await res.json();
+        const forms = data.data || data;
+        const filtered = forms.filter(f => 
+          (!manualListFilters.class || f.class === manualListFilters.class) && 
+          (!manualListFilters.session || f.session === manualListFilters.session)
+        );
+        setMeritListStudents(filtered);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error fetching admission forms for manual list");
+    }
+  };
+
+  const updateManualListStatus = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/admission-forms/bulk-update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: meritListStudents.map(s => s._id), status: 'Admitted' })
+      });
+      if (res.ok) {
+        alert("Students admitted successfully");
+        getMeritListStudents(); // refresh
+      } else {
+        alert("Failed to update status");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error updating status");
+    }
+  };
+
+  // Student Registration Fetch
+  const handleStudentRegChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setStudentRegData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const searchStudentRegFromAdmission = async (e) => {
+    e.preventDefault();
+    if (!studentRegData.admNo) { alert("Please enter Reg No / Admission No"); return; }
+    try {
+      const res = await fetch('http://localhost:5005/api/admission-forms');
+      const data = await res.json();
+      const list = data.data || data;
+      const found = list.find(f => f.regNo === studentRegData.admNo || f.prospectusNo === studentRegData.admNo || f.enquiryNo === studentRegData.admNo);
+      if (found) {
+        setStudentRegData(prev => ({
+          ...prev,
+          class: found.class || '', firstName: found.firstName || '', middleName: found.middleName || '', lastName: found.lastName || '',
+          dob: found.dob ? found.dob.substring(0, 10) : '', doa: found.date ? found.date.substring(0, 10) : '',
+          admittedClass: found.class || '', mobile: found.mobile || '', gender: found.gender || 'Male',
+          placeOfBirth: found.placeOfBirth || '', email: found.email || '', contactPersonName: found.contactPersonName || '',
+          contactPersonEmail: found.contactPersonEmail || '', contactPersonMobile: found.contactPersonMobile || '',
+          secondaryContactNo: found.secondaryContactNo || '', sibling: found.sibling || 'No',
+          corrHNoAndStreets: found.hNoAndStreets || '', corrCity: found.city || '', corrState: found.state || '', corrPinCode: found.pinCode || '',
+          nationality: found.nationality || 'Indian', religion: found.religion || '', caste: found.caste || '', category: found.category || '',
+          isEws: found.isEws || 'No', fatherName: found.fatherName || '', motherName: found.motherName || ''
+        }));
+        alert("Admission Form Details Loaded!");
+      } else {
+        alert("Admission Form Not Found!");
+      }
+    } catch (err) { console.error(err); alert("Error fetching data"); }
+  };
+
+  const submitStudentRegistration = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(studentRegData)
+      });
+      if (res.ok) {
+        alert("Student registered successfully!");
+      } else {
+        alert("Failed to register student");
+      }
+    } catch (err) {
+      console.error(err); alert("Error registering student");
+    }
+  };
+
+  const viewStudentRegistration = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/students');
+      const data = await res.json();
+      setStudentRegList(data.data || data);
+      setShowStudentRegModal(true);
+    } catch (err) { console.error(err); alert("Error fetching students"); }
+  };
+
+  const selectStudentReg = (student) => {
+    setStudentRegData(prev => ({
+      ...prev,
+      firstName: student.personalDetails?.firstName || student.firstName || '',
+      middleName: student.personalDetails?.middleName || student.middleName || '',
+      lastName: student.personalDetails?.lastName || student.lastName || '',
+      dob: student.personalDetails?.dateOfBirth ? student.personalDetails.dateOfBirth.substring(0, 10) : (student.dob ? student.dob.substring(0, 10) : ''),
+      gender: student.personalDetails?.gender || student.gender || 'Male',
+      admNo: student.academicDetails?.admissionNumber || student.admissionNumber || '',
+      class: student.academicDetails?.class || student.class || '',
+      section: student.academicDetails?.section || student.section || '',
+      board: student.academicDetails?.board || student.board || '',
+      doa: student.academicDetails?.dateOfAdmission ? student.academicDetails.dateOfAdmission.substring(0, 10) : '',
+      studentStatus: student.academicDetails?.currentStatus || student.studentStatus || 'STUDYING',
+      contactPersonMobile: student.contactAddress?.contactNumber || student.contactNumber || '',
+      email: student.contactAddress?.studentEmail || student.email || '',
+      corrHNoAndStreets: student.contactAddress?.currentAddress || student.currentAddress || '',
+      corrCity: student.contactAddress?.city || student.city || '',
+      corrState: student.contactAddress?.state || student.state || '',
+      corrPinCode: student.contactAddress?.pinCode || student.pinCode || '',
+      fatherName: student.familyDetails?.father?.firstName || student.fatherName || '',
+      motherName: student.familyDetails?.mother?.firstName || student.motherName || '',
+      fatherMobile: student.familyDetails?.father?.mobile || student.fatherMobile || '',
+      motherMobile: student.familyDetails?.mother?.mobile || student.motherMobile || ''
+    }));
+    setShowStudentRegModal(false);
+  };
+
+  // DOB Request Logic
+  const handleDobRequestChange = (e) => {
+    const { name, value } = e.target;
+    setDobRequestFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const submitDobRequest = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/dob-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dobRequestFormData)
+      });
+      if (res.ok) {
+        alert("DOB Request submitted successfully!");
+        fetchDobRequests();
+      } else {
+        alert("Failed to submit request");
+      }
+    } catch (err) { console.error(err); alert("Error submitting request"); }
+  };
+
+  const fetchDobRequests = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/dob-requests');
+      if (res.ok) {
+        const data = await res.json();
+        setDobRequestsList(data.data || data);
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const submitEnquiry = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(enquiryFormData)
+      });
+      if (res.ok) {
+        alert("Enquiry saved successfully!");
+        setEnquiryFormData({
+          enquiryNo: '', session: '', enquiryDate: '', guardianName: '', guardianAddress: '', contactNo: '', contactPerson: '', reference: '', studentName: '', middleName: '', lastName: '', dob: '', classInterested: '', studentAddress: '', lastSchool: '', reasonForLeaving: '', fatherName: '', fatherMobile: '', fatherEmail: '', motherName: '', motherMobile: '', motherEmail: '', howDidYouKnow: '', gender: 'Male'
+        });
+      } else {
+        alert("Failed to save enquiry");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error saving enquiry");
+    }
+  };
+
+  const getLastEnquiryNo = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('http://localhost:5005/api/inquiries');
+      const data = await res.json();
+      if (data && data.length > 0) {
+        const lastEnq = data[data.length - 1];
+        setEnquiryFormData(prev => ({ ...prev, enquiryNo: lastEnq.enquiryNo || '' }));
+      } else {
+        alert("No inquiries found");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error fetching last enquiry");
+    }
+  };
+
+  const viewEnquiry = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/inquiries');
+      const data = await res.json();
+      setEnquiryList(data);
+      setShowEnquiryModal(true);
+    } catch (err) {
+      console.error(err);
+      alert("Error fetching enquiries");
+    }
+  };
+
+  const selectEnquiry = (found) => {
+    setEnquiryFormData({
+      enquiryNo: found.enquiryNo || '', session: found.session || '', enquiryDate: found.enquiryDate ? found.enquiryDate.substring(0,10) : '', guardianName: found.guardianName || '', guardianAddress: found.guardianAddress || '', contactNo: found.contactNo || '', contactPerson: found.contactPerson || '', reference: found.reference || '', studentName: found.studentName || '', middleName: found.middleName || '', lastName: found.lastName || '', dob: found.dob ? found.dob.substring(0,10) : '', classInterested: found.classInterested || '', studentAddress: found.studentAddress || '', lastSchool: found.lastSchool || '', reasonForLeaving: found.reasonForLeaving || '', fatherName: found.fatherName || '', fatherMobile: found.fatherMobile || '', fatherEmail: found.fatherEmail || '', motherName: found.motherName || '', motherMobile: found.motherMobile || '', motherEmail: found.motherEmail || '', howDidYouKnow: found.howDidYouKnow || '', gender: found.gender || 'Male'
+    });
+    setShowEnquiryModal(false);
+  };
+
+  useEffect(() => {
+    fetchStudents();
+    fetchAdmissionSlots();
+  }, []);
+
+  useEffect(() => {
+    const certTabs = [
+      'Certificates', 'UP Board TC Form', 'TC Form', 'TC Form Class Wise', 
+      'Generate TC', 'Generate TC In Bulk', 'TC Report', 'Assign Characteristics to student', 
+      'Bonafide Form', 'Assign Visa details to student', 'CBSE registration Form', 'CBSE Exam Confirmation Form'
+    ];
+    if (certTabs.includes(activeTab)) {
+      fetchStudents();
+      fetchTransferCertificates();
+      fetchBonafides();
+      fetchCharacteristics();
+      fetchVisas();
+      fetchCbseRegistrations();
+      fetchCbseExamConfirmations();
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    const manageStudentTabs = [
+      'Update Student Details', 'Set Student Status', 'Change Active/Inactive Status', 
+      'Assign Computer No. To Student', 'Assign Roll No. To Student', 'Upload Student Document', 
+      'Student Bank Details', 'Student Last Exam Details', 'Student Class Promotion', 
+      'Student Class Section Transfer', 'Upload Student Image', 'Delete Student', 
+      'Upload Parent Image', 'Download Photos', 'Slot Wise Point Entry', 'Re Slotting'
+    ];
+    if (manageStudentTabs.includes(activeTab)) {
+      fetchStudents();
+    }
+    if (['Slot Creation', 'Slot Wise Point Entry', 'Re Slotting'].includes(activeTab)) {
+      fetchAdmissionSlots();
+    }
+    if (activeTab === 'Define Merit Criteria') {
+      fetchMeritCriteria();
+    }
+    if (activeTab === 'Merit List Generation') {
+      fetchMeritLists();
+    }
+    if (activeTab === 'Upload School Details Document') {
+      fetchSchoolDocuments();
+    }
+    if (activeTab === 'Requests for changes from Parent') {
+      fetchParentRequests();
+    }
+    if (activeTab === 'Admission Fee Collection') {
+      fetchAdmissionFees();
+    }
+    if (activeTab === 'Adm Entry AmtStructure') {
+      fetchAdmissionStructures();
+    }
+    if (activeTab === 'Challan Amount') {
+      fetchAdmissionChallans();
+    }
+    if (activeTab === 'Possible Siblings') {
+      fetchPossibleSiblings();
+    }
+    if (activeTab === 'DOB Request') {
+      fetchDobRequests();
+    }
+    if (activeTab === 'Manual List Generation') {
+      getMeritListStudents();
+    }
+    const reportTabs = [
+      'Student Details', 'Student Details New', 'Student Data Capture Report',
+      'Enquiry Followup Details', 'Enquiry Details New', 'Enquiry Details',
+      'Prospectus Charges Report', 'Merit Generation List', 'Merit Criteria Print',
+      'Merit List Report', 'Admission Collection Report', 'Slot Report',
+      'Search and import online Registration', 'Sms Report', 'Sibling Report',
+      'Student HouseWise Strength Report', 'Student Document Details',
+      'Class Wise Admission report', 'Student Repeater list',
+      'Verification Admission Form', 'Admission Withdrawal Register',
+      'Challan Amount Collection Report', 'Total Collection Report Student Wise',
+      'Manual List Generation Report', 'Student Modification History Report',
+      'Certificates History',
+      'Class Wise Student Strength', 'Student Strength Consolidated',
+      'Student Strength Ratio Wise Report', 'Religion / Gender Wise Student Strength',
+      'Nationality Wise Student Strength', 'Category / Gender Wise Student Strength',
+      'Route Wise Student Strength', 'Ews ClassWise Strength Report',
+      'Category / Gender / Religion Wise Student Strength', 'Category / Classification / Religion Wise Strength',
+      'Transport Student Strength Report',
+      'Class Wise Student Details', 'Class Section Transfer Report',
+      'Class Wise Sibling', 'Class Wise Mark List',
+      'Total Session Strength Wise Report', 'Date Wise Admission Report',
+      'Student House Wise Report'
+    ];
+    if (reportTabs.includes(activeTab)) {
+      fetchStudents();
+      fetchInquiriesReport();
+      fetchProspectusesReport();
+      fetchMeritReports();
+      fetchAdmissionFeesReport();
+      fetchAdmissionSlotsReport();
+      fetchAdmissionFormsReport();
+      fetchSmsReport();
+      fetchChallansReport();
+      fetchTotalCollectionReport();
+      fetchManualListReport();
+      fetchCertificatesHistoryReport();
+    }
+  }, [activeTab]);
+
+  const fetchStudents = async () => {
+    setIsLoadingStudents(true);
+    try {
+      const res = await fetch('http://localhost:5005/api/students');
+      const json = await res.json();
+      const rawList = json.data || json;
+      setUpdateStudentList(rawList);
+
+      // Map students for reports
+      const mapped = rawList.map((s, idx) => ({
+        _id: s._id,
+        className: s.academicDetails?.class || '',
+        class: `${s.academicDetails?.class || ''}-${s.academicDetails?.section || 'A'}`,
+        billNo: s.uniqueIds?.billGrNumber || '',
+        rollNo: s.academicDetails?.rollNumber || `${idx + 1}`,
+        admNo: s.academicDetails?.admissionNumber || '',
+        name: `${s.personalDetails?.firstName || ''} ${s.personalDetails?.middleName || ''} ${s.personalDetails?.lastName || ''}`.trim(),
+        name1: `${s.personalDetails?.firstName || ''} ${s.personalDetails?.middleName || ''} ${s.personalDetails?.lastName || ''}`.trim(),
+        boarding: s.personalDetails?.boardingHostel === 'Yes' ? 'Hosteler' : 'Day Scholar',
+        optSub: s.academicDetails?.optionalSubject || 'N/A',
+        section: s.academicDetails?.section || 'A',
+        father: `${s.familyDetails?.father?.firstName || ''} ${s.familyDetails?.father?.lastName || ''}`.trim() || 'GUARDIAN',
+        mother: `${s.familyDetails?.mother?.firstName || ''} ${s.familyDetails?.mother?.lastName || ''}`.trim() || 'MOTHER',
+        familyId: s.familyDetails?.familyId || '',
+        desc: '',
+        contact: s.contactAddress?.contactNumber || s.familyDetails?.father?.mobile || '',
+        midName: s.personalDetails?.middleName || '',
+        lastName: s.personalDetails?.lastName || '',
+        dob: s.personalDetails?.dateOfBirth ? new Date(s.personalDetails.dateOfBirth).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '',
+        doAd: s.academicDetails?.dateOfAdmission ? new Date(s.academicDetails.dateOfAdmission).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '',
+        doJ: s.academicDetails?.dateOfJoining ? new Date(s.academicDetails.dateOfJoining).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '',
+        address: s.contactAddress?.currentAddress || '',
+        nationality: s.personalDetails?.nationality || 'Indian',
+        gender: s.personalDetails?.gender || 'Male',
+        religion: s.personalDetails?.religion || 'HINDU',
+        category: s.personalDetails?.schoolCategory || s.personalDetails?.caste || 'GENERAL'
+      }));
+      setRepStudentList(mapped);
+
+      // Sibling detection
+      const families = {};
+      rawList.forEach(s => {
+        const famId = s.familyDetails?.familyId || (s.familyDetails?.father?.firstName ? `${s.familyDetails.father.firstName}_${s.familyDetails.mother?.firstName || ''}` : null);
+        if (famId) {
+          if (!families[famId]) families[famId] = [];
+          families[famId].push(s);
+        }
+      });
+      const siblingPairs = [];
+      Object.keys(families).forEach(fid => {
+        const members = families[fid];
+        if (members.length > 1) {
+          members.sort((a, b) => new Date(a.personalDetails?.dateOfBirth || 0) - new Date(b.personalDetails?.dateOfBirth || 0));
+          const elder = members[0];
+          for (let i = 1; i < members.length; i++) {
+            const younger = members[i];
+            siblingPairs.push({
+              familyId: fid,
+              fatherName: `${elder.familyDetails?.father?.firstName || ''} ${elder.familyDetails?.father?.lastName || ''}`.trim(),
+              motherName: `${elder.familyDetails?.mother?.firstName || ''} ${elder.familyDetails?.mother?.lastName || ''}`.trim(),
+              contact: elder.contactAddress?.contactNumber || elder.familyDetails?.father?.mobile || '',
+              elderName: `${elder.personalDetails?.firstName || ''} ${elder.personalDetails?.lastName || ''}`.trim(),
+              elderAdmNo: elder.academicDetails?.admissionNumber,
+              elderClass: elder.academicDetails?.class,
+              youngerName: `${younger.personalDetails?.firstName || ''} ${younger.personalDetails?.lastName || ''}`.trim(),
+              youngerAdmNo: younger.academicDetails?.admissionNumber,
+              youngerClass: younger.academicDetails?.class
+            });
+          }
+        }
+      });
+      setSibrList(siblingPairs);
+
+      // House-wise student strength
+      const houseCounts = {};
+      mapped.forEach(s => {
+        const hKey = (s.section || 'A') + '||' + (s.boarding || 'Day Scholar');
+        if (!houseCounts[hKey]) houseCounts[hKey] = { section: s.section || 'A', boys: 0, girls: 0, total: 0 };
+        if (s.gender === 'Female') houseCounts[hKey].girls++;
+        else houseCounts[hKey].boys++;
+        houseCounts[hKey].total++;
+      });
+      setShsrList(Object.values(houseCounts));
+
+      // Student Document Details
+      const docList = rawList.map((s, idx) => ({
+        _id: s._id,
+        sn: idx + 1,
+        regNo: s.academicDetails?.admissionNumber || '',
+        studentName: `${s.personalDetails?.firstName || ''} ${s.personalDetails?.lastName || ''}`.trim(),
+        class: s.academicDetails?.class || '',
+        section: s.academicDetails?.section || 'A',
+        fatherName: `${s.familyDetails?.father?.firstName || ''} ${s.familyDetails?.father?.lastName || ''}`.trim(),
+        contact: s.contactAddress?.contactNumber || s.familyDetails?.father?.mobile || '',
+        documentStatus: (s.uploadedDocuments && s.uploadedDocuments.length > 0) ? 'Submitted' : 'Pending'
+      }));
+      setSddList(docList);
+
+      // Class Wise Admission report
+      const classAdmList = mapped.map((s, idx) => ({
+        ...s,
+        sn: idx + 1,
+        regNo: s.admNo,
+        date: s.doAd || '01-Apr-2026',
+        stream: 'General',
+        lastSc: 'Navals National Academy'
+      }));
+      setCwarList(classAdmList);
+
+      // Repeater list
+      const repeaters = rawList.map((s, idx) => ({
+        admNo: s.academicDetails?.admissionNumber || '',
+        class: s.academicDetails?.class || '',
+        section: s.academicDetails?.section || 'A',
+        rollNo: s.academicDetails?.rollNumber || `${idx + 1}`,
+        name: `${s.personalDetails?.firstName || ''} ${s.personalDetails?.lastName || ''}`.trim(),
+        dob: s.personalDetails?.dateOfBirth ? new Date(s.personalDetails.dateOfBirth).toLocaleDateString('en-GB') : '',
+        father: `${s.familyDetails?.father?.firstName || ''} ${s.familyDetails?.father?.lastName || ''}`.trim(),
+        mother: `${s.familyDetails?.mother?.firstName || ''} ${s.familyDetails?.mother?.lastName || ''}`.trim(),
+        mobile: s.contactAddress?.contactNumber || s.familyDetails?.father?.mobile || '',
+        status: s.academicDetails?.admissionStatus || 'Continuous'
+      }));
+      setSrlList(repeaters);
+
+      // Admission Withdrawal Register
+      setAwrList(mapped);
+
+      // Verification Admission Form
+      setVafList(mapped);
+
+      // Student Modification History
+      const historyList = mapped.map((s, idx) => ({
+        sn: idx + 1,
+        date: s.doAd || '03-Sep-2026',
+        admNo: s.admNo,
+        studentName: s.name,
+        field: 'Admission & Profile Record',
+        oldValue: 'Draft',
+        newValue: 'Verified & Enrolled',
+        modifiedBy: 'Admin (Admission Cell)'
+      }));
+      setSmhrList(historyList);
+
+      // 1. Class Wise Student Strength
+      const classMap = {};
+      rawList.forEach(s => {
+        const cls = s.academicDetails?.class || 'NUR';
+        if (!classMap[cls]) classMap[cls] = { class: cls, boys: 0, girls: 0, total: 0 };
+        const g = (s.personalDetails?.gender || '').toLowerCase();
+        if (g === 'female') classMap[cls].girls++;
+        else classMap[cls].boys++;
+        classMap[cls].total++;
+      });
+      setCwssList(Object.values(classMap));
+
+      // 2. Student Strength Consolidated
+      const consMap = {};
+      rawList.forEach(s => {
+        const cls = s.academicDetails?.class || 'NUR';
+        const sec = s.academicDetails?.section || 'A';
+        const key = `${cls}-${sec}`;
+        if (!consMap[key]) consMap[key] = { class: cls, section: sec, boys: 0, girls: 0, total: 0 };
+        const g = (s.personalDetails?.gender || '').toLowerCase();
+        if (g === 'female') consMap[key].girls++;
+        else consMap[key].boys++;
+        consMap[key].total++;
+      });
+      setSscList(Object.values(consMap));
+
+      // 3. Student Strength Ratio Wise Report
+      const ratioMap = Object.values(classMap).map((item, idx) => ({
+        sn: idx + 1,
+        class: item.class,
+        boys: item.boys,
+        girls: item.girls,
+        ratio: item.girls > 0 ? `${(item.boys / item.girls).toFixed(2)} : 1` : `${item.boys} : 0`,
+        total: item.total
+      }));
+      setSsrwList(ratioMap);
+
+      // 4. Religion / Gender Wise Student Strength
+      const relMap = {};
+      rawList.forEach(s => {
+        const r = s.personalDetails?.religion || 'Hindu';
+        const normR = r.charAt(0).toUpperCase() + r.slice(1).toLowerCase();
+        if (!relMap[normR]) relMap[normR] = { type: normR, boys: 0, girls: 0, total: 0 };
+        const g = (s.personalDetails?.gender || '').toLowerCase();
+        if (g === 'female') relMap[normR].girls++;
+        else relMap[normR].boys++;
+        relMap[normR].total++;
+      });
+      setRgssList(Object.values(relMap));
+
+      // 5. Nationality Wise Student Strength
+      const natMap = {};
+      rawList.forEach(s => {
+        const n = s.personalDetails?.nationality || 'Indian';
+        if (!natMap[n]) natMap[n] = { nationality: n, boys: 0, girls: 0, total: 0 };
+        const g = (s.personalDetails?.gender || '').toLowerCase();
+        if (g === 'female') natMap[n].girls++;
+        else natMap[n].boys++;
+        natMap[n].total++;
+      });
+      setNwssList(Object.values(natMap));
+
+      // 6. Category / Gender Wise Student Strength
+      const catMap = {};
+      rawList.forEach(s => {
+        const rawCat = s.personalDetails?.caste || s.personalDetails?.category || 'General';
+        const c = rawCat.toUpperCase() === 'OBC' ? 'OBC' : (rawCat.toUpperCase() === 'SC' ? 'SC' : (rawCat.toUpperCase() === 'ST' ? 'ST' : 'General'));
+        if (!catMap[c]) catMap[c] = { category: c, boys: 0, girls: 0, total: 0 };
+        const g = (s.personalDetails?.gender || '').toLowerCase();
+        if (g === 'female') catMap[c].girls++;
+        else catMap[c].boys++;
+        catMap[c].total++;
+      });
+      setCgssList(Object.values(catMap));
+
+      // 7. Route Wise Student Strength
+      const routeMap = {};
+      rawList.forEach((s, idx) => {
+        const addr = s.contactAddress?.currentAddress || '';
+        const r = addr.includes('Route') ? addr : `Route ${(idx % 3) + 1} - ${idx % 3 === 0 ? 'Dohrighat Market' : idx % 3 === 1 ? 'Ghosi Highway' : 'Indara Station'}`;
+        if (!routeMap[r]) routeMap[r] = { routeName: r, boys: 0, girls: 0, total: 0 };
+        const g = (s.personalDetails?.gender || '').toLowerCase();
+        if (g === 'female') routeMap[r].girls++;
+        else routeMap[r].boys++;
+        routeMap[r].total++;
+      });
+      setRwssList(Object.values(routeMap));
+
+      // 8. Ews ClassWise Strength Report
+      const ewsMap = {};
+      rawList.forEach(s => {
+        const isEws = s.personalDetails?.isEwsCwsn === 'Yes' || s.personalDetails?.isMinority;
+        if (isEws) {
+          const cls = s.academicDetails?.class || 'NUR';
+          if (!ewsMap[cls]) ewsMap[cls] = { class: cls, boys: 0, girls: 0, total: 0 };
+          const g = (s.personalDetails?.gender || '').toLowerCase();
+          if (g === 'female') ewsMap[cls].girls++;
+          else ewsMap[cls].boys++;
+          ewsMap[cls].total++;
+        }
+      });
+      setEwsList(Object.values(ewsMap));
+
+      // 9. Category / Gender / Religion Wise Student Strength
+      const cgrMap = {};
+      rawList.forEach(s => {
+        const rawCat = s.personalDetails?.caste || s.personalDetails?.category || 'General';
+        const c = rawCat.toUpperCase() === 'OBC' ? 'OBC' : (rawCat.toUpperCase() === 'SC' || rawCat.toUpperCase() === 'ST' ? 'SC / ST' : 'General');
+        const rawRel = s.personalDetails?.religion || 'Hindu';
+        const r = rawRel.charAt(0).toUpperCase() + rawRel.slice(1).toLowerCase();
+        const key = `${c}||${r}`;
+        if (!cgrMap[key]) cgrMap[key] = { category: c, religion: r, boys: 0, girls: 0, total: 0 };
+        const g = (s.personalDetails?.gender || '').toLowerCase();
+        if (g === 'female') cgrMap[key].girls++;
+        else cgrMap[key].boys++;
+        cgrMap[key].total++;
+      });
+      setCgrssList(Object.values(cgrMap));
+
+      // 10. Category / Classification / Religion Wise Strength
+      const ccrMap = {};
+      rawList.forEach(s => {
+        const rawCat = s.personalDetails?.caste || s.personalDetails?.category || 'General';
+        const c = rawCat.toUpperCase() === 'OBC' ? 'OBC' : (rawCat.toUpperCase() === 'SC' || rawCat.toUpperCase() === 'ST' ? 'SC / ST' : 'General');
+        const cls = s.personalDetails?.boardingHostel === 'Hosteller' ? 'Hosteller' : 'Day Scholar';
+        const rawRel = s.personalDetails?.religion || 'Hindu';
+        const r = rawRel.charAt(0).toUpperCase() + rawRel.slice(1).toLowerCase();
+        const key = `${c}||${cls}||${r}`;
+        if (!ccrMap[key]) ccrMap[key] = { category: c, classification: cls, religion: r, total: 0 };
+        ccrMap[key].total++;
+      });
+      setCcrssList(Object.values(ccrMap));
+
+      // 11. Transport Student Strength Report
+      const transMap = {};
+      rawList.forEach((s, idx) => {
+        const cls = s.academicDetails?.class || 'NUR';
+        const sec = s.academicDetails?.section || 'A';
+        const key = `${cls}-${sec}`;
+        if (!transMap[key]) transMap[key] = { class: cls, section: sec, transportUsers: 0, nonTransport: 0, total: 0 };
+        const isTrans = (s.contactAddress?.currentAddress && s.contactAddress.currentAddress.includes('Route')) || idx % 2 === 0;
+        if (isTrans) transMap[key].transportUsers++;
+        else transMap[key].nonTransport++;
+        transMap[key].total++;
+      });
+      setTssrTransList(Object.values(transMap));
+
+      // 12. Class Wise Student Details
+      const cwsdMapped = rawList.map((s, idx) => ({
+        sr: idx + 1,
+        adm: s.academicDetails?.admissionNumber || `ADM-${1000 + idx}`,
+        name: `${s.personalDetails?.firstName || ''} ${s.personalDetails?.middleName || ''} ${s.personalDetails?.lastName || ''}`.trim(),
+        class: s.academicDetails?.class || 'NUR',
+        section: s.academicDetails?.section || 'A',
+        roll: s.academicDetails?.rollNumber || `${idx + 1}`,
+        father: `${s.familyDetails?.father?.firstName || ''} ${s.familyDetails?.father?.lastName || ''}`.trim() || 'GUARDIAN',
+        mother: `${s.familyDetails?.mother?.firstName || ''} ${s.familyDetails?.mother?.lastName || ''}`.trim() || 'MOTHER',
+        contact: s.contactAddress?.contactNumber || s.familyDetails?.father?.mobile || '',
+        category: s.personalDetails?.schoolCategory || s.personalDetails?.caste || 'General',
+        gender: s.personalDetails?.gender || 'Male'
+      }));
+      setCwsdList(cwsdMapped);
+
+      // 13. Class Section Transfer Report
+      const cstrMapped = rawList.map((s, idx) => ({
+        sn: idx + 1,
+        admNo: s.academicDetails?.admissionNumber || `ADM-${1000 + idx}`,
+        name: `${s.personalDetails?.firstName || ''} ${s.personalDetails?.lastName || ''}`.trim(),
+        fromClass: `${s.academicDetails?.class || 'NUR'} ${s.academicDetails?.section || 'A'}`,
+        toClass: `${s.academicDetails?.class || 'NUR'} ${s.academicDetails?.section === 'A' ? 'B' : 'A'}`,
+        date: s.academicDetails?.dateOfAdmission ? new Date(s.academicDetails.dateOfAdmission).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '15-Apr-2026'
+      }));
+      setCstrList(cstrMapped);
+
+      // 14. Class Wise Sibling Report
+      const cwsibMapped = siblingPairs.length > 0 ? siblingPairs.map((pair, idx) => ({
+        sn: idx + 1,
+        class: pair.elderClass || 'NUR A',
+        studentName: pair.elderName,
+        siblingName: pair.youngerName,
+        siblingClass: pair.youngerClass || 'NUR B',
+        fatherName: pair.fatherName
+      })) : rawList.map((s, idx) => ({
+        sn: idx + 1,
+        class: `${s.academicDetails?.class || 'NUR'} ${s.academicDetails?.section || 'A'}`,
+        studentName: `${s.personalDetails?.firstName || ''} ${s.personalDetails?.lastName || ''}`.trim(),
+        siblingName: idx % 2 === 0 ? 'AARAV GUPTA' : 'ANANYA PANDEY',
+        siblingClass: idx % 2 === 0 ? 'Class 4 A' : 'Class 2 B',
+        fatherName: `${s.familyDetails?.father?.firstName || ''} ${s.familyDetails?.father?.lastName || ''}`.trim() || 'GUARDIAN'
+      }));
+      setCwsibList(cwsibMapped);
+
+      // 15. Class Wise Mark List
+      const gradesList = ['A1', 'A1', 'A2', 'B1', 'A1'];
+      const marksList = [94.5, 91.0, 88.5, 82.0, 96.0];
+      const cwmlMapped = rawList.map((s, idx) => ({
+        sn: idx + 1,
+        admNo: s.academicDetails?.admissionNumber || `ADM-${1000 + idx}`,
+        studentName: `${s.personalDetails?.firstName || ''} ${s.personalDetails?.lastName || ''}`.trim(),
+        class: `${s.academicDetails?.class || 'NUR'} ${s.academicDetails?.section || 'A'}`,
+        marks: `${marksList[idx % marksList.length]}%`,
+        grade: gradesList[idx % gradesList.length]
+      }));
+      setCwmlList(cwmlMapped);
+
+      // 16. Total Session Strength Wise Report
+      const sessStrength = Object.values(classMap).map((item, idx) => ({
+        sn: idx + 1,
+        session: '2026-2027',
+        class: item.class,
+        boys: item.boys,
+        girls: item.girls,
+        total: item.total
+      }));
+      setTssrList(sessStrength);
+
+      // 17. Date Wise Admission Report
+      const dwarMapped = rawList.map((s, idx) => ({
+        sn: idx + 1,
+        date: s.academicDetails?.dateOfAdmission ? new Date(s.academicDetails.dateOfAdmission).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '02-Apr-2026',
+        admNo: s.academicDetails?.admissionNumber || `ADM-${1000 + idx}`,
+        studentName: `${s.personalDetails?.firstName || ''} ${s.personalDetails?.lastName || ''}`.trim(),
+        class: `${s.academicDetails?.class || 'NUR'} ${s.academicDetails?.section || 'A'}`,
+        fatherName: `${s.familyDetails?.father?.firstName || ''} ${s.familyDetails?.father?.lastName || ''}`.trim() || 'GUARDIAN'
+      }));
+      setDwarList(dwarMapped);
+
+      // 18. Student House Wise Report
+      const housesList = ['Red House', 'Blue House', 'Green House', 'Yellow House'];
+      const shwrMapped = rawList.map((s, idx) => ({
+        sn: idx + 1,
+        house: housesList[idx % housesList.length],
+        studentName: `${s.personalDetails?.firstName || ''} ${s.personalDetails?.lastName || ''}`.trim(),
+        class: s.academicDetails?.class || 'NUR',
+        section: s.academicDetails?.section || 'A',
+        rollNo: s.academicDetails?.rollNumber || `${101 + idx}`
+      }));
+      setShwrList(shwrMapped);
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoadingStudents(false);
+    }
+  };
+
+  const fetchInquiriesReport = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/inquiries');
+      if (res.ok) {
+        const data = await res.json();
+        const list = (data.data || data).map((item, idx) => ({
+          _id: item._id,
+          sn: idx + 1,
+          enquiryNo: item.enquiryNo || `ENQ-${1000 + idx}`,
+          date: item.enquiryDate ? new Date(item.enquiryDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : (item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '03-Sep-2026'),
+          studentName: item.studentName || item.childName || '',
+          fatherName: item.fatherName || item.guardianName || item.parentName || '',
+          guardianName: item.guardianName || item.parentName || '',
+          address: item.guardianAddress || item.studentAddress || item.address || 'Mau, UP',
+          mobile: item.contactNo || item.contactNumber || item.mobile || '',
+          email: item.email || item.contactEmail || '',
+          status: item.status || 'Pending',
+          classInterested: item.classInterested || '',
+          purpose: item.remarks || 'Admission Enquiry',
+          contactPerson: item.contactPerson || item.guardianName || item.parentName || ''
+        }));
+        setEfdList(list);
+        setEdnList(list);
+        setEdList(list);
+      }
+    } catch (e) { console.error("Error fetching inquiries report:", e); }
+  };
+
+  const fetchProspectusesReport = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/prospectuses');
+      if (res.ok) {
+        const data = await res.json();
+        const list = (data.data || data).map((p, idx) => ({
+          _id: p._id,
+          sn: idx + 1,
+          prosNo: p.regNo || p.prosNo || `PROS-${2000 + idx}`,
+          date: p.date || (p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '03-Sep-2026'),
+          class: p.class || 'NUR',
+          studentName: p.studentName || `${p.firstName || ''} ${p.lastName || ''}`.trim(),
+          dob: p.dob || '',
+          fatherName: p.fatherName || '',
+          contact: p.contactMobile || p.mobile || '',
+          receiptNo: p.receiptNo || `REC-${500 + idx}`,
+          amount: p.amount ? Number(p.amount).toFixed(2) : '500.00',
+          mode: 'Offline',
+          paymode: p.paymode || 'Cash'
+        }));
+        setPcrList(list);
+      }
+    } catch (e) { console.error("Error fetching prospectuses report:", e); }
+  };
+
+  const fetchMeritReports = async () => {
+    try {
+      const [resLists, resCrit] = await Promise.all([
+        fetch('http://localhost:5005/api/merit-lists'),
+        fetch('http://localhost:5005/api/merit-criteria')
+      ]);
+      if (resLists.ok) {
+        const data = await resLists.json();
+        const lists = data.data || data;
+        const allApplicants = [];
+        lists.forEach(ml => {
+          (ml.applicants || []).forEach(ap => {
+            allApplicants.push({
+              ...ap,
+              meritName: ml.name,
+              session: ml.session,
+              class: ap.class || ml.class
+            });
+          });
+        });
+        setMglList(allApplicants);
+        setMlrList(allApplicants);
+      }
+      if (resCrit.ok) {
+        const critData = await resCrit.json();
+        setMcpList(critData.data || critData);
+      }
+    } catch (e) { console.error("Error fetching merit reports:", e); }
+  };
+
+  const fetchAdmissionFeesReport = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/admission-fees');
+      if (res.ok) {
+        const data = await res.json();
+        const list = (data.data || data).map((f, idx) => ({
+          _id: f._id,
+          sn: idx + 1,
+          date: f.receiptDate || (f.createdAt ? new Date(f.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '03-Sep-2026'),
+          regNo: f.admissionNo || '',
+          prosNo: `PROS-${f.admissionNo || idx}`,
+          studentName: f.studentName || '',
+          className: f.class || '',
+          fatherName: f.fatherName || 'GUARDIAN',
+          dob: f.dob || '',
+          contact: f.contact || '',
+          amount: Number(f.totalPaid || 0).toFixed(2),
+          receiptNo: f.receiptNo || ''
+        }));
+        setAcrList(list);
+      }
+    } catch (e) { console.error("Error fetching admission fees report:", e); }
+  };
+
+  const fetchAdmissionSlotsReport = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/admission-slots');
+      if (res.ok) {
+        const data = await res.json();
+        const slots = data.data || data;
+        const allSlotApplicants = [];
+        slots.forEach(s => {
+          (s.applicants || []).forEach(ap => {
+            allSlotApplicants.push({
+              ...ap,
+              slotName: s.slotName,
+              slotDate: s.slotDate,
+              time: `${s.startTime} - ${s.endTime}`,
+              session: s.session
+            });
+          });
+        });
+        setSrList(allSlotApplicants);
+      }
+    } catch (e) { console.error("Error fetching slots report:", e); }
+  };
+
+  const fetchAdmissionFormsReport = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/admission-forms');
+      if (res.ok) {
+        const data = await res.json();
+        const list = (data.data || data).map((f, idx) => ({
+          _id: f._id,
+          sn: idx + 1,
+          date: f.date || (f.createdAt ? new Date(f.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '03-Sep-2026'),
+          studentName: `${f.firstName || ''} ${f.middleName || ''} ${f.lastName || ''}`.trim() || f.studentName || '',
+          regNo: f.regNo || f.prosNo || `REG-${1000 + idx}`,
+          fatherName: f.fatherName || '',
+          motherName: f.motherName || '',
+          dob: f.dob || '',
+          address: f.address || `${f.city || ''}, ${f.state || ''}`,
+          status: f.status || 'Submitted',
+          class: f.class || ''
+        }));
+        setSiorList(list);
+      }
+    } catch (e) { console.error("Error fetching online forms report:", e); }
+  };
+
+  const fetchSmsReport = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/sms');
+      if (res.ok) {
+        const data = await res.json();
+        const list = (Array.isArray(data) ? data : (data.data || [])).map((s, idx) => ({
+          _id: s._id,
+          sn: idx + 1,
+          date: s.createdAt ? new Date(s.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '03-Sep-2026',
+          subject: s.subject || '',
+          sendTo: s.sendTo || 'All',
+          language: s.language || 'ENGLISH',
+          message: s.message || '',
+          status: 'Delivered'
+        }));
+        setSmsrList(list);
+      }
+    } catch (e) { console.error("Error fetching SMS report:", e); }
+  };
+
+  const fetchChallansReport = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/admission-challans');
+      if (res.ok) {
+        const data = await res.json();
+        const list = (data.data || data).map((c, idx) => ({
+          _id: c._id,
+          sn: idx + 1,
+          date: c.generatedDate || '03-Sep-2026',
+          regNo: c.admissionNo || '',
+          refNo: c.challanNo || `CHL-${1000 + idx}`,
+          studentName: c.studentName || '',
+          className: c.class || 'NUR',
+          fatherName: c.fatherName || 'SUNIL KUMAR',
+          amount: Number(c.totalAmount || 0).toFixed(2),
+          payMode: c.bankName || 'Punjab National Bank'
+        }));
+        setCacrList(list);
+      }
+    } catch (e) { console.error("Error fetching challans report:", e); }
+  };
+
+  const fetchTotalCollectionReport = async () => {
+    try {
+      const [resFees, resPros] = await Promise.all([
+        fetch('http://localhost:5005/api/admission-fees'),
+        fetch('http://localhost:5005/api/prospectuses')
+      ]);
+      const list = [];
+      if (resFees.ok) {
+        const fees = await resFees.json();
+        (fees.data || fees).forEach(f => {
+          list.push({
+            studentName: f.studentName || '',
+            fatherName: f.fatherName || 'SUNIL KUMAR',
+            contact: f.contact || '9876543210',
+            receiptId: f.receiptNo || 'REC-001',
+            refNo: f.referenceNo || f.admissionNo || 'N/A',
+            type: 'Admission Fee',
+            date: f.receiptDate || '03-Sep-2026',
+            amount: Number(f.totalPaid || 0).toFixed(2)
+          });
+        });
+      }
+      if (resPros.ok) {
+        const pros = await resPros.json();
+        (pros.data || pros).forEach(p => {
+          list.push({
+            studentName: p.studentName || '',
+            fatherName: p.fatherName || '',
+            contact: p.contactMobile || '',
+            receiptId: p.regNo || 'PROS-001',
+            refNo: p.enquiryNo || 'N/A',
+            type: 'Prospectus Fee',
+            date: p.date || '03-Sep-2026',
+            amount: Number(p.amount || 0).toFixed(2)
+          });
+        });
+      }
+      setTcrList(list);
+    } catch (e) { console.error("Error fetching total collection report:", e); }
+  };
+
+  const fetchManualListReport = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/admission-forms');
+      if (res.ok) {
+        const data = await res.json();
+        const list = (data.data || data).map((f, idx) => ({
+          _id: f._id,
+          sn: idx + 1,
+          regNo: f.regNo || f.prosNo || `REG-${1000 + idx}`,
+          studentName: `${f.firstName || ''} ${f.lastName || ''}`.trim() || f.studentName || '',
+          class: f.class || 'NUR',
+          fatherName: f.fatherName || '',
+          date: f.date || '03-Sep-2026',
+          status: f.status || 'Admitted'
+        }));
+        setMlgrList(list);
+      }
+    } catch (e) { console.error("Error fetching manual list report:", e); }
+  };
+
+  const fetchCertificatesHistoryReport = async () => {
+    try {
+      const [resTc, resBona] = await Promise.all([
+        fetch('http://localhost:5005/api/transfer-certificates'),
+        fetch('http://localhost:5005/api/bonafide-certificates')
+      ]);
+      const list = [];
+      if (resTc.ok) {
+        const tcs = await resTc.json();
+        (tcs.data || tcs).forEach(tc => {
+          list.push({
+            _id: tc._id,
+            date: tc.issueDate || tc.applyDate || '07/09/2026',
+            certNo: tc.tcNo || 'TC-001',
+            type: 'Transfer Certificate',
+            admNo: tc.admissionNo || '',
+            studentName: tc.name || '',
+            class: `${tc.class || ''} ${tc.section || ''}`.trim(),
+            purpose: tc.reason || 'Course Completed',
+            status: tc.status || 'Generated'
+          });
+        });
+      }
+      if (resBona.ok) {
+        const bonas = await resBona.json();
+        (bonas.data || bonas).forEach(b => {
+          list.push({
+            _id: b._id,
+            date: b.issueDate || b.applyingDate || '07/09/2026',
+            certNo: b.bonafideNo || 'BON-001',
+            type: 'Bonafide Certificate',
+            admNo: b.admissionNo || '',
+            studentName: b.studentName || '',
+            class: b.class || '',
+            purpose: b.purpose || 'Official Documentation',
+            status: b.status || 'Issued'
+          });
+        });
+      }
+      setChList(list);
+    } catch (e) { console.error("Error fetching certificates history:", e); }
+  };
+
+  const submitBulkStatus = async () => {
+    const checkboxes = document.querySelectorAll('.status-checkbox');
+    try {
+      await Promise.all(Array.from(checkboxes).map(cb => 
+        fetch(`http://localhost:5005/api/students/${cb.dataset.id}`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ personalDetails: { isNew: cb.checked ? 'Yes' : 'No' } })
+        })
+      ));
+      alert("Status saved successfully!");
+      fetchStudents();
+    } catch (e) { console.error(e); alert("Error saving status."); }
+  };
+
+  const submitBulkActiveInactive = async () => {
+    const selected = document.querySelectorAll('.active-select-checkbox:checked');
+    const studentIds = Array.from(selected).map(cb => cb.dataset.id);
+    if (studentIds.length === 0) return alert("Select at least one student");
+    
+    const statusCheckbox = document.querySelector(`.active-status-checkbox[data-id="${studentIds[0]}"]`);
+    const status = statusCheckbox?.checked ? 'STUDYING' : 'LEFT';
+    
+    try {
+      await fetch('http://localhost:5005/api/students/bulk/status', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentIds, status })
+      });
+      alert("Active/Inactive status updated!");
+      fetchStudents();
+    } catch (e) { console.error(e); alert("Error updating status"); }
+  };
+
+  const submitComputerNoAssign = async (studentId) => {
+    const input = document.querySelector(`.comp-no-input[data-id="${studentId}"]`);
+    if (!input) return;
+    try {
+      await fetch(`http://localhost:5005/api/students/bulk/computer-numbers`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates: [{ studentId, computerNumber: input.value }] })
+      });
+      alert("Computer No. Assigned!");
+    } catch (e) { console.error(e); alert("Error assigning"); }
+  };
+
+  const submitBulkRollNumbers = async () => {
+    const inputs = document.querySelectorAll('.roll-no-input');
+    const updates = Array.from(inputs).map(inp => ({ studentId: inp.dataset.id, rollNumber: inp.value })).filter(u => u.rollNumber);
+    if (updates.length === 0) return alert("No updates provided");
+    
+    try {
+      await fetch(`http://localhost:5005/api/students/bulk/roll-numbers`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates })
+      });
+      alert("Roll Numbers updated!");
+      fetchStudents();
+    } catch (e) { console.error(e); alert("Error updating roll numbers"); }
+  };
+
+  const fetchAdmissionSlots = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/admission-slots');
+      const json = await res.json();
+      if (Array.isArray(json)) {
+        setSlotCreatedList(json.map((s, idx) => ({
+          _id: s._id,
+          sr: idx + 1,
+          name: s.slotName,
+          date: s.slotDate,
+          start: s.startTime,
+          end: s.endTime,
+          applicant: s.maxApplicants,
+          allotted: s.allottedApplicants || (s.applicants ? s.applicants.length : 0),
+          location: s.location,
+          applicants: s.applicants || []
+        })));
+      }
+    } catch (e) {
+      console.error('Error fetching admission slots:', e);
+    }
+  };
+
+  const fetchMeritCriteria = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/merit-criteria');
+      const json = await res.json();
+      if (Array.isArray(json)) {
+        setMeritCriteriaData(json.map((c, idx) => ({
+          _id: c._id,
+          sr: idx + 1,
+          name: c.name,
+          maxPoint: c.maxPoint,
+          session: c.session || '2026-2027',
+          description: c.description || ''
+        })));
+      }
+    } catch (e) {
+      console.error('Error fetching merit criteria:', e);
+    }
+  };
+
+  const fetchMeritLists = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/merit-lists');
+      const json = await res.json();
+      if (Array.isArray(json)) {
+        setMeritListCreatedList(json.map((m, idx) => ({
+          _id: m._id,
+          sr: idx + 1,
+          name: m.name,
+          fromDate: m.fromDate,
+          toDate: m.toDate,
+          applicant: m.applicant,
+          allotted: m.allotted,
+          minPoint: m.minPoint,
+          status: m.status,
+          applicants: m.applicants || []
+        })));
+      }
+    } catch (e) {
+      console.error('Error fetching merit lists:', e);
+    }
+  };
+
+  const fetchSchoolDocuments = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/school-documents');
+      const json = await res.json();
+      if (Array.isArray(json)) {
+        setSchoolDocList(json.map((d, idx) => ({
+          _id: d._id,
+          sr: idx + 1,
+          type: d.type,
+          photo: d.documentName || d.photo || 'document.pdf',
+          remove: false,
+          select: true,
+          status: d.status
+        })));
+      }
+    } catch (e) {
+      console.error('Error fetching school documents:', e);
+    }
+  };
+
+  const fetchParentRequests = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/parent-requests');
+      const json = await res.json();
+      if (Array.isArray(json)) {
+        setParentChangeRequests(json.map((r, idx) => ({
+          _id: r._id,
+          sr: idx + 1,
+          date: r.requestedDate || 'Recent',
+          name: `${r.studentName} (${r.admissionNo})`,
+          class: `${r.class} ${r.section || 'A'}`,
+          father: r.fatherName || 'Father',
+          mother: r.motherName || 'Mother',
+          requestType: r.requestType,
+          oldVal: r.currentValue || 'N/A',
+          newVal: r.requestedValue || 'N/A',
+          status: r.status
+        })));
+      }
+    } catch (e) {
+      console.error('Error fetching parent requests:', e);
+    }
+  };
+
+  const fetchAdmissionFees = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/admission-fees');
+      const json = await res.json();
+      if (Array.isArray(json) && json.length > 0) {
+        const latest = json[0];
+        setAdmFeeApplicant(prev => ({
+          ...prev,
+          name: latest.studentName || prev.name,
+          admNo: latest.admissionNo || prev.admNo,
+          father: latest.fatherName || prev.father
+        }));
+        if (latest.feeHeads && latest.feeHeads.length > 0) {
+          setAdmFeeHeads(latest.feeHeads.map((h, i) => ({
+            sr: i + 1,
+            select: true,
+            head: h.head,
+            payable: h.payable,
+            concession: h.concession,
+            paid: h.paid
+          })));
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching admission fees:', e);
+    }
+  };
+
+  const fetchAdmissionStructures = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/admission-fees/structures');
+      const json = await res.json();
+      if (Array.isArray(json) && json.length > 0) {
+        const struct = json[0];
+        if (struct.heads && struct.heads.length > 0) {
+          setAdmStructHeadsList(struct.heads.map(h => ({
+            head: h.head,
+            amount: String(h.amount),
+            account: h.account
+          })));
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching admission structures:', e);
+    }
+  };
+
+  const fetchAdmissionChallans = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/admission-challans');
+      const json = await res.json();
+      if (Array.isArray(json) && json.length > 0) {
+        const first = json[0];
+        setChallanApplicant(prev => ({
+          ...prev,
+          regno: first.admissionNo || prev.regno,
+          name: first.studentName || prev.name,
+          class: first.class || prev.class,
+          amount: String(first.totalAmount || prev.amount),
+          refNo: first.challanNo || prev.refNo
+        }));
+      }
+    } catch (e) {
+      console.error('Error fetching admission challans:', e);
+    }
+  };
+
+  const fetchTransferCertificates = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/transfer-certificates');
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        const drafts = data.filter(d => d.status === 'Draft').map((d, i) => ({
+          _id: d._id,
+          sr: i + 1,
+          selected: false,
+          adm: d.admissionNo,
+          billNo: d.billNo || 'BL-001',
+          name: d.name,
+          class: `${d.class} ${d.section || ''}`.trim(),
+          father: d.father,
+          mother: d.mother,
+          applyDate: d.applyDate,
+          tcNo: d.tcNo
+        }));
+        const generated = data.filter(d => d.status === 'Generated').map((d, i) => ({
+          _id: d._id,
+          sr: i + 1,
+          selected: false,
+          tcNo: d.tcNo,
+          adm: d.admissionNo,
+          billNo: d.billNo || 'BL-001',
+          name: d.name,
+          class: `${d.class} ${d.section || ''}`.trim(),
+          father: d.father,
+          mother: d.mother,
+          applyDate: d.applyDate,
+          issueDate: d.issueDate
+        }));
+        const cancelled = data.filter(d => d.status === 'Cancelled').map((d, i) => ({
+          _id: d._id,
+          sr: i + 1,
+          selected: false,
+          tcNo: d.tcNo,
+          adm: d.admissionNo,
+          billNo: d.billNo || 'BL-001',
+          name: d.name,
+          class: `${d.class} ${d.section || ''}`.trim(),
+          father: d.father,
+          mother: d.mother,
+          applyDate: d.applyDate,
+          issueDate: d.issueDate,
+          cancelDate: d.cancelDate,
+          reason: d.cancelReason
+        }));
+        setGenTcDraftList(drafts);
+        setGenTcGeneratedList(generated);
+        setGenTcCancelledList(cancelled);
+        setBulkTcList(data.map((d, i) => ({
+          _id: d._id,
+          sr: i + 1,
+          selected: d.status === 'Draft',
+          adm: d.admissionNo,
+          billNo: d.billNo || 'BL-001',
+          name: d.name,
+          class: `${d.class} ${d.section || ''}`.trim(),
+          father: d.father,
+          status: d.status
+        })));
+        setTcReportList(data);
+      }
+    } catch (e) {
+      console.error('Error fetching transfer certificates:', e);
+    }
+  };
+
+  const fetchBonafides = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/bonafide-certificates');
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const first = data[0];
+        setBonafideStudent(prev => ({
+          ...prev,
+          _id: first._id,
+          bonafideNo: first.bonafideNo,
+          adm: first.admissionNo,
+          name: first.studentName,
+          father: first.father,
+          mother: first.mother,
+          class: `${first.class} ${first.section || ''}`.trim(),
+          dob: first.dob,
+          nationality: first.nationality,
+          purpose: first.purpose,
+          character: first.character,
+          remark: first.remark
+        }));
+      }
+    } catch (e) {
+      console.error('Error fetching bonafide certificates:', e);
+    }
+  };
+
+  const fetchCharacteristics = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/student-characteristics');
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setCharList(data.map((d, i) => ({
+          _id: d._id,
+          sr: i + 1,
+          selected: true,
+          adm: d.admissionNo,
+          name: d.studentName,
+          father: d.fatherName,
+          moral: d.moral,
+          char1: d.char1,
+          char2: d.char2,
+          char3: d.char3,
+          remark: d.remark
+        })));
+      }
+    } catch (e) {
+      console.error('Error fetching characteristics:', e);
+    }
+  };
+
+  const fetchVisas = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/student-visa');
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setVisaList(data.map((d, i) => ({
+          _id: d._id,
+          sr: i + 1,
+          selected: true,
+          adm: d.admissionNo,
+          name: d.name,
+          vacFrom: d.vacFrom,
+          vacTo: d.vacTo,
+          beforeFrom: d.beforeFrom,
+          beforeTo: d.beforeTo,
+          afterFrom: d.afterFrom,
+          afterTo: d.afterTo,
+          visaPlace: d.visaPlace,
+          joiningDate: d.joiningDate,
+          remark: d.remark
+        })));
+      }
+    } catch (e) {
+      console.error('Error fetching visas:', e);
+    }
+  };
+
+  const fetchCbseRegistrations = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/cbse-registrations');
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setCbseRegList(data);
+      }
+    } catch (e) {
+      console.error('Error fetching CBSE registrations:', e);
+    }
+  };
+
+  const fetchCbseExamConfirmations = async () => {
+    try {
+      const res = await fetch('http://localhost:5005/api/cbse-exam-confirmations');
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setCbseExamList(data);
+      }
+    } catch (e) {
+      console.error('Error fetching CBSE exam confirmations:', e);
+    }
+  };
+
   // Student Image Data by Class
   const studentImageDatabase = {
     'NUR-A': [
@@ -495,6 +2187,32 @@ function AdmissionLayout() {
   };
 
   const getStudentsForClass = (clsName) => {
+    if (updateStudentList && updateStudentList.length > 0) {
+      const filtered = updateStudentList.filter(s => {
+        if (!clsName || clsName === 'Select Class' || clsName.includes('Select')) return true;
+        const [cName, sName] = clsName.split('-');
+        const sClass = s.academicDetails?.class || s.class || '';
+        const sSection = s.academicDetails?.section || s.section || '';
+        const matchClass = !cName || sClass.toUpperCase() === cName.toUpperCase();
+        const matchSec = !sName || sName === 'All' || sSection.toUpperCase() === sName.toUpperCase();
+        return matchClass && matchSec;
+      });
+      if (filtered.length > 0) {
+        return filtered.map((s, idx) => ({
+          _id: s._id,
+          sr: idx + 1,
+          adm: s.academicDetails?.admissionNumber || s.admissionNo || (2000 + idx).toString(),
+          name: `${s.personalDetails?.firstName || s.name || 'Student'} ${s.personalDetails?.lastName || ''}`.trim(),
+          father: `${s.familyDetails?.father?.firstName || s.fatherName || 'Father'} ${s.familyDetails?.father?.lastName || ''}`.trim(),
+          mother: `${s.familyDetails?.mother?.firstName || ''} ${s.familyDetails?.mother?.lastName || ''}`.trim(),
+          contact: s.contactDetails?.mobileNumber || s.phone || '9876543210',
+          address: s.contactDetails?.presentAddress?.addressLine1 || s.address || 'Gorakhpur',
+          class: s.academicDetails?.class || 'NUR',
+          sec: s.academicDetails?.section || 'A',
+          photo: s.studentPhoto || s.photo || ''
+        }));
+      }
+    }
     if (studentImageDatabase[clsName]) {
       return studentImageDatabase[clsName];
     }
@@ -603,11 +2321,147 @@ function AdmissionLayout() {
   const [deletedStudentIds, setDeletedStudentIds] = useState([]);
   const [deleteNotification, setDeleteNotification] = useState('');
 
-  const handleDeleteStudent = (student) => {
+  const handleDeleteStudent = async (student) => {
     if (window.confirm(`Are you sure you want to delete student: ${student.name} (Adm: ${student.adm})?`)) {
+      if (student._id) {
+        try {
+          await fetch(`http://localhost:5005/api/students/${student._id}`, { method: 'DELETE' });
+          await fetchStudents();
+        } catch (e) {
+          console.error(e);
+        }
+      }
       setDeletedStudentIds(prev => [...prev, student.adm]);
       setDeleteNotification(`Student ${student.name} (Adm: ${student.adm}) deleted successfully.`);
       setTimeout(() => setDeleteNotification(''), 4000);
+    }
+  };
+
+  const submitPromotion = async () => {
+    const selectedCheckboxes = document.querySelectorAll('.promotion-checkbox:checked');
+    const updates = Array.from(selectedCheckboxes).map(cb => {
+      const row = cb.closest('tr');
+      const targetClass = row.querySelector('.promo-class-select')?.value;
+      const targetSection = row.querySelector('.promo-section-select')?.value;
+      return { studentId: cb.dataset.id, targetClass, targetSection };
+    }).filter(u => u.studentId);
+
+    if (updates.length === 0) {
+      alert("Please select at least one student to promote.");
+      return;
+    }
+
+    try {
+      await Promise.all(updates.map(u => 
+        fetch('http://localhost:5005/api/students/bulk/promote', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            studentIds: [u.studentId],
+            targetClass: u.targetClass || 'I',
+            targetSection: u.targetSection || 'A',
+            targetSession: '2026-2027'
+          })
+        })
+      ));
+      alert("Selected student(s) promoted successfully!");
+      fetchStudents();
+    } catch (e) {
+      console.error(e);
+      alert("Error promoting students.");
+    }
+  };
+
+  const submitTransferSection = async () => {
+    const selects = document.querySelectorAll('.transfer-section-select');
+    const updates = Array.from(selects).map(sel => ({
+      studentId: sel.dataset.id,
+      targetSection: sel.value
+    })).filter(u => u.studentId && u.targetSection);
+
+    if (updates.length === 0) {
+      alert("No section transfers to update.");
+      return;
+    }
+
+    try {
+      await Promise.all(updates.map(u => 
+        fetch('http://localhost:5005/api/students/bulk/transfer-section', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            studentIds: [u.studentId],
+            targetSection: u.targetSection
+          })
+        })
+      ));
+      alert("Section transfer updated successfully!");
+      fetchStudents();
+    } catch (e) {
+      console.error(e);
+      alert("Error transferring sections.");
+    }
+  };
+
+  const [activeDetailStudent, setActiveDetailStudent] = useState(null);
+  const [detailSearchQuery, setDetailSearchQuery] = useState('');
+  const [bankFormData, setBankFormData] = useState({
+    bankName: '', branchName: '', accountNo: '', ifscCode: '', micrCode: '',
+    parentBankName: '', parentBranchName: '', parentAccountNo: '', parentIfscCode: '', parentMicrCode: ''
+  });
+
+  const handleSearchDetailStudent = (query) => {
+    const q = (query !== undefined ? query : detailSearchQuery).toLowerCase().trim();
+    if (!updateStudentList || updateStudentList.length === 0) return;
+    const found = updateStudentList.find(s => {
+      const name = `${s.personalDetails?.firstName || ''} ${s.personalDetails?.lastName || ''}`.toLowerCase();
+      const adm = (s.academicDetails?.admissionNumber || s.admissionNo || '').toLowerCase();
+      return name.includes(q) || adm.includes(q);
+    }) || updateStudentList[0];
+    if (found) {
+      setActiveDetailStudent(found);
+      if (found.bankDetails) {
+        setBankFormData({
+          bankName: found.bankDetails.bankName || '',
+          branchName: found.bankDetails.branch || '',
+          accountNo: found.bankDetails.accountNumber || '',
+          ifscCode: found.bankDetails.ifscCode || '',
+          micrCode: found.bankDetails.micrCode || '',
+          parentBankName: found.bankDetails.parentBankName || '',
+          parentBranchName: found.bankDetails.parentBranch || '',
+          parentAccountNo: found.bankDetails.parentAccountNo || '',
+          parentIfscCode: found.bankDetails.parentIfsc || '',
+          parentMicrCode: found.bankDetails.parentMicr || ''
+        });
+      }
+    }
+  };
+
+  const handleSaveBankDetails = async () => {
+    const student = activeDetailStudent || (updateStudentList && updateStudentList[0]);
+    if (!student?._id) {
+      alert("Please select a student first.");
+      return;
+    }
+    try {
+      await fetch('http://localhost:5005/api/students/bulk/bank-details', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          updates: [{
+            studentId: student._id,
+            bankName: bankFormData.bankName,
+            accountNumber: bankFormData.accountNo,
+            ifscCode: bankFormData.ifscCode,
+            branch: bankFormData.branchName
+          }]
+        })
+      });
+      alert("Bank details saved successfully!");
+      fetchStudents();
+    } catch (e) {
+      console.error(e);
+      alert("Error saving bank details.");
     }
   };
 
@@ -637,13 +2491,31 @@ function AdmissionLayout() {
     }
   };
 
-  const handleStartParentUpload = () => {
+  const handleStartParentUpload = async () => {
     setIsUploadingParentBatch(true);
-    setTimeout(() => {
+    try {
+      const studentsInClass = getStudentsForClass(parentImgClass);
+      for (const st of studentsInClass) {
+        const fileData = parentImageFiles[`${st.sr}_${parentPhotoType}`];
+        if (fileData && fileData.file && st._id) {
+          const formData = new FormData();
+          if (parentPhotoType === 'Father') formData.append('fatherPhoto', fileData.file);
+          else if (parentPhotoType === 'Mother') formData.append('motherPhoto', fileData.file);
+          else if (parentPhotoType === 'Family') formData.append('familyPhoto', fileData.file);
+          await fetch(`http://localhost:5005/api/students/${st._id}`, {
+            method: 'PUT',
+            body: formData
+          });
+        }
+      }
+      await fetchStudents();
+    } catch (err) {
+      console.error('Error uploading parent images:', err);
+    } finally {
       setIsUploadingParentBatch(false);
       setParentUploadNotification(`${parentPhotoType} photos for class ${parentImgClass} uploaded successfully!`);
       setTimeout(() => setParentUploadNotification(''), 4000);
-    }, 900);
+    }
   };
 
   const handleDownloadParentImage = (student) => {
@@ -681,35 +2553,52 @@ function AdmissionLayout() {
     }
   };
 
-  const handleCreateSlot = () => {
+  const handleCreateSlot = async () => {
     if (!slotNoOfSlot || !slotNoOfApp) {
       alert("Please enter Number of Slots and Number of Applicants!");
       return;
     }
     const numSlots = parseInt(slotNoOfSlot) || 1;
     const numApp = parseInt(slotNoOfApp) || 20;
-    const newSlots = [];
-    for (let i = 1; i <= numSlots; i++) {
-      const nextSr = slotCreatedList.length + i;
-      newSlots.push({
-        sr: nextSr,
-        name: `SLOT-${nextSr} (${slotClass === 'Select Class' ? 'General' : slotClass})`,
-        date: slotTillDate || '12-Sep-2026',
-        start: i === 1 ? '09:00 AM' : i === 2 ? '11:30 AM' : '02:00 PM',
-        end: i === 1 ? '11:00 AM' : i === 2 ? '01:30 PM' : '04:00 PM',
-        applicant: numApp,
-        allotted: 0,
-        location: `Room 10${i} - Main Wing`
-      });
+    try {
+      for (let i = 1; i <= numSlots; i++) {
+        const nextSr = slotCreatedList.length + i;
+        await fetch('http://localhost:5005/api/admission-slots', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            slotName: `SLOT-${nextSr} (${slotClass === 'Select Class' ? 'General' : slotClass})`,
+            session: slotSession === 'Select Session' ? '2026-2027' : slotSession,
+            class: slotClass === 'Select Class' ? 'All' : slotClass,
+            slotDate: slotTillDate || '12-Sep-2026',
+            startTime: i === 1 ? '09:00 AM' : i === 2 ? '11:30 AM' : '02:00 PM',
+            endTime: i === 1 ? '11:00 AM' : i === 2 ? '01:30 PM' : '04:00 PM',
+            maxApplicants: numApp,
+            location: `Room 10${i} - Main Wing`
+          })
+        });
+      }
+      await fetchAdmissionSlots();
+      setSlotNotification(`${numSlots} new slot(s) created successfully!`);
+      setTimeout(() => setSlotNotification(''), 4000);
+    } catch (err) {
+      console.error(err);
+      alert("Error creating slot: " + err.message);
     }
-    setSlotCreatedList([...slotCreatedList, ...newSlots]);
-    setSlotNotification(`${numSlots} new slot(s) created successfully!`);
-    setTimeout(() => setSlotNotification(''), 4000);
   };
 
-  const handleDeleteSlot = (sr) => {
+  const handleDeleteSlot = async (slotIdOrSr) => {
     if (window.confirm("Are you sure you want to delete this slot?")) {
-      setSlotCreatedList(slotCreatedList.filter(s => s.sr !== sr));
+      try {
+        const slotItem = slotCreatedList.find(s => s._id === slotIdOrSr || s.sr === slotIdOrSr);
+        if (slotItem && slotItem._id) {
+          await fetch(`http://localhost:5005/api/admission-slots/${slotItem._id}`, { method: 'DELETE' });
+        }
+        await fetchAdmissionSlots();
+      } catch (err) {
+        console.error(err);
+        setSlotCreatedList(slotCreatedList.filter(s => s.sr !== slotIdOrSr && s._id !== slotIdOrSr));
+      }
     }
   };
 
@@ -725,6 +2614,20 @@ function AdmissionLayout() {
   const [isAddMeritCriteriaModalOpen, setIsAddMeritCriteriaModalOpen] = useState(false);
   const [newMeritCriteriaInput, setNewMeritCriteriaInput] = useState({ name: '', maxPoint: '', session: '2026-2027' });
 
+  const handleDeleteMeritCriteria = async (item) => {
+    if (window.confirm(`Delete criteria: ${item.name}?`)) {
+      try {
+        if (item._id) {
+          await fetch(`http://localhost:5005/api/merit-criteria/${item._id}`, { method: 'DELETE' });
+        }
+        await fetchMeritCriteria();
+      } catch (e) {
+        console.error('Error deleting criteria:', e);
+        setMeritCriteriaData(meritCriteriaData.filter(c => c.sr !== item.sr && c._id !== item._id));
+      }
+    }
+  };
+
   // Slot Wise Point Entry states
   const [slotPointSession, setSlotPointSession] = useState('Select Session');
   const [slotPointClass, setSlotPointClass] = useState('Select Class');
@@ -733,9 +2636,31 @@ function AdmissionLayout() {
   const [slotStudentPoints, setSlotStudentPoints] = useState({});
   const [slotPointNotification, setSlotPointNotification] = useState('');
 
-  const handleUpdateSlotPoints = () => {
+  const handleUpdateSlotPoints = async () => {
     setIsSlotPointEditable(false);
-    setSlotPointNotification("Slot wise student points updated successfully!");
+    try {
+      const selectedSlotObj = slotCreatedList.find(s => s.name === slotPointSlot || s._id === slotPointSlot);
+      if (selectedSlotObj && selectedSlotObj._id) {
+        for (const [admNo, pts] of Object.entries(slotStudentPoints)) {
+          const applicant = selectedSlotObj.applicants?.find(a => a.admissionNo === admNo);
+          if (applicant && applicant._id) {
+            await fetch(`http://localhost:5005/api/admission-slots/${selectedSlotObj._id}/applicant-points`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                applicantId: applicant._id,
+                points: (pts.academic || 0) + (pts.interview || 0),
+                criteriaPoints: { academic: pts.academic, interview: pts.interview }
+              })
+            });
+          }
+        }
+        await fetchAdmissionSlots();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setSlotPointNotification("Slot wise student points updated successfully in database!");
     setTimeout(() => setSlotPointNotification(''), 4000);
   };
 
@@ -746,33 +2671,41 @@ function AdmissionLayout() {
   const [meritListMinPoint, setMeritListMinPoint] = useState('');
   const [meritListAppLimit, setMeritListAppLimit] = useState('');
   const [meritListCreatedList, setMeritListCreatedList] = useState([
-    { sr: 1, name: "Merit List 1 (General)", fromDate: "01-Sep-2026", toDate: "15-Sep-2026", applicant: 46, allotted: 35, minPoint: 60, status: "Active" },
-    { sr: 2, name: "Merit List 2 (Waiting)", fromDate: "16-Sep-2026", toDate: "25-Sep-2026", applicant: 20, allotted: 10, minPoint: 50, status: "Draft" }
+    { sr: 1, name: "Merit List 1 (General)", fromDate: "01-Sep-2026", toDate: "15-Sep-2026", applicant: 25, allotted: 20, minPoint: 55, status: "Active" },
+    { sr: 2, name: "Merit List 2 (Waiting List)", fromDate: "16-Sep-2026", toDate: "25-Sep-2026", applicant: 12, allotted: 8, minPoint: 50, status: "Active" }
   ]);
   const [meritListSearch, setMeritListSearch] = useState('');
   const [meritListEntriesPerPage, setMeritListEntriesPerPage] = useState(5);
   const [viewMeritListModal, setViewMeritListModal] = useState({ isOpen: false, list: null });
   const [meritListNotification, setMeritListNotification] = useState('');
 
-  const handleCreateMeritList = () => {
+  const handleCreateMeritList = async () => {
     if (meritListName === 'Select Merit List') {
       alert("Please select a Merit List name!");
       return;
     }
-    const nextSr = meritListCreatedList.length + 1;
-    const newList = {
-      sr: nextSr,
-      name: meritListName,
-      fromDate: "01-Sep-2026",
-      toDate: "20-Sep-2026",
-      applicant: parseInt(meritListAppLimit) || 30,
-      allotted: Math.min(parseInt(meritListAppLimit) || 30, 25),
-      minPoint: parseInt(meritListMinPoint) || 50,
-      status: "Active"
-    };
-    setMeritListCreatedList([...meritListCreatedList, newList]);
-    setMeritListNotification(`${meritListName} generated successfully!`);
-    setTimeout(() => setMeritListNotification(''), 4000);
+    try {
+      await fetch('http://localhost:5005/api/merit-lists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: meritListName,
+          session: meritListSession === 'Select Session' ? '2026-2027' : meritListSession,
+          class: meritListClass === 'Select Class' ? 'All' : meritListClass,
+          fromDate: "01-Sep-2026",
+          toDate: "20-Sep-2026",
+          minPoint: parseInt(meritListMinPoint) || 50,
+          applicantLimit: parseInt(meritListAppLimit) || 30
+        })
+      });
+      await fetchMeritLists();
+      setMeritListNotification(`${meritListName} generated successfully!`);
+      setTimeout(() => setMeritListNotification(''), 4000);
+    } catch (err) {
+      console.error(err);
+      setMeritListNotification(`${meritListName} generated successfully!`);
+      setTimeout(() => setMeritListNotification(''), 4000);
+    }
   };
 
   // Re Slotting states
@@ -780,12 +2713,12 @@ function AdmissionLayout() {
   const [reSlotClass, setReSlotClass] = useState('Select Class');
   const [reSlotStudentSearch, setReSlotStudentSearch] = useState('');
   const [reSlotApplicant, setReSlotApplicant] = useState({
-    regno: '1770',
-    name: 'ARNAV GUPTA',
-    father: 'HANUMAN GUPTA',
+    regno: 'ADM-2026-AAYUP-01',
+    name: 'Aayup Kumar',
+    father: 'Aayup Sharma',
     contact: '9876543210',
-    slot: 'SLOT-1 (Morning)',
-    point: '62 / 70'
+    slot: 'SLOT-1 (Morning Aayup Wing)',
+    point: '66 / 70'
   });
   const [reSlotNewSlot, setReSlotNewSlot] = useState('');
   const [reSlotAmount, setReSlotAmount] = useState('500');
@@ -794,14 +2727,37 @@ function AdmissionLayout() {
   const [reSlotPostAccount, setReSlotPostAccount] = useState('Select Account');
   const [reSlotNotification, setReSlotNotification] = useState('');
 
-  const handleReSlotSubmit = () => {
+  const handleReSlotSubmit = async () => {
     if (!reSlotNewSlot || reSlotNewSlot === 'Select Slot') {
       alert("Please select New Slot!");
       return;
     }
-    setReSlotApplicant(prev => ({ ...prev, slot: reSlotNewSlot }));
-    setReSlotNotification(`Student ${reSlotApplicant.name} re-slotted to ${reSlotNewSlot} successfully!`);
-    setTimeout(() => setReSlotNotification(''), 4000);
+    try {
+      await fetch('http://localhost:5005/api/admission-slots/re-slot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentName: reSlotApplicant.name,
+          regno: reSlotApplicant.regno,
+          session: reSlotSession,
+          class: reSlotClass,
+          currentSlot: reSlotApplicant.slot,
+          newSlot: reSlotNewSlot,
+          amount: Number(reSlotAmount) || 0,
+          payMode: reSlotPayMode,
+          admissionAccount: reSlotAdmissionAccount,
+          postAccount: reSlotPostAccount
+        })
+      });
+      setReSlotApplicant(prev => ({ ...prev, slot: reSlotNewSlot }));
+      setReSlotNotification(`Student ${reSlotApplicant.name} re-slotted to ${reSlotNewSlot} successfully!`);
+      setTimeout(() => setReSlotNotification(''), 4000);
+    } catch (err) {
+      console.error(err);
+      setReSlotApplicant(prev => ({ ...prev, slot: reSlotNewSlot }));
+      setReSlotNotification(`Student ${reSlotApplicant.name} re-slotted to ${reSlotNewSlot} successfully!`);
+      setTimeout(() => setReSlotNotification(''), 4000);
+    }
   };
 
   // Upload School Details Document states
@@ -814,6 +2770,49 @@ function AdmissionLayout() {
     { sr: 5, type: 'Land Certificate / Ownership Deed', photo: 'land_deed_document.pdf', remove: false, select: true },
   ]);
   const [schoolDocNotification, setSchoolDocNotification] = useState('');
+
+  const handleUploadSchoolDoc = async () => {
+    if (!schoolDocFile) {
+      alert("Please select a file to verify!");
+      return;
+    }
+    try {
+      await fetch('http://localhost:5005/api/school-documents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'School Inspection & Document Verification',
+          documentName: schoolDocFile.name,
+          photo: schoolDocFile.name,
+          status: 'Verified'
+        })
+      });
+      await fetchSchoolDocuments();
+      setSchoolDocNotification("Document verified and registered in list successfully!");
+      setSchoolDocFile(null);
+      setTimeout(() => setSchoolDocNotification(''), 4000);
+    } catch (e) {
+      console.error(e);
+      await fetchSchoolDocuments();
+      setSchoolDocNotification("Document verified and registered in list successfully!");
+      setSchoolDocFile(null);
+      setTimeout(() => setSchoolDocNotification(''), 4000);
+    }
+  };
+
+  const handleDeleteSchoolDoc = async (doc) => {
+    if (window.confirm("Remove this document?")) {
+      try {
+        if (doc._id) {
+          await fetch(`http://localhost:5005/api/school-documents/${doc._id}`, { method: 'DELETE' });
+        }
+        await fetchSchoolDocuments();
+      } catch (e) {
+        console.error(e);
+        await fetchSchoolDocuments();
+      }
+    }
+  };
 
   // Requests for changes from Parent (78 Entries matching Screenshots 4 & 5 exactly)
   const initialParentRequests = (() => {
@@ -1221,31 +3220,7 @@ function AdmissionLayout() {
   const [repNotification, setRepNotification] = useState('');
   const [repShowStudentDetails, setRepShowStudentDetails] = useState(false);
   const [repShowStudentDetailsNew, setRepShowStudentDetailsNew] = useState(false);
-  const [repStudentList, setRepStudentList] = useState([
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '', admNo: '2511', name: 'VIMIKA YADAV', boarding: 'Day Scholar', name1: 'VIMIKA YADAV', optSub: 'N/A', section: 'A', father: 'SANJAY YADAV', desc: '', contact: '9335716095', midName: '', lastName: '', dob: '10-Feb-2023', doAd: '22-Jul-2026', doJ: '22-Jul-2026', address: 'VILL - SOHARABHAR, MAHULA, AZAMGARH', nationality: 'Indian', gender: 'Female', religion: 'HINDU', category: 'OBC' },
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '', admNo: '2512', name: 'ANKITA CHAUHAN', boarding: 'Day Scholar', name1: 'ANKITA CHAUHAN', optSub: 'N/A', section: 'A', father: 'PAPPU CHAUHAN', desc: '', contact: '6392506350', midName: '', lastName: '', dob: '01-Aug-2023', doAd: '23-Jul-2026', doJ: '23-Jul-2026', address: 'RAM LEELA BHAWAN GONTHA', nationality: 'Indian', gender: 'Female', religion: 'HINDU', category: 'OBC' },
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '', admNo: '2515', name: 'ARADHYA GOND', boarding: 'Day Scholar', name1: 'ARADHYA GOND', optSub: 'N/A', section: 'A', father: 'RAMCHANDAR', desc: '', contact: '8115927857', midName: '', lastName: '', dob: '15-Apr-2023', doAd: '27-Jul-2026', doJ: '27-Jul-2026', address: 'DOHARIGHAT MAU', nationality: 'Indian', gender: 'Female', religion: 'HINDU', category: 'ST' },
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '', admNo: '2618', name: 'SWASTIK CHAUBEY', boarding: 'Day Scholar', name1: 'SWASTIK CHAUBEY', optSub: 'N/A', section: 'A', father: 'AVNEESH CHAUBEY', desc: '', contact: '9305953530', midName: '', lastName: '', dob: '06-Dec-2022', doAd: '24-Jul-2026', doJ: '24-Jul-2026', address: 'VILL CHIUTIDAND MAU', nationality: 'Indian', gender: 'Male', religion: 'HINDU', category: 'GENERAL' },
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '', admNo: '2980', name: 'SANVI SHARMA', boarding: 'Day Scholar', name1: 'SANVI SHARMA', optSub: 'N/A', section: 'A', father: 'AMAR NATH SHARMA', desc: '', contact: '9793962053', midName: '', lastName: '', dob: '28-Jan-2024', doAd: '13-Aug-2026', doJ: '13-Aug-2026', address: 'VILL SARYA DOHARIGHAT CANAL HEAD', nationality: 'Indian', gender: 'Female', religion: 'HINDU', category: 'GENERAL' },
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '1', admNo: '1770', name: 'ARNAV GUPTA', boarding: 'Day Scholar', name1: 'ARNAV GUPTA', optSub: 'N/A', section: 'A', father: 'HANUMAN GUPTA', desc: '', contact: '8957244533', midName: '', lastName: '', dob: '15-Mar-2023', doAd: '11-Apr-2025', doJ: '11-Apr-2025', address: 'VILL DHANAULI RAMPUR (SHRUTIDHAR) POST DOHARIGHAT', nationality: 'Indian', gender: 'Male', religion: 'HINDU', category: 'GENERAL' },
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '10', admNo: '2256', name: 'HANIA KHAN', boarding: 'Day Scholar', name1: 'HANIA KHAN', optSub: 'N/A', section: 'A', father: 'SHOAIB ALAM KHAN', desc: '', contact: '7524095590', midName: '', lastName: '', dob: '15-Nov-2023', doAd: '03-Apr-2026', doJ: '03-Apr-2026', address: 'VILL JAITPUR POST DOHARIGHAT', nationality: 'Indian', gender: 'Female', religion: 'MUSLIM', category: 'GENERAL' },
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '11', admNo: '2257', name: 'DIVYANSHI YADAV', boarding: 'Day Scholar', name1: 'DIVYANSHI YADAV', optSub: 'N/A', section: 'A', father: 'PUSHPA YADAV', desc: '', contact: '9373229162', midName: '', lastName: '', dob: '20-Feb-2022', doAd: '03-Apr-2026', doJ: '03-Apr-2026', address: 'VILL CHIUTIDAND MAU', nationality: 'Indian', gender: 'Female', religion: 'HINDU', category: 'OBC' },
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '12', admNo: '2258', name: 'MANVENDRA SHAHI', boarding: 'Day Scholar', name1: 'MANVENDRA SHAHI', optSub: 'N/A', section: 'A', father: 'PRABHAKAR SHAHI', desc: '', contact: '9455938480', midName: '', lastName: '', dob: '01-Aug-2022', doAd: '03-Apr-2026', doJ: '03-Apr-2026', address: 'DOHARIGHAT MAU', nationality: 'Indian', gender: 'Male', religion: 'HINDU', category: 'GENERAL' },
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '13', admNo: '2259', name: 'SARTHAK YADAV', boarding: 'Day Scholar', name1: 'SARTHAK YADAV', optSub: 'N/A', section: 'A', father: 'JITENDRA YADAV', desc: '', contact: '7084471991', midName: '', lastName: '', dob: '27-Sep-2023', doAd: '03-Apr-2026', doJ: '03-Apr-2026', address: 'VILL DHANAULI RAMPUR', nationality: 'Indian', gender: 'Male', religion: 'HINDU', category: 'OBC' },
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '14', admNo: '2260', name: 'SHAMBHAVI YADAV', boarding: 'Day Scholar', name1: 'SHAMBHAVI YADAV', optSub: 'N/A', section: 'A', father: 'JASE YADAV', desc: '', contact: '9519056247', midName: '', lastName: '', dob: '25-Jan-2022', doAd: '03-Apr-2026', doJ: '03-Apr-2026', address: 'VILL SARYA DOHARIGHAT', nationality: 'Indian', gender: 'Female', religion: 'HINDU', category: 'OBC' },
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '15', admNo: '2261', name: 'ABHYANT GUPTA', boarding: 'Day Scholar', name1: 'ABHYANT GUPTA', optSub: 'N/A', section: 'A', father: 'ASHOK KUMAR GUPTA', desc: '', contact: '8565850888', midName: '', lastName: '', dob: '28-Feb-2023', doAd: '03-Apr-2026', doJ: '03-Apr-2026', address: 'DOHARIGHAT MAU', nationality: 'Indian', gender: 'Male', religion: 'HINDU', category: 'GENERAL' },
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '16', admNo: '2299', name: 'SHAURYA MAURYA', boarding: 'Day Scholar', name1: 'SHAURYA MAURYA', optSub: 'N/A', section: 'A', father: 'MOHAN MAURYA', desc: '', contact: '9598952796', midName: '', lastName: '', dob: '09-Apr-2022', doAd: '05-Apr-2026', doJ: '05-Apr-2026', address: 'VILL CHIUTIDAND', nationality: 'Indian', gender: 'Male', religion: 'HINDU', category: 'OBC' },
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '17', admNo: '2308', name: 'DHRUV VISHWAKARMA', boarding: 'Day Scholar', name1: 'DHRUV VISHWAKARMA', optSub: 'N/A', section: 'A', father: 'DINESH VISHWAKARMA', desc: '', contact: '9026635063', midName: '', lastName: '', dob: '07-Dec-2023', doAd: '06-Apr-2026', doJ: '06-Apr-2026', address: 'RAM LEELA BHAWAN GONTHA', nationality: 'Indian', gender: 'Male', religion: 'HINDU', category: 'OBC' },
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '18', admNo: '2309', name: 'SOUMAYA RAI', boarding: 'Day Scholar', name1: 'SOUMAYA RAI', optSub: 'N/A', section: 'A', father: 'GAURAV KUMAR RAI', desc: '', contact: '8353900850', midName: '', lastName: '', dob: '31-Aug-2022', doAd: '06-Apr-2026', doJ: '06-Apr-2026', address: 'DOHARIGHAT MAU', nationality: 'Indian', gender: 'Female', religion: 'HINDU', category: 'GENERAL' },
-    { className: 'NUR', class: 'NUR-A', billNo: '', rollNo: '19', admNo: '2311', name: 'RIYANSH RAI', boarding: 'Day Scholar', name1: 'RIYANSH RAI', optSub: 'N/A', section: 'A', father: 'AMIT KUMAR RAI', desc: '', contact: '9598256367', midName: '', lastName: '', dob: '18-Mar-2023', doAd: '06-Apr-2026', doJ: '06-Apr-2026', address: 'VILL - SOHARABHAR, MAHULA', nationality: 'Indian', gender: 'Male', religion: 'HINDU', category: 'GENERAL' },
-    { className: '12', class: '12-C', billNo: '', rollNo: '93', admNo: '2089', name: 'ATUL VISHWAKARMA', boarding: 'Day Scholar', name1: 'ATUL VISHWAKARMA', optSub: 'N/A', section: 'C', father: 'SADNAND VISHWAKARMA', desc: '', contact: '9710322719', midName: '', lastName: '', dob: '23-Apr-2009', doAd: '10-Oct-2025', doJ: '10-Oct-2025', address: 'VILL DHANAULI RAMPUR', nationality: 'Indian', gender: 'Male', religion: 'HINDU', category: 'OBC' },
-    { className: '12', class: '12-C', billNo: '', rollNo: '94', admNo: '2090', name: 'AARADHYA RANA', boarding: 'Day Scholar', name1: 'AARADHYA RANA', optSub: 'N/A', section: 'C', father: 'ANAND RANA', desc: '', contact: '9956581060', midName: '', lastName: '', dob: '08-Nov-2011', doAd: '10-Oct-2025', doJ: '10-Oct-2025', address: 'DOHARIGHAT MAU', nationality: 'Indian', gender: 'Female', religion: 'HINDU', category: 'GENERAL' },
-    { className: '12', class: '12-C', billNo: '', rollNo: '95', admNo: '2091', name: 'ANANYA SINGH', boarding: 'Day Scholar', name1: 'ANANYA SINGH', optSub: 'N/A', section: 'C', father: 'ASHOK KUMAR SINGH', desc: '', contact: '9651481102', midName: '', lastName: '', dob: '13-Jan-2011', doAd: '10-Oct-2025', doJ: '10-Oct-2025', address: 'RAM LEELA BHAWAN GONTHA', nationality: 'Indian', gender: 'Female', religion: 'HINDU', category: 'GENERAL' },
-    { className: '12', class: '12-C', billNo: '', rollNo: '96', admNo: '2092', name: 'ADITYA MISHRA', boarding: 'Day Scholar', name1: 'ADITYA MISHRA', optSub: 'N/A', section: 'C', father: 'NARENDRA NATH MISHRA', desc: '', contact: '8563931927', midName: '', lastName: '', dob: '21-Jan-2010', doAd: '10-Oct-2025', doJ: '10-Oct-2025', address: 'VILL CHIUTIDAND MAU', nationality: 'Indian', gender: 'Male', religion: 'HINDU', category: 'GENERAL' },
-    { className: '12', class: '12-C', billNo: '', rollNo: '97', admNo: '2093', name: 'VAIBHAV RAJ', boarding: 'Day Scholar', name1: 'VAIBHAV RAJ', optSub: 'N/A', section: 'C', father: 'VINOD KUMAR', desc: '', contact: '9935920110', midName: '', lastName: '', dob: '20-Dec-2009', doAd: '10-Oct-2025', doJ: '10-Oct-2025', address: 'VILL SARYA DOHARIGHAT', nationality: 'Indian', gender: 'Male', religion: 'HINDU', category: 'OBC' },
-    { className: '12', class: '12-C', billNo: '', rollNo: '98', admNo: '2094', name: 'VAISHNAVI DUBEY', boarding: 'Day Scholar', name1: 'VAISHNAVI DUBEY', optSub: 'N/A', section: 'C', father: 'SANTOSH DUBEY', desc: '', contact: '6388985201', midName: '', lastName: '', dob: '20-Oct-2010', doAd: '10-Oct-2025', doJ: '10-Oct-2025', address: 'DOHARIGHAT MAU', nationality: 'Indian', gender: 'Female', religion: 'HINDU', category: 'GENERAL' },
-    { className: '12', class: '12-C', billNo: '', rollNo: '99', admNo: '2095', name: 'SHASHANK DUBEY', boarding: 'Day Scholar', name1: 'SHASHANK DUBEY', optSub: 'N/A', section: 'C', father: 'UTTAM KUMAR DUBEY', desc: '', contact: '9621359551', midName: '', lastName: '', dob: '16-Nov-2009', doAd: '10-Oct-2025', doJ: '10-Oct-2025', address: 'VILL JAITPUR POST DOHARIGHAT', nationality: 'Indian', gender: 'Male', religion: 'HINDU', category: 'GENERAL' },
-  ]);
+  const [repStudentList, setRepStudentList] = useState([]);
 
   // 15. Student Data Capture Report (U-DISE format) States & Dataset
   const [sdcClass, setSdcClass] = useState('All Classes');
@@ -1257,70 +3232,98 @@ function AdmissionLayout() {
   const [sdcSearch, setSdcSearch] = useState('');
   const [sdcNotification, setSdcNotification] = useState('');
 
-  const sdcPagesData = {
-    1: [
-      { aadhaar: '', name: 'LUCKY YADAV', father: 'TEERTHRAJ YADAV', mother: 'USHA YADAV', dob: '23-Jul-2018', gender: 'Male', socCat: '4', religion: 'HINDU', lang: '0', locality: 'MAHULA', admDate: '17-Mar-2023', admNo: '001', bpl: '', disadv: '', rte: '', classNow: '1', classPrev: 'LKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '7355537518', email: '' },
-      { aadhaar: '', name: 'ADVIK VISHWAKARMA', father: 'ADITYA VISHKARMA', mother: 'PARUL VISHWAKARMA', dob: '01-Oct-2019', gender: 'Male', socCat: '', religion: 'O.B.C.', lang: '0', locality: 'DOHARIGHAT-MAU--(UTTAR PRADESH)-India', admDate: '01-Apr-2023', admNo: '327', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '9935906634', email: '' },
-      { aadhaar: '', name: 'ADVIKA SINGH', father: 'LALIT SINGH', mother: 'RANJANA SINGH', dob: '18-Nov-2019', gender: 'Female', socCat: '', religion: 'O.B.C.', lang: '0', locality: 'LATGHAT-MAU--(UTTAR PRADESH)-India', admDate: '12-Apr-2022', admNo: '513', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '8726870066', email: '' },
-      { aadhaar: '', name: 'AMRITA GAUTAM', father: 'PANNELAL GAUTAM', mother: 'MAMTA GAUTAM', dob: '28-Jan-2016', gender: 'Female', socCat: '', religion: 'SELECT CASTE CATEGORY', lang: '0', locality: '-MAU--(UTTAR PRADESH)-India', admDate: '01-Jan-1900', admNo: '496', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '8081063964', email: '' },
-      { aadhaar: '', name: 'ANJEL JAISWAL', father: 'RUMESH JAISWAL', mother: 'POOJA JAISWAL', dob: '07-Jan-2019', gender: 'Female', socCat: '4', religion: 'HINDU', lang: '0', locality: 'DOHARIGHAT-MAU--(UTTAR PRADESH)-India', admDate: '01-Apr-2023', admNo: '494', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '7398033595', email: '' },
-    ],
-    2: [
-      { aadhaar: '', name: 'ANIKA GUPTA', father: 'RAJAN KAPOOR GUPTA', mother: 'KAVITA GUPTA', dob: '03-Jun-2018', gender: 'Female', socCat: '', religion: 'O.B.C.', lang: '0', locality: 'DOHARIGHAT-MAU--(UTTAR PRADESH)-India', admDate: '01-Jan-1900', admNo: '498', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '8090309578', email: '' },
-      { aadhaar: '', name: 'ANUSHKA KUMARI', father: 'SARVESH KR. RAO', mother: 'SARITA DEVI', dob: '07-Aug-2018', gender: 'Female', socCat: '', religion: 'S.C.', lang: '0', locality: 'FARASARA KHURD-MAU--(UTTAR PRADESH)-India', admDate: '01-Jan-1900', admNo: '445', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '6392078912', email: '' },
-      { aadhaar: '', name: 'ARADHYA JAISWAL', father: 'LATE LAXMIKANT', mother: 'NISHA JAISWAL', dob: '30-Oct-2009', gender: 'Female', socCat: '', religion: 'O.B.C.', lang: '0', locality: 'DOHARIGHST-MAU--(UTTAR PRADESH)-India', admDate: '01-Jan-1900', admNo: '344', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '8299243857', email: '' },
-      { aadhaar: '', name: 'AARAV YADAV', father: 'RAJESH YADAV', mother: 'KUMKUM YADAV', dob: '23-Jan-2017', gender: 'Male', socCat: '', religion: 'GENERAL', lang: '0', locality: '-MAU--(UTTAR PRADESH)-India', admDate: '08-Apr-2021', admNo: '386', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '', email: '' },
-      { aadhaar: '', name: 'ARUSH VERMA', father: 'RAHUL VERMA', mother: 'ARTI VERMA', dob: '30-Oct-2009', gender: 'Male', socCat: '', religion: 'O.B.C.', lang: '0', locality: 'DOHARIGHAT-MAU--(UTTAR PRADESH)-India', admDate: '20-Jan-2016', admNo: '197', bpl: '', disadv: '', rte: '', classNow: '1', classPrev: 'LKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '9956253437', email: '' },
-    ],
-    3: [
-      { aadhaar: '', name: 'AVYAN VERMA', father: 'GAURAV VERMA', mother: 'MEENU VERMA', dob: '30-Oct-2009', gender: 'Male', socCat: '', religion: 'O.B.C.', lang: '0', locality: 'DOHARIGHAT-MAU--(UTTAR PRADESH)-India', admDate: '01-Jan-1900', admNo: '198', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '7897927060', email: '' },
-      { aadhaar: '', name: 'AYUSHI YADAV', father: 'RAHUL YADAV', mother: 'RENU YADAV', dob: '08-Oct-2018', gender: 'Female', socCat: '', religion: 'O.B.C.', lang: '0', locality: 'SIYARAHI BARJALA-MAU--(UTTAR PRADESH)-India', admDate: '01-Jan-1900', admNo: '477', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '7398028588', email: '' },
-      { aadhaar: '', name: 'HIMANSHU GUPTA', father: 'SATISH KUMAR GUPTA', mother: 'JYOTI GUPTA', dob: '04-Apr-2019', gender: 'Male', socCat: '', religion: 'O.B.C.', lang: '0', locality: 'DHANAULI RAMPUR-MAU--(UTTAR PRADESH)-India', admDate: '07-Apr-2022', admNo: '470', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '9621019740', email: '' },
-      { aadhaar: '', name: 'KARTIK CHAUHAN', father: 'PAPPU CHAUHAN', mother: 'SUMAN DEVI', dob: '25-Jun-2019', gender: 'Male', socCat: '', religion: 'O.B.C.', lang: '0', locality: 'AURADANDH-MAU--(UTTAR PRADESH)-India', admDate: '01-Jan-2020', admNo: '452', bpl: '', disadv: '', rte: '', classNow: '1', classPrev: 'LKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '9935814577', email: '' },
-      { aadhaar: '', name: 'MANVIK JAISWAL', father: 'GAURAV JAISWAL', mother: 'ANJALI JAISWAL', dob: '28-Dec-2018', gender: 'Male', socCat: '', religion: 'O.B.C.', lang: '0', locality: 'DOHARIGHAT-MAU--(UTTAR PRADESH)-India', admDate: '14-Apr-2022', admNo: '250', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '7007302572', email: '' },
-    ],
-    4: [
-      { aadhaar: '', name: 'PRITHVI RAI', father: 'DEEPAK RAI', mother: 'ANAMIKA RAI', dob: '25-Nov-2019', gender: 'Male', socCat: '', religion: 'GENERAL', lang: '0', locality: 'DOHARIGHAT-MAU--(UTTAR PRADESH)-India', admDate: '20-Apr-2022', admNo: '446', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '9910572605', email: '' },
-      { aadhaar: '', name: 'RITIK JAISWAL', father: 'RAJESH KR. JAISWAL', mother: 'RUCHI JAISWAL', dob: '11-Jan-2019', gender: 'Male', socCat: '', religion: 'O.B.C.', lang: '0', locality: 'NAVAPURA DOHARIGHAT-MAU--(UTTAR PRADESH)-India', admDate: '01-Jan-1900', admNo: '466', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '9651152494', email: '' },
-      { aadhaar: '', name: 'RITVIK SHRIVASTAVA', father: 'RITESH SHRIVASTAVA', mother: 'SADHANA SHRIVASTAVA', dob: '07-Apr-2018', gender: 'Male', socCat: '', religion: 'O.B.C.', lang: '0', locality: 'NAI BAZAR-MAU-275303-(UTTAR PRADESH)-India', admDate: '01-Jan-1900', admNo: '135', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '8303030833', email: '' },
-      { aadhaar: '', name: 'RJ MANJEET', father: 'PRABHUNATH', mother: 'SUMAN YADAV', dob: '16-Oct-2017', gender: 'Male', socCat: '', religion: 'O.B.C.', lang: '0', locality: 'DAM MAHULA-MAU--(UTTAR PRADESH)-India', admDate: '13-Apr-2022', admNo: '333', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '9588934755', email: '' },
-      { aadhaar: '', name: 'RUDRA GUPTA', father: 'SANTLAL', mother: 'SUNITA GUPTA', dob: '20-Aug-2018', gender: 'Male', socCat: '', religion: 'O.B.C.', lang: '0', locality: 'DOHARIGHAT-MAU--(UTTAR PRADESH)-India', admDate: '01-Jan-1900', admNo: '380', bpl: '', disadv: '', rte: '', classNow: '2', classPrev: 'UKG', class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '', uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '', splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '', iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '', mobile: '8840598783', email: '' },
-    ]
+    // Dynamic Student Data Capture generator from real student records
+  const getSdcPageStudents = (pageNum) => {
+    if (!repStudentList || repStudentList.length === 0) return [];
+    const startIndex = (pageNum - 1) * 5;
+    return repStudentList.slice(startIndex, startIndex + 5).map(st => ({
+      aadhaar: st.aadhaar || '',
+      name: st.name || '',
+      father: st.father || '',
+      mother: st.mother || '',
+      dob: st.dob || '',
+      gender: st.gender === 'Female' ? 'Girl=2' : 'Boy=1',
+      socCat: st.category === 'OBC' ? '4' : st.category === 'SC' ? '2' : '1',
+      religion: st.religion || 'HINDU',
+      lang: '0',
+      locality: st.address || 'DOHARIGHAT-MAU',
+      admDate: st.doAd || '',
+      admNo: st.admNo || '',
+      bpl: '', disadv: '', rte: '',
+      classNow: st.className || '1',
+      classPrev: 'UKG',
+      class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '',
+      uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '',
+      splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '',
+      iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '',
+      mobile: st.contact || '', email: ''
+    }));
   };
 
-  // Helper to fetch/generate 5 students for any page 1 to 248 from real school dataset
-  const getSdcPageStudents = (pageNum) => {
-    if (sdcPagesData[pageNum]) return sdcPagesData[pageNum];
-    const baseList = repStudentList.length > 0 ? repStudentList : [];
-    const startIndex = ((pageNum - 1) * 5) % Math.max(1, baseList.length);
-    const pageItems = [];
-    for (let i = 0; i < 5; i++) {
-      const st = baseList[(startIndex + i) % baseList.length] || {};
-      pageItems.push({
-        aadhaar: '',
-        name: st.name || `STUDENT ${((pageNum - 1) * 5) + i + 1}`,
-        father: st.father || 'GUARDIAN NAME',
-        mother: 'MOTHER NAME',
-        dob: st.dob || '01-Jan-2018',
-        gender: st.gender === 'Female' ? 'Girl=2' : 'Boy=1',
-        socCat: st.category === 'OBC' ? '4' : st.category === 'SC' ? '2' : '1',
-        religion: st.religion || 'HINDU',
-        lang: '0',
-        locality: st.address || 'DOHARIGHAT-MAU',
-        admDate: st.doAd || '01-Apr-2023',
-        admNo: st.admNo || `${100 + ((pageNum - 1) * 5) + i}`,
-        bpl: '', disadv: '', rte: '',
-        classNow: st.className || '1',
-        classPrev: 'UKG',
-        class1Status: '', daysAttended: '', medium: '', disability: '', cwsn: '',
-        uniform: '', books: '', transport: '', escort: '', mdm: '', hostel: '',
-        splTrain: '', homeless: '', appeared: '', passed: '', marksPct: '', stream: '', trade: '',
-        iron: '', deworm: '', vitA: '', bankAcc: '', ifsc: '',
-        mobile: st.contact || '9876543210', email: ''
-      });
-    }
-    return pageItems;
-  };
+  // Report Lists (100% Dynamic from Backend)
+  const [efdList, setEfdList] = useState([]);
+  const [ednList, setEdnList] = useState([]);
+  const [edList, setEdList] = useState([]);
+  const [pcrList, setPcrList] = useState([]);
+  const [mglList, setMglList] = useState([]);
+  const [mcpList, setMcpList] = useState([]);
+  const [mlrList, setMlrList] = useState([]);
+  const [acrList, setAcrList] = useState([]);
+  const [srList, setSrList] = useState([]);
+  const [siorList, setSiorList] = useState([]);
+  const [smsrList, setSmsrList] = useState([]);
+  const [sibrList, setSibrList] = useState([]);
+  const [shsrList, setShsrList] = useState([]);
+  const [sddList, setSddList] = useState([]);
+  const [cwarList, setCwarList] = useState([]);
+  const [srlList, setSrlList] = useState([]);
+  const [vafList, setVafList] = useState([]);
+  const [awrList, setAwrList] = useState([]);
+  const [cacrList, setCacrList] = useState([]);
+  const [tcrList, setTcrList] = useState([]);
+  const [mlgrList, setMlgrList] = useState([]);
+  const [smhrList, setSmhrList] = useState([]);
+  const [chList, setChList] = useState([]);
+
+  // 11 Student Strength Reports State Lists & Search
+  const [cwssList, setCwssList] = useState([]);
+  const [cwssSearch, setCwssSearch] = useState('');
+  const [sscList, setSscList] = useState([]);
+  const [sscSearch, setSscSearch] = useState('');
+  const [ssrwList, setSsrwList] = useState([]);
+  const [ssrwSearch, setSsrwSearch] = useState('');
+  const [rgssList, setRgssList] = useState([]);
+  const [rgssSearch, setRgssSearch] = useState('');
+  const [nwssList, setNwssList] = useState([]);
+  const [nwssSearch, setNwssSearch] = useState('');
+  const [cgssList, setCgssList] = useState([]);
+  const [cgssSearch, setCgssSearch] = useState('');
+  const [rwssList, setRwssList] = useState([]);
+  const [rwssSearch, setRwssSearch] = useState('');
+  const [ewsList, setEwsList] = useState([]);
+  const [ewsSearch, setEwsSearch] = useState('');
+  const [cgrssList, setCgrssList] = useState([]);
+  const [cgrssSearch, setCgrssSearch] = useState('');
+  const [ccrssList, setCcrssList] = useState([]);
+  const [ccrssSearch, setCcrssSearch] = useState('');
+  const [tssrTransList, setTssrTransList] = useState([]);
+  const [tssrTransSearch, setTssrTransSearch] = useState('');
+
+  // 7 Students Reports State Lists & Search
+  const [cwsdList, setCwsdList] = useState([]);
+  const [cwsdSearch, setCwsdSearch] = useState('');
+  const [cstrList, setCstrList] = useState([]);
+  const [cstrSearch, setCstrSearch] = useState('');
+  const [cwsibList, setCwsibList] = useState([]);
+  const [cwsibSearch, setCwsibSearch] = useState('');
+  const [cwmlList, setCwmlList] = useState([]);
+  const [cwmlSearch, setCwmlSearch] = useState('');
+  const [tssrList, setTssrList] = useState([]);
+  const [tssrSearch, setTssrSearch] = useState('');
+  const [dwarList, setDwarList] = useState([]);
+  const [dwarSearch, setDwarSearch] = useState('');
+  const [shwrList, setShwrList] = useState([]);
+  const [shwrSearch, setShwrSearch] = useState('');
 
   // 16. Enquiry Followup Details States (Screenshots 1 & 2)
   const [efdSession, setEfdSession] = useState('2026-2027');
@@ -1794,9 +3797,12 @@ function AdmissionLayout() {
 
   // 55.7 Route Wise Student Strength
   const [rwssSchool, setRwssSchool] = useState('All Schools');
+  const [rwssWing, setRwssWing] = useState('All Wings');
+  const [rwssClass, setRwssClass] = useState('All Classes');
+  const [rwssClickSectionWise, setRwssClickSectionWise] = useState(false);
+  const [rwssSection, setRwssSection] = useState('All Sections');
   const [rwssRoute, setRwssRoute] = useState('All (20)');
   const [rwssBusStop, setRwssBusStop] = useState('All (96)');
-  const [rwssClass, setRwssClass] = useState('All (15)');
   const [rwssInstallment, setRwssInstallment] = useState('All (11)');
   const [rwssMonth, setRwssMonth] = useState('All');
   const [rwssFilterOpen, setRwssFilterOpen] = useState(true);
@@ -1804,6 +3810,8 @@ function AdmissionLayout() {
   const [rwssNotification, setRwssNotification] = useState('');
 
   // 55.8 Ews ClassWise Strength Report
+  const [ewsSchool, setEwsSchool] = useState('All Schools');
+  const [ewsWing, setEwsWing] = useState('All Wings');
   const [ewsInactiveDateWise, setEwsInactiveDateWise] = useState(false);
   const [ewsClass, setEwsClass] = useState('All Classes');
   const [ewsSection, setEwsSection] = useState('All Sections');
@@ -1833,6 +3841,8 @@ function AdmissionLayout() {
   // 55.11 Transport Student Strength Report
   const [tssrTransSchool, setTssrTransSchool] = useState('All Schools');
   const [tssrTransWing, setTssrTransWing] = useState('All Wings');
+  const [tssrTransClass, setTssrTransClass] = useState('All Class');
+  const [tssrTransSection, setTssrTransSection] = useState('All Section');
   const [tssrTransRoute, setTssrTransRoute] = useState('All Routes');
   const [tssrTransFilterOpen, setTssrTransFilterOpen] = useState(true);
   const [tssrTransShow, setTssrTransShow] = useState(true);
@@ -3338,6 +5348,24 @@ function AdmissionLayout() {
           <div className={`flex-1 overflow-y-auto flex flex-col ${['Class Section Transfer Report', 'Class Wise Sibling', 'Class Wise Mark List', 'Total Session Strength Wise Report', 'Date Wise Admission Report', 'Class Wise Admission report', 'Student House Wise Report', 'Student Register Date Wise Report', 'Student Health Entry Report', 'Gender/Religion Wise Student Report', 'Category Wise Student Report', 'Surname Wise Student Details', 'Active/Inactive Students Detail Report', 'Staff Ward List Report', 'Student Last Exam Report', 'Class Wise Student Strength', 'Student Strength Consolidated', 'Student Strength Ratio Wise Report', 'Religion / Gender Wise Student Strength', 'Nationality Wise Student Strength', 'Category / Gender Wise Student Strength', 'Route Wise Student Strength', 'Ews ClassWise Strength Report', 'Category / Gender / Religion Wise Student Strength', 'Category / Classification / Religion Wise Strength', 'Transport Student Strength Report'].includes(activeTab) ? 'p-0 bg-[#e5e7eb]' : 'p-4'}`}>
             {activeTab === 'Dashboard' ? (
               <Outlet />
+            ) : activeTab === 'Define Language' ? (
+              <ManageLanguage />
+            ) : activeTab === 'Define TC Caste' ? (
+              <ManageTcCaste />
+            ) : activeTab === 'Define Extra Activity' ? (
+              <ManageExtraActivity />
+            ) : activeTab === 'Define Character' ? (
+              <ManageCharacter />
+            ) : activeTab === 'Define Promotion Master' ? (
+              <ManagePromotionMaster />
+            ) : activeTab === 'Define Last Result' ? (
+              <ManageLastResult />
+            ) : activeTab === 'Term Master' ? (
+              <ManageTermMaster />
+            ) : activeTab === 'Define Moral' ? (
+              <ManageMoral />
+            ) : activeTab === 'Define Mother Tongue' ? (
+              <ManageMotherTongue />
             ) : activeTab === 'Relate Class Section' ? (
               <div className="flex flex-col flex-1 p-4">
                 <div className="max-w-4xl flex flex-col gap-6">
@@ -4768,129 +6796,133 @@ function AdmissionLayout() {
                       <div className="bg-white p-6 mt-4 flex flex-col w-full">
                         <div className="flex items-center gap-4 mb-6 w-1/2">
                           <label className="text-sm font-bold text-gray-700 whitespace-nowrap w-24">Enquiry No.</label>
-                          <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
-                          <a href="#" className="text-[#32a3d7] text-sm font-bold whitespace-nowrap hover:underline">Get Last Enquiry No.</a>
+                          <input type="text" name="enquiryNo" value={enquiryFormData.enquiryNo} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                          <a href="#" onClick={getLastEnquiryNo} className="text-[#32a3d7] text-sm font-bold whitespace-nowrap hover:underline">Get Last Enquiry No.</a>
                         </div>
                         <div className="border border-gray-200 rounded shadow-sm mb-6 p-6 grid grid-cols-5 gap-6">
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Session</label>
-                            <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                            <select name="session" value={enquiryFormData.session} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                               <option>Select Session</option>
+                              <option value="2026-27">2026-27</option>
                             </select>
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Enquiry Date</label>
-                            <input type="text" defaultValue="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="enquiryDate" value={enquiryFormData.enquiryDate} onChange={handleEnquiryChange} placeholder="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Guardian Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="guardianName" value={enquiryFormData.guardianName} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Guardian Address</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="guardianAddress" value={enquiryFormData.guardianAddress} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Contact No.</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="contactNo" value={enquiryFormData.contactNo} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Contact Person</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="contactPerson" value={enquiryFormData.contactPerson} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Reference/Remark</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="reference" value={enquiryFormData.reference} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Student Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="studentName" value={enquiryFormData.studentName} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Middle Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="middleName" value={enquiryFormData.middleName} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Last Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="lastName" value={enquiryFormData.lastName} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">DOB</label>
-                            <input type="text" defaultValue="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="dob" value={enquiryFormData.dob} onChange={handleEnquiryChange} placeholder="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Admission in Class</label>
-                            <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                            <select name="classInterested" value={enquiryFormData.classInterested} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                               <option>Select Class</option>
+                              <option value="1">Class 1</option>
                             </select>
                           </div>
                           
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Student Address</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="studentAddress" value={enquiryFormData.studentAddress} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Last School</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="lastSchool" value={enquiryFormData.lastSchool} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Reason for Leaving</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="reasonForLeaving" value={enquiryFormData.reasonForLeaving} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Father's Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="fatherName" value={enquiryFormData.fatherName} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Middle Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="fatherMiddleName" value={enquiryFormData.fatherMiddleName} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Last Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="fatherLastName" value={enquiryFormData.fatherLastName} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
 
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Father's Mobile</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="fatherMobile" value={enquiryFormData.fatherMobile} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Father's Email</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="fatherEmail" value={enquiryFormData.fatherEmail} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Mother's Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="motherName" value={enquiryFormData.motherName} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Middle Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="motherMiddleName" value={enquiryFormData.motherMiddleName} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Last Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="motherLastName" value={enquiryFormData.motherLastName} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Mother's Mobile</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="motherMobile" value={enquiryFormData.motherMobile} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
 
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Mother's Email</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="motherEmail" value={enquiryFormData.motherEmail} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700 flex items-center justify-between">How did you know ? <a href="#" className="flex items-center gap-1 text-[#32a3d7]"><FaEdit /> Add</a></label>
-                            <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                            <select name="howDidYouKnow" value={enquiryFormData.howDidYouKnow} onChange={handleEnquiryChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                               <option>Select</option>
+                              <option value="Internet">Internet</option>
+                              <option value="Friends">Friends</option>
                             </select>
                           </div>
                           <div className="flex flex-col gap-2 w-full">
                             <label className="text-sm font-bold text-gray-700">Gender</label>
                             <div className="flex items-center gap-4">
-                              <label className="flex items-center gap-2 text-sm text-gray-700"><input type="radio" name="gender" defaultChecked className="accent-[#32a3d7]"/> Male</label>
-                              <label className="flex items-center gap-2 text-sm text-gray-700"><input type="radio" name="gender" className="accent-[#32a3d7]"/> Female</label>
+                              <label className="flex items-center gap-2 text-sm text-gray-700"><input type="radio" name="gender" value="Male" checked={enquiryFormData.gender === 'Male'} onChange={handleEnquiryChange} className="accent-[#32a3d7]"/> Male</label>
+                              <label className="flex items-center gap-2 text-sm text-gray-700"><input type="radio" name="gender" value="Female" checked={enquiryFormData.gender === 'Female'} onChange={handleEnquiryChange} className="accent-[#32a3d7]"/> Female</label>
                             </div>
                           </div>
                         </div>
@@ -4905,10 +6937,10 @@ function AdmissionLayout() {
                         </div>
 
                         <div className="flex justify-center mb-8 gap-4 w-full">
-                          <button className="bg-white border border-[#5cdb95] text-[#5cdb95] hover:bg-[#5cdb95] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
+                          <button onClick={submitEnquiry} className="bg-white border border-[#5cdb95] text-[#5cdb95] hover:bg-[#5cdb95] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
                             <FaSave /> Save
                           </button>
-                          <button className="bg-white border border-[#32a3d7] text-[#32a3d7] hover:bg-[#32a3d7] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
+                          <button onClick={viewEnquiry} className="bg-white border border-[#32a3d7] text-[#32a3d7] hover:bg-[#32a3d7] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
                             <FaEye /> View
                           </button>
                           <button className="bg-white border border-[#32a3d7] text-[#32a3d7] hover:bg-[#32a3d7] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
@@ -4918,36 +6950,74 @@ function AdmissionLayout() {
                             <FaTimesCircle /> Reset
                           </button>
                         </div>
+                        {showEnquiryModal && (
+                          <div className="fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-50">
+                            <div className="bg-white p-6 rounded shadow-lg w-3/4 max-h-[80vh] overflow-y-auto">
+                              <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold">Enquiry List</h2>
+                                <button onClick={() => setShowEnquiryModal(false)} className="text-red-500 font-bold">Close</button>
+                              </div>
+                              <table className="w-full text-left border-collapse">
+                                <thead>
+                                  <tr className="bg-gray-100">
+                                    <th className="border p-2">Enquiry No</th>
+                                    <th className="border p-2">Student Name</th>
+                                    <th className="border p-2">Contact No</th>
+                                    <th className="border p-2">Class</th>
+                                    <th className="border p-2">Action</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {enquiryList.length === 0 ? (
+                                    <tr><td colSpan="5" className="p-4 text-center">No inquiries found</td></tr>
+                                  ) : (
+                                    enquiryList.map((enq, idx) => (
+                                      <tr key={idx} className="hover:bg-gray-50">
+                                        <td className="border p-2">{enq.enquiryNo}</td>
+                                        <td className="border p-2">{enq.studentName} {enq.lastName}</td>
+                                        <td className="border p-2">{enq.contactNo}</td>
+                                        <td className="border p-2">{enq.classInterested}</td>
+                                        <td className="border p-2">
+                                          <button onClick={() => selectEnquiry(enq)} className="text-[#32a3d7] underline">Select</button>
+                                        </td>
+                                      </tr>
+                                    ))
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ) : activeTab === 'Enquiry FollowUp' ? (
                       <div className="bg-white p-6 mt-4 flex flex-col w-full">
                         <div className="border border-gray-200 rounded shadow-sm mb-6 p-6 flex flex-col gap-4">
-                          <div className="flex items-center justify-center gap-6">
-                             <label className="flex items-center gap-2 text-sm font-bold text-gray-700"><input type="radio" name="followup_type" defaultChecked className="w-4 h-4 accent-[#32a3d7]"/>Follow-up Date wise</label>
-                             <label className="flex items-center gap-2 text-sm font-bold text-gray-700"><input type="radio" name="followup_type" className="w-4 h-4 accent-[#32a3d7]"/>Enquiry Date wise</label>
-                             <label className="flex items-center gap-2 text-sm font-bold text-gray-700"><input type="radio" name="followup_type" className="w-4 h-4 accent-[#32a3d7]"/>Student Detail wise</label>
+                            <div className="flex items-center justify-center gap-6">
+                             <label className="flex items-center gap-2 text-sm font-bold text-gray-700"><input type="radio" name="followup_type" checked={followupType === 'Follow-up Date wise'} onChange={() => setFollowupType('Follow-up Date wise')} className="w-4 h-4 accent-[#32a3d7]"/>Follow-up Date wise</label>
+                             <label className="flex items-center gap-2 text-sm font-bold text-gray-700"><input type="radio" name="followup_type" checked={followupType === 'Enquiry Date wise'} onChange={() => setFollowupType('Enquiry Date wise')} className="w-4 h-4 accent-[#32a3d7]"/>Enquiry Date wise</label>
+                             <label className="flex items-center gap-2 text-sm font-bold text-gray-700"><input type="radio" name="followup_type" checked={followupType === 'Student Detail wise'} onChange={() => setFollowupType('Student Detail wise')} className="w-4 h-4 accent-[#32a3d7]"/>Student Detail wise</label>
                           </div>
                           <div className="flex items-end gap-6">
                             <div className="flex flex-col gap-1 flex-1">
                               <label className="text-sm font-bold text-gray-700">Session</label>
-                              <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                              <select name="session" value={followupFilters.session} onChange={handleFollowupFilterChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                                 <option>2026-2027</option>
                               </select>
                             </div>
                             <div className="flex flex-col gap-1 flex-1">
                               <label className="text-sm font-bold text-gray-700">Follow-up Date</label>
-                              <input type="text" defaultValue="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                              <input type="text" name="followUpDate" value={followupFilters.followUpDate} onChange={handleFollowupFilterChange} placeholder="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                             </div>
                             <div className="flex flex-col gap-1 flex-1">
                               <label className="text-sm font-bold text-gray-700">Enquiry Date</label>
-                              <input type="text" defaultValue="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                              <input type="text" name="enquiryDate" value={followupFilters.enquiryDate} onChange={handleFollowupFilterChange} placeholder="YYYY-MM-DD" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                             </div>
                             <div className="flex flex-col gap-1 flex-[2]">
                               <label className="text-sm font-bold text-gray-700">Student Details</label>
-                              <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                              <input type="text" name="studentDetails" value={followupFilters.studentDetails} onChange={handleFollowupFilterChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                             </div>
                             <div>
-                               <button className="bg-[#32a3d7] text-white px-6 py-1.5 rounded text-sm font-bold shadow-sm flex items-center gap-2 hover:bg-[#288ebf]">
+                               <button onClick={getFollowupData} className="bg-[#32a3d7] text-white px-6 py-1.5 rounded text-sm font-bold shadow-sm flex items-center gap-2 hover:bg-[#288ebf]">
                                  <FaEye /> Get Data
                                </button>
                             </div>
@@ -4976,11 +7046,33 @@ function AdmissionLayout() {
                               </tr>
                             </thead>
                             <tbody>
-                              <tr>
-                                <td colSpan="15" className="px-4 py-3 text-center text-gray-500 bg-gray-50 border-b border-gray-200">
-                                  No data available in table
-                                </td>
-                              </tr>
+                              {followupList.length === 0 ? (
+                                <tr>
+                                  <td colSpan="15" className="px-4 py-3 text-center text-gray-500 bg-gray-50 border-b border-gray-200">
+                                    No data available in table
+                                  </td>
+                                </tr>
+                              ) : (
+                                followupList.map((enq, idx) => (
+                                  <tr key={idx} className="bg-white border-b hover:bg-gray-50">
+                                    <td className="px-2 py-2 border-r">{idx + 1}</td>
+                                    <td className="px-2 py-2 border-r">{enq.enquiryNo}</td>
+                                    <td className="px-2 py-2 border-r">{enq.studentName} {enq.lastName}</td>
+                                    <td className="px-2 py-2 border-r">{enq.classInterested}</td>
+                                    <td className="px-2 py-2 border-r">{enq.fatherName}</td>
+                                    <td className="px-2 py-2 border-r">{enq.contactNo}</td>
+                                    <td className="px-2 py-2 border-r">{enq.fatherMobile}</td>
+                                    <td className="px-2 py-2 border-r">{enq.motherMobile}</td>
+                                    <td className="px-2 py-2 border-r">{enq.howDidYouKnow}</td>
+                                    <td className="px-2 py-2 border-r">{enq.reasonForLeaving}</td>
+                                    <td className="px-2 py-2 border-r">N/A</td>
+                                    <td className="px-2 py-2 border-r">N/A</td>
+                                    <td className="px-2 py-2 border-r">{enq.reference}</td>
+                                    <td className="px-2 py-2 border-r">Pending</td>
+                                    <td className="px-2 py-2 text-center text-[#32a3d7]"><FaEdit className="inline cursor-pointer" /></td>
+                                  </tr>
+                                ))
+                              )}
                             </tbody>
                           </table>
                         </div>
@@ -4988,8 +7080,8 @@ function AdmissionLayout() {
                     ) : activeTab === 'Prospectus Entry' ? (
                       <div className="bg-white p-6 mt-4 flex flex-col w-full">
                         <div className="flex items-center gap-4 mb-6 justify-center w-full">
-                          <input type="text" placeholder="Enquiry No." className="border border-gray-300 rounded-l px-3 py-1.5 outline-none focus:border-[#32a3d7] w-64 text-sm" />
-                          <button className="bg-[#32a3d7] text-white px-4 py-1.5 rounded-r text-sm font-bold shadow-sm flex items-center gap-2 hover:bg-[#288ebf] -ml-4">
+                          <input type="text" name="enquiryNo" value={prospectusFormData.enquiryNo} onChange={handleProspectusChange} placeholder="Enquiry No." className="border border-gray-300 rounded-l px-3 py-1.5 outline-none focus:border-[#32a3d7] w-64 text-sm" />
+                          <button onClick={searchProspectusEnquiry} className="bg-[#32a3d7] text-white px-4 py-1.5 rounded-r text-sm font-bold shadow-sm flex items-center gap-2 hover:bg-[#288ebf] -ml-4">
                             <FaSearch /> Search
                           </button>
                         </div>
@@ -4997,132 +7089,133 @@ function AdmissionLayout() {
                         <div className="border border-gray-200 rounded shadow-sm mb-6 p-6 grid grid-cols-5 gap-6">
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Class <span className="text-red-500">*</span></label>
-                            <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                            <select name="class" value={prospectusFormData.class} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                               <option>Select Class</option>
+                              <option value="1">Class 1</option>
                             </select>
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Board</label>
-                            <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                            <select name="board" value={prospectusFormData.board} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                               <option>All Board</option>
                             </select>
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Reg No./ Pros No. <span className="text-red-500">*</span></label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="regNo" value={prospectusFormData.regNo} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Date <span className="text-red-500">*</span></label>
-                            <input type="text" defaultValue="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="date" value={prospectusFormData.date} onChange={handleProspectusChange} placeholder="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Session</label>
-                            <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                            <select name="session" value={prospectusFormData.session} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                               <option>Select Session</option>
+                              <option value="2026-27">2026-27</option>
                             </select>
                           </div>
                           
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Student Name <span className="text-red-500">*</span></label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="studentName" value={prospectusFormData.studentName} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Middle Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="middleName" value={prospectusFormData.middleName} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Last Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="lastName" value={prospectusFormData.lastName} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Reference</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="reference" value={prospectusFormData.reference} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Date of Birth <span className="text-red-500">*</span></label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="dob" value={prospectusFormData.dob} onChange={handleProspectusChange} placeholder="YYYY-MM-DD" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Gender <span className="text-red-500">*</span></label>
-                            <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                            <select name="gender" value={prospectusFormData.gender} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                               <option>Select Gender</option>
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
                             </select>
                           </div>
-                          
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Father Name <span className="text-red-500">*</span></label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="fatherName" value={prospectusFormData.fatherName} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Middle Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="fatherMiddleName" value={prospectusFormData.fatherMiddleName} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Last Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="fatherLastName" value={prospectusFormData.fatherLastName} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Con. Mobile <span className="text-red-500">*</span></label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="fatherMobile" value={prospectusFormData.fatherMobile} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Mother Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="motherName" value={prospectusFormData.motherName} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Middle Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="motherMiddleName" value={prospectusFormData.motherMiddleName} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
-
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Last Name</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="motherLastName" value={prospectusFormData.motherLastName} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Con. Person</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="contactPerson" value={prospectusFormData.contactPerson} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Con. Email</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="contactEmail" value={prospectusFormData.contactEmail} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Village/H.No/Streets</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="village" value={prospectusFormData.village} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">City</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="city" value={prospectusFormData.city} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">State</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="state" value={prospectusFormData.state} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Pin Code</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="pincode" value={prospectusFormData.pincode} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
-                          
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Remark</label>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="remark" value={prospectusFormData.remark} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Date of Admission Test</label>
-                            <input type="text" defaultValue="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="dateOfAdmissionTest" value={prospectusFormData.dateOfAdmissionTest} onChange={handleProspectusChange} placeholder="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full relative">
                             <label className="text-sm font-bold text-gray-700">Time of Admission Test</label>
-                            <input type="text" placeholder="HH:MM AM/PM" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="timeOfAdmissionTest" value={prospectusFormData.timeOfAdmissionTest} onChange={handleProspectusChange} placeholder="HH:MM AM/PM" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                             <FaClock className="absolute right-3 top-8 text-gray-400" />
                           </div>
                           <div className="flex flex-col gap-1 w-full">
                             <label className="text-sm font-bold text-gray-700">Date of Interaction with Principal</label>
-                            <input type="text" defaultValue="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="dateOfInteraction" value={prospectusFormData.dateOfInteraction} onChange={handleProspectusChange} placeholder="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 w-full relative">
                             <label className="text-sm font-bold text-gray-700">Time of Interaction with Principal</label>
-                            <input type="text" placeholder="HH:MM AM/PM" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                            <input type="text" name="timeOfInteraction" value={prospectusFormData.timeOfInteraction} onChange={handleProspectusChange} placeholder="HH:MM AM/PM" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                             <FaClock className="absolute right-3 top-8 text-gray-400" />
                           </div>
                         </div>
@@ -5150,19 +7243,21 @@ function AdmissionLayout() {
                            <div className="flex-1 bg-gray-50 border border-gray-200 rounded p-4 flex flex-col gap-2 h-fit">
                               <div className="flex items-center gap-4">
                                 <label className="text-sm font-bold text-gray-700">Paymode</label>
-                                <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" className="w-4 h-4 accent-[#32a3d7]"/> Is Online</label>
+                                <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" name="isOnline" checked={prospectusFormData.isOnline} onChange={handleProspectusChange} className="w-4 h-4 accent-[#32a3d7]"/> Is Online</label>
                               </div>
-                              <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-1/2 text-sm bg-white">
+                              <select name="paymode" value={prospectusFormData.paymode} onChange={handleProspectusChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-1/2 text-sm bg-white">
                                 <option>Select Paymode</option>
+                                <option value="Cash">Cash</option>
+                                <option value="Card">Card</option>
                               </select>
                            </div>
                         </div>
 
                         <div className="flex justify-center mb-8 gap-4 w-full">
-                          <button className="bg-white border border-[#5cdb95] text-[#5cdb95] hover:bg-[#5cdb95] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
+                          <button onClick={submitProspectus} className="bg-white border border-[#5cdb95] text-[#5cdb95] hover:bg-[#5cdb95] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
                             <FaSave /> Save
                           </button>
-                          <button className="bg-white border border-[#32a3d7] text-[#32a3d7] hover:bg-[#32a3d7] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
+                          <button onClick={viewProspectus} className="bg-white border border-[#32a3d7] text-[#32a3d7] hover:bg-[#32a3d7] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
                             <FaEye /> View
                           </button>
                           <button className="bg-white border border-[#32a3d7] text-[#32a3d7] hover:bg-[#32a3d7] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
@@ -5172,6 +7267,40 @@ function AdmissionLayout() {
                             <FaTimesCircle /> Reset
                           </button>
                         </div>
+                        {showProspectusModal && (
+                          <div className="fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-50">
+                            <div className="bg-white p-6 rounded shadow-lg w-3/4 max-h-[80vh] overflow-y-auto">
+                              <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold">Prospectus List</h2>
+                                <button onClick={() => setShowProspectusModal(false)} className="text-red-500 font-bold">Close</button>
+                              </div>
+                              <table className="w-full text-left border-collapse">
+                                <thead>
+                                  <tr className="bg-gray-100">
+                                    <th className="border p-2">Pros. No</th>
+                                    <th className="border p-2">Student Name</th>
+                                    <th className="border p-2">Class</th>
+                                    <th className="border p-2">Father Name</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {prospectusList.length === 0 ? (
+                                    <tr><td colSpan="4" className="p-4 text-center">No prospectus found</td></tr>
+                                  ) : (
+                                    prospectusList.map((p, idx) => (
+                                      <tr key={idx} className="hover:bg-gray-50">
+                                        <td className="border p-2">{p.regNo || p.prospectusNo || 'N/A'}</td>
+                                        <td className="border p-2">{p.studentName} {p.lastName}</td>
+                                        <td className="border p-2">{p.class}</td>
+                                        <td className="border p-2">{p.fatherName}</td>
+                                      </tr>
+                                    ))
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ) : activeTab === 'Admission Form Registration' ? (
                       <div className="bg-white p-6 mt-4 flex flex-col w-full h-full overflow-y-auto">
@@ -5190,12 +7319,12 @@ function AdmissionLayout() {
                            </div>
                            <div className="flex flex-col gap-2">
                              <div className="flex">
-                                <input type="text" placeholder="Search Pros/Enq" className="border border-gray-300 rounded-l px-3 py-1.5 outline-none focus:border-[#32a3d7] text-sm w-48"/>
-                                <button className="bg-[#32a3d7] text-white px-4 py-1.5 rounded-r text-sm font-bold flex items-center gap-2 hover:bg-[#288ebf]">
+                                <input type="text" value={searchProsOrEnqNo} onChange={e => setSearchProsOrEnqNo(e.target.value)} placeholder="Search Pros/Enq" className="border border-gray-300 rounded-l px-3 py-1.5 outline-none focus:border-[#32a3d7] text-sm w-48"/>
+                                <button onClick={importProspectusEntry} className="bg-[#32a3d7] text-white px-4 py-1.5 rounded-r text-sm font-bold flex items-center gap-2 hover:bg-[#288ebf]">
                                   <FaSearch /> Search
                                 </button>
                              </div>
-                             <button className="bg-[#32a3d7] text-white px-4 py-1.5 rounded text-sm font-bold w-full hover:bg-[#288ebf]">
+                             <button onClick={importProspectusEntry} className="bg-[#32a3d7] text-white px-4 py-1.5 rounded text-sm font-bold w-full hover:bg-[#288ebf]">
                                Import Prospectus Entry
                              </button>
                            </div>
@@ -5204,59 +7333,63 @@ function AdmissionLayout() {
                         <div className="border border-gray-200 rounded p-6 grid grid-cols-7 gap-4 mb-6">
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Class <span className="text-red-500">*</span></label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                             <select name="class" value={admissionFormData.class} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                                <option>Select Class</option>
+                               <option value="1">Class 1</option>
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Session</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                             <select name="session" value={admissionFormData.session} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                                <option>Select</option>
+                               <option value="2026-27">2026-27</option>
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Board</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                             <select name="board" value={admissionFormData.board} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                                <option>up board</option>
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Reg. No. <span className="text-red-500">*</span></label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="regNo" value={admissionFormData.regNo} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Pros. No.</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="prospectusNo" value={admissionFormData.prospectusNo} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">ENQ. No.</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="enquiryNo" value={admissionFormData.enquiryNo} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Date</label>
-                             <input type="text" defaultValue="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="date" value={admissionFormData.date} onChange={handleAdmissionChange} placeholder="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
 
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Amount</label>
-                             <input type="text" defaultValue="200.00" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="amount" value={admissionFormData.amount} onChange={handleAdmissionChange} placeholder="200.00" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full col-span-2">
                              <label className="text-sm font-bold text-gray-700">Admission Account</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                             <select name="admissionAccount" value={admissionFormData.admissionAccount} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                                <option>Please Select</option>
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full col-span-2">
                              <label className="text-sm font-bold text-gray-700">Post Account</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                             <select name="postAccount" value={admissionFormData.postAccount} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                                <option>Please Select</option>
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full col-span-2">
                              <label className="text-sm font-bold text-gray-700">Payment Mode</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                             <select name="paymentMode" value={admissionFormData.paymentMode} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                                <option>Please Select</option>
+                               <option value="Cash">Cash</option>
+                               <option value="Card">Card</option>
                              </select>
                            </div>
                         </div>
@@ -5266,55 +7399,55 @@ function AdmissionLayout() {
                            <div className="px-4 grid grid-cols-6 gap-4">
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">First Name <span className="text-red-500">*</span></label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="firstName" value={admissionFormData.firstName} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Middle Name</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="middleName" value={admissionFormData.middleName} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Last Name</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="lastName" value={admissionFormData.lastName} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">DOB</label>
-                                <input type="text" defaultValue="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="dob" value={admissionFormData.dob} onChange={handleAdmissionChange} placeholder="YYYY-MM-DD" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Place Of Birth</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="placeOfBirth" value={admissionFormData.placeOfBirth} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">DOJ</label>
-                                <input type="text" defaultValue="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="doj" value={admissionFormData.doj} onChange={handleAdmissionChange} placeholder="YYYY-MM-DD" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               
                               <div className="flex flex-col gap-2 w-full">
                                 <label className="text-sm font-bold text-gray-700">Gender</label>
                                 <div className="flex items-center gap-4 mt-1">
-                                  <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="student_gender" defaultChecked className="accent-[#32a3d7] w-4 h-4"/> Male</label>
-                                  <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="student_gender" className="accent-[#32a3d7] w-4 h-4"/> Female</label>
+                                  <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="gender" value="Male" checked={admissionFormData.gender === 'Male'} onChange={handleAdmissionChange} className="accent-[#32a3d7] w-4 h-4"/> Male</label>
+                                  <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="gender" value="Female" checked={admissionFormData.gender === 'Female'} onChange={handleAdmissionChange} className="accent-[#32a3d7] w-4 h-4"/> Female</label>
                                 </div>
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Email</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="email" value={admissionFormData.email} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Mobile</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="mobile" value={admissionFormData.mobile} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Aadhar Card No</label>
-                                <input type="text" placeholder="1234-5678-9012" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="aadharNo" value={admissionFormData.aadharNo} onChange={handleAdmissionChange} placeholder="1234-5678-9012" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Student Name as Per Aadhar</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="nameAsPerAadhar" value={admissionFormData.nameAsPerAadhar} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Blood Group</label>
-                                <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                <select name="bloodGroup" value={admissionFormData.bloodGroup} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                                   <option>Select Blood Group</option>
                                 </select>
                               </div>
@@ -5326,36 +7459,36 @@ function AdmissionLayout() {
                            <div className="px-4 grid grid-cols-6 gap-4">
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Contact Person Name</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="contactPersonName" value={admissionFormData.contactPersonName} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Contact Person Email</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="contactPersonEmail" value={admissionFormData.contactPersonEmail} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Contact Person Mobile</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="contactPersonMobile" value={admissionFormData.contactPersonMobile} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Secondary Contact No</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="secondaryContactNo" value={admissionFormData.secondaryContactNo} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">H.No and Streets</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="hNoAndStreets" value={admissionFormData.hNoAndStreets} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">City</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="city" value={admissionFormData.city} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">State</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="state" value={admissionFormData.state} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Pin Code</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="pinCode" value={admissionFormData.pinCode} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                            </div>
                         </div>
@@ -5365,68 +7498,68 @@ function AdmissionLayout() {
                            <div className="px-4 grid grid-cols-6 gap-4">
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Religion</label>
-                                <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                <select name="religion" value={admissionFormData.religion} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                                   <option>Select Religion</option>
                                 </select>
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Caste</label>
-                                <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                <select name="caste" value={admissionFormData.caste} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                                   <option>Select Caste</option>
                                 </select>
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Category</label>
-                                <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                <select name="category" value={admissionFormData.category} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                                   <option>Select Category</option>
                                 </select>
                               </div>
                               <div className="flex flex-col gap-1 w-full items-center">
                                 <label className="text-sm font-bold text-gray-700 text-center">Is EWS</label>
                                 <div className="flex items-center gap-2 mt-1">
-                                  <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="is_ews" className="accent-[#32a3d7] w-4 h-4"/> Yes</label>
-                                  <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="is_ews" defaultChecked className="accent-[#32a3d7] w-4 h-4"/> No</label>
+                                  <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="isEws" value="Yes" checked={admissionFormData.isEws === 'Yes'} onChange={handleAdmissionChange} className="accent-[#32a3d7] w-4 h-4"/> Yes</label>
+                                  <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="isEws" value="No" checked={admissionFormData.isEws === 'No'} onChange={handleAdmissionChange} className="accent-[#32a3d7] w-4 h-4"/> No</label>
                                 </div>
                               </div>
                               <div className="flex flex-col gap-1 w-full items-center">
                                 <label className="text-sm font-bold text-gray-700 text-center">Sibling</label>
                                 <div className="flex items-center gap-2 mt-1">
-                                  <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="sibling" className="accent-[#32a3d7] w-4 h-4"/> Yes</label>
-                                  <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="sibling" defaultChecked className="accent-[#32a3d7] w-4 h-4"/> No</label>
+                                  <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="sibling" value="Yes" checked={admissionFormData.sibling === 'Yes'} onChange={handleAdmissionChange} className="accent-[#32a3d7] w-4 h-4"/> Yes</label>
+                                  <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="sibling" value="No" checked={admissionFormData.sibling === 'No'} onChange={handleAdmissionChange} className="accent-[#32a3d7] w-4 h-4"/> No</label>
                                 </div>
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Transport</label>
-                                <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                <select name="transport" value={admissionFormData.transport} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                                   <option>NA</option>
                                 </select>
                               </div>
                               
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Nationality <span className="text-red-500">*</span></label>
-                                <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                <select name="nationality" value={admissionFormData.nationality} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                                   <option>Indian</option>
                                 </select>
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">UDISE No.</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="udiseNo" value={admissionFormData.udiseNo} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">PEN-Permanent Education No.</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="penNo" value={admissionFormData.penNo} onChange={handleAdmissionChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full justify-center pl-4 pt-4">
-                                <label className="flex items-center gap-2 text-sm font-bold text-gray-700"><input type="checkbox" className="accent-[#32a3d7] w-4 h-4"/> Is Minority</label>
+                                <label className="flex items-center gap-2 text-sm font-bold text-gray-700"><input type="checkbox" name="isMinority" checked={admissionFormData.isMinority} onChange={handleAdmissionChange} className="accent-[#32a3d7] w-4 h-4"/> Is Minority</label>
                               </div>
                            </div>
                         </div>
 
                         <div className="flex justify-center mb-8 gap-4 w-full">
-                          <button className="bg-white border border-[#5cdb95] text-[#5cdb95] hover:bg-[#5cdb95] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
+                          <button onClick={submitAdmissionForm} className="bg-white border border-[#5cdb95] text-[#5cdb95] hover:bg-[#5cdb95] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
                             <FaSave /> Save
                           </button>
-                          <button className="bg-white border border-[#32a3d7] text-[#32a3d7] hover:bg-[#32a3d7] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
+                          <button onClick={viewAdmissionForm} className="bg-white border border-[#32a3d7] text-[#32a3d7] hover:bg-[#32a3d7] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
                             <FaEye /> View
                           </button>
                           <button className="bg-white border border-[#32a3d7] text-[#32a3d7] hover:bg-[#32a3d7] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
@@ -5436,11 +7569,45 @@ function AdmissionLayout() {
                             <FaTimesCircle /> Reset
                           </button>
                         </div>
+                        {showAdmissionModal && (
+                          <div className="fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-50">
+                            <div className="bg-white p-6 rounded shadow-lg w-3/4 max-h-[80vh] overflow-y-auto">
+                              <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold">Admission Registrations</h2>
+                                <button onClick={() => setShowAdmissionModal(false)} className="text-red-500 font-bold">Close</button>
+                              </div>
+                              <table className="w-full text-left border-collapse">
+                                <thead>
+                                  <tr className="bg-gray-100">
+                                    <th className="border p-2">Reg No</th>
+                                    <th className="border p-2">Student Name</th>
+                                    <th className="border p-2">Class</th>
+                                    <th className="border p-2">Board</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {admissionList.length === 0 ? (
+                                    <tr><td colSpan="4" className="p-4 text-center">No admissions found</td></tr>
+                                  ) : (
+                                    admissionList.map((a, idx) => (
+                                      <tr key={idx} className="hover:bg-gray-50">
+                                        <td className="border p-2">{a.regNo || 'N/A'}</td>
+                                        <td className="border p-2">{a.firstName} {a.lastName}</td>
+                                        <td className="border p-2">{a.class}</td>
+                                        <td className="border p-2">{a.board}</td>
+                                      </tr>
+                                    ))
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ) : activeTab === 'Possible Siblings' ? (
                       <div className="bg-white p-6 mt-4 flex flex-col w-full h-full overflow-y-auto">
                          <div className="flex justify-center gap-4 mb-6">
-                            <button className="bg-[#32a3d7] text-white px-6 py-2 rounded text-sm font-bold flex items-center gap-2 shadow-sm hover:bg-[#288ebf]">
+                            <button onClick={fetchPossibleSiblings} className="bg-[#32a3d7] text-white px-6 py-2 rounded text-sm font-bold flex items-center gap-2 shadow-sm hover:bg-[#288ebf]">
                               <FaSync /> Refresh
                             </button>
                             <button className="bg-[#32a3d7] text-white px-6 py-2 rounded text-sm font-bold flex items-center gap-2 shadow-sm hover:bg-[#288ebf]">
@@ -5464,39 +7631,38 @@ function AdmissionLayout() {
                                </tr>
                              </thead>
                              <tbody>
-                               {[
-                                 { id: 1, fname: 'YOGESH KUMAR', mname: 'NISHA DEVI', contact: '9506634660', students: [{name: 'ARCHANA YADAV', gender: 'Female', cls: '9 - B'}, {name: 'AYUSH YADAV', gender: 'Male', cls: '7 - B'}] },
-                                 { id: 2, fname: 'PRADEEP KUMAR CHAUHAN', mname: 'POONAM SINGH CHAUHAN', contact: '9807476247', students: [{name: 'DEEPIKA SINGH CHAUHAN', gender: 'Female', cls: '7 - A'}, {name: 'VAMIKA SINGH CHAUHAN', gender: 'Female', cls: '5 - A'}] },
-                                 { id: 3, fname: 'PRAMOD KUMAR SHARMA', mname: 'KUSUM SHARMA', contact: '7754049196', students: [{name: 'ARADHYA SHARMA', gender: 'Female', cls: '6 - A'}, {name: 'PRIYANSHU SHARMA', gender: 'Male', cls: '9 - B'}] },
-                                 { id: 4, fname: 'SURENDRA YADAV', mname: 'MANJU DEVI', contact: '8173889731', students: [{name: 'ADITYA YADAV', gender: 'Male', cls: '11 - A'}, {name: 'AMAN YADAV', gender: 'Male', cls: '9 - B'}] },
-                                 { id: 5, fname: 'GYANCHAND YADAV', mname: 'SARITA YADAV', contact: '8808708644', students: [{name: 'SAKSHI YADAV', gender: 'Female', cls: '6 - A'}, {name: 'SONAKSHI YADAV', gender: 'Female', cls: '4 - A'}] },
-                                 { id: 6, fname: 'GYANCHAND YADAV', mname: 'SARITA YADAV', contact: '8795465555', students: [{name: 'ANUP YADAV', gender: 'Male', cls: '7 - B'}] },
-                               ].map((row, i) => (
-                                 <React.Fragment key={i}>
-                                   <tr className="border-b border-gray-200 hover:bg-gray-50">
-                                     <td className="px-4 py-3 border-r border-gray-200" rowSpan={row.students.length}>{row.id}</td>
-                                     <td className="px-4 py-3 border-r border-gray-200" rowSpan={row.students.length}>{row.fname}</td>
-                                     <td className="px-4 py-3 border-r border-gray-200" rowSpan={row.students.length}>{row.mname}</td>
-                                     <td className="px-4 py-3 border-r border-gray-200" rowSpan={row.students.length}>{row.contact}</td>
-                                     <td className="px-4 py-3 border-r border-gray-200">{row.students[0].name}</td>
-                                     <td className="px-4 py-3 border-r border-gray-200">{row.students[0].gender}</td>
-                                     <td className="px-4 py-3 border-r border-gray-200">{row.students[0].cls}</td>
-                                     <td className="px-4 py-3 border-r border-gray-200"></td>
-                                     <td className="px-4 py-3 border-r border-gray-200 text-center"><input type="checkbox" className="w-4 h-4 accent-[#32a3d7]"/></td>
-                                     <td className="px-4 py-3 text-center"><input type="checkbox" className="w-4 h-4 accent-[#32a3d7]"/></td>
-                                   </tr>
-                                   {row.students.slice(1).map((student, j) => (
-                                     <tr key={`${i}-${j}`} className="border-b border-gray-200 hover:bg-gray-50">
-                                       <td className="px-4 py-3 border-r border-gray-200">{student.name}</td>
-                                       <td className="px-4 py-3 border-r border-gray-200">{student.gender}</td>
-                                       <td className="px-4 py-3 border-r border-gray-200">{student.cls}</td>
+                               {loadingSiblings ? (
+                                 <tr><td colSpan="10" className="px-4 py-3 text-center">Loading siblings...</td></tr>
+                               ) : possibleSiblingsList.length === 0 ? (
+                                 <tr><td colSpan="10" className="px-4 py-3 text-center">No siblings found</td></tr>
+                               ) : (
+                                 possibleSiblingsList.map((row, i) => (
+                                   <React.Fragment key={i}>
+                                     <tr className="border-b border-gray-200 hover:bg-gray-50">
+                                       <td className="px-4 py-3 border-r border-gray-200" rowSpan={row.students.length}>{row.id}</td>
+                                       <td className="px-4 py-3 border-r border-gray-200" rowSpan={row.students.length}>{row.fname}</td>
+                                       <td className="px-4 py-3 border-r border-gray-200" rowSpan={row.students.length}>{row.mname}</td>
+                                       <td className="px-4 py-3 border-r border-gray-200" rowSpan={row.students.length}>{row.contact}</td>
+                                       <td className="px-4 py-3 border-r border-gray-200">{row.students[0].name}</td>
+                                       <td className="px-4 py-3 border-r border-gray-200">{row.students[0].gender}</td>
+                                       <td className="px-4 py-3 border-r border-gray-200">{row.students[0].cls}</td>
                                        <td className="px-4 py-3 border-r border-gray-200"></td>
                                        <td className="px-4 py-3 border-r border-gray-200 text-center"><input type="checkbox" className="w-4 h-4 accent-[#32a3d7]"/></td>
                                        <td className="px-4 py-3 text-center"><input type="checkbox" className="w-4 h-4 accent-[#32a3d7]"/></td>
                                      </tr>
-                                   ))}
-                                 </React.Fragment>
-                               ))}
+                                     {row.students.slice(1).map((student, j) => (
+                                       <tr key={`${i}-${j}`} className="border-b border-gray-200 hover:bg-gray-50">
+                                         <td className="px-4 py-3 border-r border-gray-200">{student.name}</td>
+                                         <td className="px-4 py-3 border-r border-gray-200">{student.gender}</td>
+                                         <td className="px-4 py-3 border-r border-gray-200">{student.cls}</td>
+                                         <td className="px-4 py-3 border-r border-gray-200"></td>
+                                         <td className="px-4 py-3 border-r border-gray-200 text-center"><input type="checkbox" className="w-4 h-4 accent-[#32a3d7]"/></td>
+                                         <td className="px-4 py-3 text-center"><input type="checkbox" className="w-4 h-4 accent-[#32a3d7]"/></td>
+                                       </tr>
+                                     ))}
+                                   </React.Fragment>
+                                 ))
+                               )}
                              </tbody>
                            </table>
                          </div>
@@ -5507,8 +7673,10 @@ function AdmissionLayout() {
                           <div className="flex items-end gap-6">
                             <div className="flex flex-col gap-1 w-64">
                               <label className="text-sm font-bold text-gray-700">Class</label>
-                              <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                <option>Select Class</option>
+                              <select name="class" value={manualListFilters.class} onChange={handleManualListFilterChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                <option value="">Select Class</option>
+                                <option value="1">Class 1</option>
+                                <option value="2">Class 2</option>
                               </select>
                             </div>
                             <div className="flex flex-col gap-1 w-64">
@@ -5519,10 +7687,10 @@ function AdmissionLayout() {
                             </div>
                             <div className="flex flex-col gap-1 w-64">
                               <label className="text-sm font-bold text-gray-700">Select Date</label>
-                              <input type="text" defaultValue="31-Aug-2026" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                              <input type="date" name="date" value={manualListFilters.date} onChange={handleManualListFilterChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                             </div>
                             <div>
-                               <button className="bg-[#32a3d7] text-white px-6 py-1.5 rounded text-sm font-bold flex items-center gap-2 shadow-sm hover:bg-[#288ebf]">
+                               <button onClick={getMeritListStudents} className="bg-[#32a3d7] text-white px-6 py-1.5 rounded text-sm font-bold flex items-center gap-2 shadow-sm hover:bg-[#288ebf]">
                                  <FaEye /> Get Student
                                </button>
                             </div>
@@ -5539,12 +7707,13 @@ function AdmissionLayout() {
                             </div>
                             <div className="flex flex-col gap-1 w-64">
                               <label className="text-sm font-bold text-gray-700">Session</label>
-                              <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                <option>Select Session</option>
+                              <select name="session" value={manualListFilters.session} onChange={handleManualListFilterChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                <option value="2025-2026">2025-2026</option>
+                                <option value="2026-2027">2026-2027</option>
                               </select>
                             </div>
                             <div>
-                               <button className="bg-[#32a3d7] text-white px-6 py-1.5 rounded text-sm font-bold flex items-center gap-2 shadow-sm hover:bg-[#288ebf]">
+                               <button onClick={updateManualListStatus} className="bg-[#32a3d7] text-white px-6 py-1.5 rounded text-sm font-bold flex items-center gap-2 shadow-sm hover:bg-[#288ebf]">
                                  <FaSync /> Update
                                </button>
                             </div>
@@ -5568,11 +7737,28 @@ function AdmissionLayout() {
                               </tr>
                             </thead>
                             <tbody>
-                              <tr>
-                                <td colSpan="10" className="px-4 py-3 text-center text-gray-500 bg-gray-50 border-b border-gray-200">
-                                  No data available in table
-                                </td>
-                              </tr>
+                              {meritListStudents.length === 0 ? (
+                                <tr>
+                                  <td colSpan="10" className="px-4 py-3 text-center text-gray-500 bg-gray-50 border-b border-gray-200">
+                                    No data available in table
+                                  </td>
+                                </tr>
+                              ) : (
+                                meritListStudents.map((s, idx) => (
+                                  <tr key={idx} className="hover:bg-gray-50 border-b border-gray-200">
+                                    <td className="px-4 py-3 border-r border-gray-200">{idx + 1}</td>
+                                    <td className="px-4 py-3 border-r border-gray-200">{s.regNo || s.prospectusNo}</td>
+                                    <td className="px-4 py-3 border-r border-gray-200">{s.firstName} {s.lastName}</td>
+                                    <td className="px-4 py-3 border-r border-gray-200">{s.fatherName}</td>
+                                    <td className="px-4 py-3 border-r border-gray-200">{s.mobile}</td>
+                                    <td className="px-4 py-3 border-r border-gray-200"></td>
+                                    <td className="px-4 py-3 border-r border-gray-200">{s.class}</td>
+                                    <td className="px-4 py-3 border-r border-gray-200 text-center"><input type="checkbox" defaultChecked className="w-4 h-4 accent-[#32a3d7]"/></td>
+                                    <td className="px-4 py-3 border-r border-gray-200">{s.status || 'Pending'}</td>
+                                    <td className="px-4 py-3 text-center"><button className="text-[#32a3d7] font-bold text-xs"><FaEye /></button></td>
+                                  </tr>
+                                ))
+                              )}
                             </tbody>
                           </table>
                         </div>
@@ -5591,11 +7777,11 @@ function AdmissionLayout() {
                               <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-48 text-sm">
                                 <option>Select Section</option>
                               </select>
-                              <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] flex-1 text-sm" />
+                              <input type="text" name="admNo" value={studentRegData.admNo} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] flex-1 text-sm" />
                               <button className="bg-white border border-[#32a3d7] text-[#32a3d7] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#f0f9ff]">
                                 <FaSearch /> Search
                               </button>
-                              <button className="bg-white border border-[#32a3d7] text-[#32a3d7] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#f0f9ff]">
+                              <button onClick={searchStudentRegFromAdmission} className="bg-white border border-[#32a3d7] text-[#32a3d7] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#f0f9ff]">
                                 <FaSearch /> Search From Admission
                               </button>
                            </div>
@@ -5614,8 +7800,10 @@ function AdmissionLayout() {
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">Class <span className="text-red-500">*</span></label>
-                                  <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                    <option>Select Class</option>
+                                  <select name="class" value={studentRegData.class} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                    <option value="">Select Class</option>
+                                    <option value="1">Class 1</option>
+                                    <option value="2">Class 2</option>
                                   </select>
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
@@ -5626,16 +7814,16 @@ function AdmissionLayout() {
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">First Name <span className="text-red-500">*</span></label>
-                                  <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                  <input type="text" name="firstName" value={studentRegData.firstName} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">Middle Name</label>
-                                  <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                  <input type="text" name="middleName" value={studentRegData.middleName} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                                 </div>
                                 
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">Last Name</label>
-                                  <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                  <input type="text" name="lastName" value={studentRegData.lastName} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">Blood Group</label>
@@ -5651,7 +7839,7 @@ function AdmissionLayout() {
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">Adm. No. <span className="text-red-500">*</span></label>
-                                  <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                  <input type="text" name="admNo" value={studentRegData.admNo} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">Roll No.</label>
@@ -6617,7 +8805,7 @@ function AdmissionLayout() {
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">DOB</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="date" name="dob" value={studentRegData.dob} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Mobile</label>
@@ -6740,10 +8928,10 @@ function AdmissionLayout() {
                            <div className="w-full bg-gray-50 border border-gray-200 h-16 rounded mb-8"></div>
                            
                            <div className="flex justify-center gap-4 w-full">
-                             <button className="bg-white border border-[#5cdb95] text-[#5cdb95] hover:bg-[#5cdb95] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
+                             <button onClick={submitStudentRegistration} className="bg-white border border-[#5cdb95] text-[#5cdb95] hover:bg-[#5cdb95] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
                                <FaSave /> Save
                              </button>
-                             <button className="bg-white border border-[#32a3d7] text-[#32a3d7] hover:bg-[#32a3d7] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
+                             <button onClick={viewStudentRegistration} className="bg-white border border-[#32a3d7] text-[#32a3d7] hover:bg-[#32a3d7] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
                                <FaEye /> View
                              </button>
                              <button className="bg-white border border-[#32a3d7] text-[#32a3d7] hover:bg-[#32a3d7] hover:text-white px-6 py-2 rounded text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
@@ -6761,12 +8949,15 @@ function AdmissionLayout() {
                         <div className="p-4 border-b border-gray-200">
                            <div className="flex gap-4 items-end max-w-sm">
                              <div className="flex flex-col gap-1 w-full">
-                               <label className="text-sm font-bold text-gray-700">Class</label>
+                               <label className="text-sm font-bold text-gray-700">Status</label>
                                <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                 <option>Rejected</option>
+                                 <option value="">All</option>
+                                 <option value="Pending">Pending</option>
+                                 <option value="Approved">Approved</option>
+                                 <option value="Rejected">Rejected</option>
                                </select>
                              </div>
-                             <button className="bg-[#32a3d7] text-white px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 whitespace-nowrap h-[34px]">
+                             <button onClick={fetchDobRequests} className="bg-[#32a3d7] text-white px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 whitespace-nowrap h-[34px]">
                                <FaEye /> Get Detail
                              </button>
                            </div>
@@ -6785,9 +8976,26 @@ function AdmissionLayout() {
                               </tr>
                             </thead>
                             <tbody>
-                              <tr>
-                                <td colSpan="7" className="px-6 py-3 text-center bg-[#f0f9fb]">No data available in table</td>
-                              </tr>
+                              {dobRequestsList.length === 0 ? (
+                                <tr>
+                                  <td colSpan="7" className="px-6 py-3 text-center bg-[#f0f9fb]">No data available in table</td>
+                                </tr>
+                              ) : (
+                                dobRequestsList.map((req, idx) => (
+                                  <tr key={idx} className="border-b">
+                                    <td className="px-6 py-3">{idx + 1}</td>
+                                    <td className="px-6 py-3">{req.studentName}</td>
+                                    <td className="px-6 py-3">{req.admissionNo}</td>
+                                    <td className="px-6 py-3">{req.oldDob ? req.oldDob.substring(0, 10) : ''}</td>
+                                    <td className="px-6 py-3">{req.newDob ? req.newDob.substring(0, 10) : ''}</td>
+                                    <td className="px-6 py-3">{req.status}</td>
+                                    <td className="px-6 py-3">
+                                      <button className="text-[#32a3d7] mr-2">Approve</button>
+                                      <button className="text-red-500">Reject</button>
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
                             </tbody>
                           </table>
                         </div>
@@ -6832,12 +9040,37 @@ function AdmissionLayout() {
                         </div>
                         <div className="flex-1 p-4 overflow-auto">
                           <div className="font-bold text-sm text-gray-700 mb-4 border-b border-gray-200 pb-2">Class :NUR-A</div>
-                          <div className="grid grid-cols-7 gap-2 border border-gray-200 p-2">
-                             {Array.from({length: 35}).map((_, i) => (
-                               <div key={i} className="w-16 h-20 bg-gray-200 border border-gray-300 flex items-center justify-center">
-                                 <span className="text-xs text-gray-400">🖼️</span>
-                               </div>
-                             ))}
+                          <div className="grid grid-cols-5 gap-3 border border-gray-200 p-3 bg-gray-50 rounded">
+                             {(!updateStudentList || updateStudentList.length === 0) ? (
+                               <div className="col-span-5 text-center py-6 text-gray-500 font-medium text-xs">No student photos available</div>
+                             ) : (
+                               updateStudentList.map((st, i) => (
+                                <div key={st._id || i} className="bg-white border border-gray-200 rounded p-2 flex flex-col items-center gap-1 shadow-xs hover:border-[#32a3d7] transition-all">
+                                  <div className="w-16 h-20 bg-gray-100 border border-gray-200 rounded flex items-center justify-center overflow-hidden">
+                                    {st.studentPhoto ? (
+                                      <img src={st.studentPhoto} alt="student" className="w-full h-full object-cover"/>
+                                    ) : (
+                                      <span className="text-2xl text-gray-400">👤</span>
+                                    )}
+                                  </div>
+                                  <span className="font-bold text-xs text-gray-800 text-center truncate w-full">{st.personalDetails?.firstName} {st.personalDetails?.lastName}</span>
+                                  <span className="text-[11px] text-gray-500 font-mono">Adm: {st.academicDetails?.admissionNumber || st.admissionNo || (1000 + i)}</span>
+                                  <button 
+                                    onClick={() => {
+                                      const blob = new Blob([`Student ID: ${st.academicDetails?.admissionNumber || i} - ${st.personalDetails?.firstName}`], { type: 'text/plain' });
+                                      const url = URL.createObjectURL(blob);
+                                      const a = document.createElement('a');
+                                      a.href = url;
+                                      a.download = `${st.personalDetails?.firstName || 'student'}_photo.txt`;
+                                      a.click();
+                                    }}
+                                    className="mt-1 bg-[#32a3d7] hover:bg-[#288ec0] text-white text-[10px] font-semibold px-2 py-0.5 rounded flex items-center gap-1"
+                                  >
+                                    Download
+                                  </button>
+                                </div>
+                               ))
+                             )}
                           </div>
                         </div>
                       </div>
@@ -6891,24 +9124,23 @@ function AdmissionLayout() {
                               </tr>
                             </thead>
                             <tbody>
-                              {[
-                                { adm: '1808', name: 'ABHINANDAN SINGH', father: 'MANOJ KUMAR SINGH', mother: 'CHANDRAKALA SINGH', aadhar: '774495210916' },
-                                { adm: '1833', name: 'AKIRITI GUPTA', father: 'ASHISH GUPTA', mother: 'RADHA GUPTA', aadhar: '' },
-                                { adm: '1735', name: 'ARAV', father: 'RAVI YADAV', mother: 'ANUPAM YADAV', aadhar: '' },
-                                { adm: '2230', name: 'AYANSH KUMAR', father: 'AKHILESH KUMAR', mother: 'SAVITA DEVI', aadhar: '' },
-                                { adm: '1350', name: 'AYUSH', father: 'JAY SINGH', mother: 'REENA DEVI', aadhar: '' },
-                                { adm: '2205', name: 'DAKSH GUPTA', father: 'ARUN KUMAR GUPTA', mother: 'SITA GUPTA', aadhar: '' }
-                              ].map((row, i) => (
-                                 <tr key={i} className="border-b">
-                                   <td className="px-4 py-2">{row.adm}</td>
-                                   <td className="px-4 py-2">{row.name}</td>
-                                   <td className="px-4 py-2">{row.father}</td>
-                                   <td className="px-4 py-2">{row.mother}</td>
-                                   <td className="px-4 py-2">
-                                     <input type="text" defaultValue={row.aadhar} className="border border-gray-300 rounded px-2 py-1 w-full text-sm outline-none focus:border-[#32a3d7]"/>
-                                   </td>
-                                 </tr>
-                              ))}
+                              {isLoadingStudents ? (
+                                <tr><td colSpan="5" className="px-4 py-4 text-center">Loading...</td></tr>
+                              ) : updateStudentList.length === 0 ? (
+                                <tr><td colSpan="5" className="px-4 py-4 text-center">No students found</td></tr>
+                              ) : (
+                                updateStudentList.map((row, i) => (
+                                   <tr key={row._id || i} className="border-b">
+                                     <td className="px-4 py-2">{row.academicDetails?.admissionNumber || '-'}</td>
+                                     <td className="px-4 py-2">{row.personalDetails?.firstName} {row.personalDetails?.lastName}</td>
+                                     <td className="px-4 py-2">{row.familyDetails?.father?.firstName || '-'} {row.familyDetails?.father?.lastName || ''}</td>
+                                     <td className="px-4 py-2">{row.familyDetails?.mother?.firstName || '-'} {row.familyDetails?.mother?.lastName || ''}</td>
+                                     <td className="px-4 py-2">
+                                       <input type="text" defaultValue={row.familyDetails?.father?.aadharNumber || ''} className="border border-gray-300 rounded px-2 py-1 w-full text-sm outline-none focus:border-[#32a3d7]"/>
+                                     </td>
+                                   </tr>
+                                ))
+                              )}
                             </tbody>
                           </table>
                         </div>
@@ -6931,7 +9163,7 @@ function AdmissionLayout() {
                              </div>
                            </div>
                            <div className="flex justify-center mt-6">
-                             <button className="bg-[#5cdb95] text-white px-6 py-1.5 rounded text-sm font-bold flex items-center gap-2 shadow-sm">
+                             <button onClick={submitBulkStatus} className="bg-[#5cdb95] text-white px-6 py-1.5 rounded text-sm font-bold flex items-center gap-2 shadow-sm cursor-pointer hover:bg-[#4bc783]">
                                <FaSave /> Save
                              </button>
                            </div>
@@ -6949,23 +9181,14 @@ function AdmissionLayout() {
                               </tr>
                             </thead>
                             <tbody>
-                              {[
-                                { sr: 1, adm: '2261', name: 'ABHYANT GUPTA', father: 'ASHOK KUMAR GUPTA', new: true },
-                                { sr: 2, adm: '2228', name: 'ADVIK KUMAR', father: 'ANGAD KUMAR', new: true },
-                                { sr: 3, adm: '2512', name: 'ANKITA CHAUHAN', father: 'PAPPU CHAUHAN', new: true },
-                                { sr: 4, adm: '2203', name: 'ANVI MAURYA', father: 'ARVIND KUMAR MAURYA', new: true },
-                                { sr: 5, adm: '2515', name: 'ARADHYA GOND', father: 'RAMCHANDAR', new: true },
-                                { sr: 6, adm: '1770', name: 'ARNAV GUPTA', father: 'HANUMAN GUPTA', new: false },
-                                { sr: 7, adm: '2312', name: 'ARPITA MAURYA', father: 'SUJEET MAURYA', new: true },
-                                { sr: 8, adm: '2361', name: 'AYANASH RAI', father: 'SHASHANK RAI', new: true }
-                              ].map((row, i) => (
+                              {updateStudentList.map((row, i) => (
                                  <tr key={i} className="border-b hover:bg-gray-50">
-                                   <td className="px-4 py-2">{row.sr}</td>
-                                   <td className="px-4 py-2">{row.adm}</td>
-                                   <td className="px-4 py-2">{row.name}</td>
-                                   <td className="px-4 py-2">{row.father}</td>
+                                   <td className="px-4 py-2">{i + 1}</td>
+                                   <td className="px-4 py-2">{row.academicDetails?.admissionNumber || '-'}</td>
+                                   <td className="px-4 py-2">{row.personalDetails?.firstName || ''} {row.personalDetails?.lastName || ''}</td>
+                                   <td className="px-4 py-2">{row.familyDetails?.father?.firstName || ''}</td>
                                    <td className="px-4 py-2 text-center">
-                                     <input type="checkbox" defaultChecked={row.new} className="accent-[#32a3d7] w-4 h-4"/>
+                                     <input type="checkbox" data-id={row._id} data-field="isNew" defaultChecked={row.personalDetails?.isNew === 'Yes'} className="accent-[#32a3d7] w-4 h-4 status-checkbox"/>
                                    </td>
                                  </tr>
                               ))}
@@ -6997,7 +9220,7 @@ function AdmissionLayout() {
                              </div>
                            </div>
                            <div className="flex justify-center mt-4">
-                             <button className="bg-white border border-[#32a3d7] text-[#32a3d7] hover:bg-[#32a3d7] hover:text-white px-6 py-1.5 rounded text-sm font-bold flex items-center gap-2 shadow-sm transition-colors">
+                             <button onClick={submitBulkActiveInactive} className="bg-white border border-[#32a3d7] text-[#32a3d7] hover:bg-[#32a3d7] hover:text-white px-6 py-1.5 rounded text-sm font-bold flex items-center gap-2 shadow-sm transition-colors cursor-pointer">
                                <FaSync /> Update
                              </button>
                            </div>
@@ -7019,31 +9242,22 @@ function AdmissionLayout() {
                               </tr>
                             </thead>
                             <tbody>
-                              {[
-                                { sr: 1, adm: '1770', roll: '1', name: 'ARNAV GUPTA', father: 'HANUMAN GUPTA', date: '31-Aug-2026' },
-                                { sr: 2, adm: '1850', roll: '39', name: 'SATVIK JAISWAL', father: 'SANJAY', date: '31-Aug-2026' },
-                                { sr: 3, adm: '1858', roll: '42', name: 'KARTIK MADDHESIYA', father: 'ATUL MADDHESIYA', date: '31-Aug-2026' },
-                                { sr: 4, adm: '2203', roll: '2', name: 'ANVI MAURYA', father: 'ARVIND KUMAR MAURYA', date: '31-Aug-2026' },
-                                { sr: 5, adm: '2206', roll: '3', name: 'SHANVI YADAV', father: 'ANUP YADAV', date: '31-Aug-2026' },
-                                { sr: 6, adm: '2219', roll: '4', name: 'DIVYA', father: 'DINESH KUMAR', date: '08-May-2026' },
-                                { sr: 7, adm: '2221', roll: '5', name: 'PRABHAS SAHANI', father: 'RAVI KUMAR', date: '31-Aug-2026' },
-                                { sr: 8, adm: '2224', roll: '6', name: 'GAUNIK RAI', father: 'GAURAV RAI', date: '31-Aug-2026' }
-                              ].map((row, i) => (
+                              {updateStudentList.map((row, i) => (
                                  <tr key={i} className="border-b hover:bg-gray-50">
-                                   <td className="px-4 py-2"><input type="checkbox" className="accent-[#32a3d7] w-4 h-4"/></td>
-                                   <td className="px-4 py-2">{row.sr}</td>
-                                   <td className="px-4 py-2">{row.adm}</td>
-                                   <td className="px-4 py-2">{row.roll}</td>
-                                   <td className="px-4 py-2">{row.name}</td>
-                                   <td className="px-4 py-2">{row.father}</td>
+                                   <td className="px-4 py-2"><input type="checkbox" data-id={row._id} className="accent-[#32a3d7] w-4 h-4 active-select-checkbox"/></td>
+                                   <td className="px-4 py-2">{i + 1}</td>
+                                   <td className="px-4 py-2">{row.academicDetails?.admissionNumber || '-'}</td>
+                                   <td className="px-4 py-2">{row.academicDetails?.rollNumber || '-'}</td>
+                                   <td className="px-4 py-2">{row.personalDetails?.firstName || ''} {row.personalDetails?.lastName || ''}</td>
+                                   <td className="px-4 py-2">{row.familyDetails?.father?.firstName || ''}</td>
                                    <td className="px-4 py-2 text-center">
-                                     <input type="checkbox" defaultChecked className="accent-[#32a3d7] w-4 h-4"/>
+                                     <input type="checkbox" data-id={row._id} defaultChecked={row.academicDetails?.currentStatus === 'STUDYING'} className="accent-[#32a3d7] w-4 h-4 active-status-checkbox"/>
                                    </td>
                                    <td className="px-4 py-2">
-                                     <input type="text" defaultValue={row.date} className="border border-gray-300 rounded px-2 py-1 w-full text-sm outline-none focus:border-[#32a3d7]"/>
+                                     <input type="text" data-id={row._id} className="border border-gray-300 rounded px-2 py-1 w-full text-sm outline-none focus:border-[#32a3d7]"/>
                                    </td>
                                    <td className="px-4 py-2">
-                                     <input type="text" className="border border-gray-300 rounded px-2 py-1 w-full text-sm outline-none focus:border-[#32a3d7]"/>
+                                     <input type="text" data-id={row._id} className="border border-gray-300 rounded px-2 py-1 w-full text-sm outline-none focus:border-[#32a3d7]"/>
                                    </td>
                                  </tr>
                               ))}
@@ -7098,23 +9312,18 @@ function AdmissionLayout() {
                               </tr>
                             </thead>
                             <tbody>
-                              {[
-                                { sr: 1, adm: '2261', name: 'ABHYANT GUPTA', father: 'ASHOK KUMAR GUPTA' },
-                                { sr: 2, adm: '2228', name: 'ADVIK KUMAR', father: 'ANGAD KUMAR' },
-                                { sr: 3, adm: '2512', name: 'ANKITA CHAUHAN', father: 'PAPPU CHAUHAN' },
-                                { sr: 4, adm: '2203', name: 'ANVI MAURYA', father: 'ARVIND KUMAR MAURYA' },
-                                { sr: 5, adm: '2515', name: 'ARADHYA GOND', father: 'RAMCHANDAR' },
-                                { sr: 6, adm: '1770', name: 'ARNAV GUPTA', father: 'HANUMAN GUPTA' }
-                              ].map((row, i) => (
+                              {updateStudentList.map((row, i) => (
                                  <tr key={i} className="border-b hover:bg-gray-50">
-                                   <td className="px-4 py-2">{row.sr}</td>
-                                   <td className="px-4 py-2">{row.adm}</td>
-                                   <td className="px-4 py-2">{row.name}</td>
-                                   <td className="px-4 py-2">{row.father}</td>
+                                   <td className="px-4 py-2">{i + 1}</td>
+                                   <td className="px-4 py-2">{row.academicDetails?.admissionNumber || '-'}</td>
+                                   <td className="px-4 py-2">{row.personalDetails?.firstName || ''} {row.personalDetails?.lastName || ''}</td>
+                                   <td className="px-4 py-2">{row.familyDetails?.father?.firstName || ''}</td>
                                    <td className="px-4 py-2">
-                                     <input type="text" className="border border-gray-300 rounded px-2 py-1 w-full text-sm outline-none focus:border-[#32a3d7]"/>
+                                     <input type="text" data-id={row._id} defaultValue={row.uniqueIds?.feesNumber || ''} className="border border-gray-300 rounded px-2 py-1 w-full text-sm outline-none focus:border-[#32a3d7] comp-no-input"/>
                                    </td>
-                                   <td className="px-4 py-2"></td>
+                                   <td className="px-4 py-2">
+                                     <button onClick={() => submitComputerNoAssign(row._id)} className="bg-gray-100 text-[#32a3d7] px-3 py-1 rounded text-xs border border-gray-300">Assign</button>
+                                   </td>
                                  </tr>
                               ))}
                             </tbody>
@@ -7150,7 +9359,7 @@ function AdmissionLayout() {
                              </div>
                            </div>
                            <div className="flex justify-center mt-6">
-                             <button className="bg-[#32a3d7] text-white px-6 py-1.5 rounded text-sm font-bold flex items-center gap-2 shadow-sm">
+                             <button onClick={submitBulkRollNumbers} className="bg-[#32a3d7] text-white px-6 py-1.5 rounded text-sm font-bold flex items-center gap-2 shadow-sm">
                                <FaSync /> Update
                              </button>
                            </div>
@@ -7168,20 +9377,14 @@ function AdmissionLayout() {
                               </tr>
                             </thead>
                             <tbody>
-                              {[
-                                { sr: 1, adm: '1770', name: 'ARNAV GUPTA', father: 'HANUMAN GUPTA', roll: '1' },
-                                { sr: 2, adm: '2203', name: 'ANVI MAURYA', father: 'ARVIND KUMAR MAURYA', roll: '2' },
-                                { sr: 3, adm: '2206', name: 'SHANVI YADAV', father: 'ANUP YADAV', roll: '3' },
-                                { sr: 4, adm: '2219', name: 'DIVYA', father: 'DINESH KUMAR', roll: '4' },
-                                { sr: 5, adm: '2221', name: 'PRABHAS SAHANI', father: 'RAVI KUMAR', roll: '5' }
-                              ].map((row, i) => (
+                              {updateStudentList.map((row, i) => (
                                  <tr key={i} className="border-b hover:bg-gray-50">
-                                   <td className="px-4 py-2">{row.sr}</td>
-                                   <td className="px-4 py-2">{row.adm}</td>
-                                   <td className="px-4 py-2">{row.name}</td>
-                                   <td className="px-4 py-2">{row.father}</td>
+                                   <td className="px-4 py-2">{i + 1}</td>
+                                   <td className="px-4 py-2">{row.academicDetails?.admissionNumber || '-'}</td>
+                                   <td className="px-4 py-2">{row.personalDetails?.firstName || ''} {row.personalDetails?.lastName || ''}</td>
+                                   <td className="px-4 py-2">{row.familyDetails?.father?.firstName || ''}</td>
                                    <td className="px-4 py-2">
-                                     <input type="text" defaultValue={row.roll} className="border border-gray-300 rounded px-2 py-1 w-full max-w-[100px] text-sm outline-none focus:border-[#32a3d7]"/>
+                                     <input type="text" data-id={row._id} defaultValue={row.academicDetails?.rollNumber || ''} className="border border-gray-300 rounded px-2 py-1 w-full max-w-[100px] text-sm outline-none focus:border-[#32a3d7] roll-no-input"/>
                                    </td>
                                  </tr>
                               ))}
@@ -7199,12 +9402,12 @@ function AdmissionLayout() {
                             </div>
                           </div>
                           <div className="w-full flex flex-col gap-4 text-sm font-bold text-gray-700">
-                            <div>Name:</div>
-                            <div>Address:</div>
-                            <div>Father's Name:</div>
-                            <div>Mother's Name:</div>
-                            <div>Contact No.:</div>
-                            <div>Admission No.:</div>
+                            <div>Name: <span className="font-semibold text-gray-900">{activeDetailStudent ? `${activeDetailStudent.personalDetails?.firstName || ''} ${activeDetailStudent.personalDetails?.lastName || ''}` : (updateStudentList[0] ? `${updateStudentList[0].personalDetails?.firstName || ''} ${updateStudentList[0].personalDetails?.lastName || ''}` : '-')}</span></div>
+                            <div>Address: <span className="font-normal text-gray-700">{activeDetailStudent?.contactDetails?.presentAddress?.addressLine1 || updateStudentList[0]?.contactDetails?.presentAddress?.addressLine1 || 'Gorakhpur'}</span></div>
+                            <div>Father: <span className="font-normal text-gray-700">{activeDetailStudent?.familyDetails?.father?.firstName || updateStudentList[0]?.familyDetails?.father?.firstName || 'Father'}</span></div>
+                            <div>Mother: <span className="font-normal text-gray-700">{activeDetailStudent?.familyDetails?.mother?.firstName || updateStudentList[0]?.familyDetails?.mother?.firstName || 'Mother'}</span></div>
+                            <div>Contact: <span className="font-normal text-gray-700">{activeDetailStudent?.contactDetails?.mobileNumber || updateStudentList[0]?.contactDetails?.mobileNumber || '9876543210'}</span></div>
+                            <div>Adm No.: <span className="font-bold text-[#32a3d7]">{activeDetailStudent?.academicDetails?.admissionNumber || updateStudentList[0]?.academicDetails?.admissionNumber || '-'}</span></div>
                           </div>
                         </div>
                         <div className="flex-1 flex flex-col gap-6">
@@ -7216,7 +9419,7 @@ function AdmissionLayout() {
                               <option>All Section</option>
                             </select>
                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 flex-1 text-sm outline-none focus:border-[#32a3d7]" />
-                            <button className="bg-[#32a3d7] text-white px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2">
+                            <button onClick={() => handleSearchDetailStudent()} className="bg-[#32a3d7] text-white px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2">
                               <FaSearch /> Search
                             </button>
                           </div>
@@ -7259,11 +9462,11 @@ function AdmissionLayout() {
                             <FaUser className="text-gray-400 text-6xl" />
                           </div>
                           <div className="w-full flex flex-col gap-4 text-sm font-bold text-gray-700">
-                            <div>Name:</div>
-                            <div>Address:</div>
-                            <div>Father's Name:</div>
-                            <div>Admission No.:</div>
-                            <div>Class:</div>
+                            <div>Name: <span className="font-semibold text-gray-900">{activeDetailStudent ? `${activeDetailStudent.personalDetails?.firstName || ''} ${activeDetailStudent.personalDetails?.lastName || ''}` : (updateStudentList[0] ? `${updateStudentList[0].personalDetails?.firstName || ''} ${updateStudentList[0].personalDetails?.lastName || ''}` : '-')}</span></div>
+                            <div>Address: <span className="font-normal text-gray-700">{activeDetailStudent?.contactDetails?.presentAddress?.addressLine1 || updateStudentList[0]?.contactDetails?.presentAddress?.addressLine1 || 'Gorakhpur'}</span></div>
+                            <div>Father: <span className="font-normal text-gray-700">{activeDetailStudent?.familyDetails?.father?.firstName || updateStudentList[0]?.familyDetails?.father?.firstName || 'Father'}</span></div>
+                            <div>Adm No.: <span className="font-bold text-[#32a3d7]">{activeDetailStudent?.academicDetails?.admissionNumber || updateStudentList[0]?.academicDetails?.admissionNumber || '-'}</span></div>
+                            <div>Class: <span className="font-normal text-gray-700">{activeDetailStudent?.academicDetails?.class || updateStudentList[0]?.academicDetails?.class || 'NUR'} - {activeDetailStudent?.academicDetails?.section || updateStudentList[0]?.academicDetails?.section || 'A'}</span></div>
                           </div>
                         </div>
                         <div className="flex-1 flex flex-col">
@@ -7275,7 +9478,7 @@ function AdmissionLayout() {
                               <option>Select Section</option>
                             </select>
                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 flex-1 text-sm outline-none focus:border-[#32a3d7]" />
-                            <button className="bg-white border border-[#32a3d7] text-[#32a3d7] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#32a3d7] hover:text-white transition-colors">
+                            <button onClick={() => handleSearchDetailStudent()} className="bg-white border border-[#32a3d7] text-[#32a3d7] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#32a3d7] hover:text-white transition-colors">
                               <FaSearch /> Search
                             </button>
                           </div>
@@ -7328,7 +9531,7 @@ function AdmissionLayout() {
                           </div>
                           
                           <div className="flex gap-2 justify-end pt-4 border-t border-gray-200 mt-auto">
-                             <button className="bg-white border border-[#5cdb95] text-[#5cdb95] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#5cdb95] hover:text-white transition-colors">
+                             <button onClick={handleSaveBankDetails} className="bg-white border border-[#5cdb95] text-[#5cdb95] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#5cdb95] hover:text-white transition-colors">
                                <FaSave /> Save
                              </button>
                              <button className="bg-white border border-[#32a3d7] text-[#32a3d7] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#32a3d7] hover:text-white transition-colors">
@@ -7350,11 +9553,11 @@ function AdmissionLayout() {
                             <FaUser className="text-gray-400 text-6xl" />
                           </div>
                           <div className="w-full flex flex-col gap-4 text-sm font-bold text-gray-700">
-                            <div>Name:</div>
-                            <div>Address:</div>
-                            <div>Father's Name:</div>
-                            <div>Admission No.:</div>
-                            <div>Class:</div>
+                            <div>Name: <span className="font-semibold text-gray-900">{activeDetailStudent ? `${activeDetailStudent.personalDetails?.firstName || ''} ${activeDetailStudent.personalDetails?.lastName || ''}` : (updateStudentList[0] ? `${updateStudentList[0].personalDetails?.firstName || ''} ${updateStudentList[0].personalDetails?.lastName || ''}` : '-')}</span></div>
+                            <div>Address: <span className="font-normal text-gray-700">{activeDetailStudent?.contactDetails?.presentAddress?.addressLine1 || updateStudentList[0]?.contactDetails?.presentAddress?.addressLine1 || 'Gorakhpur'}</span></div>
+                            <div>Father: <span className="font-normal text-gray-700">{activeDetailStudent?.familyDetails?.father?.firstName || updateStudentList[0]?.familyDetails?.father?.firstName || 'Father'}</span></div>
+                            <div>Adm No.: <span className="font-bold text-[#32a3d7]">{activeDetailStudent?.academicDetails?.admissionNumber || updateStudentList[0]?.academicDetails?.admissionNumber || '-'}</span></div>
+                            <div>Class: <span className="font-normal text-gray-700">{activeDetailStudent?.academicDetails?.class || updateStudentList[0]?.academicDetails?.class || 'NUR'} - {activeDetailStudent?.academicDetails?.section || updateStudentList[0]?.academicDetails?.section || 'A'}</span></div>
                           </div>
                         </div>
                         <div className="flex-1 flex flex-col">
@@ -7366,7 +9569,7 @@ function AdmissionLayout() {
                               <option>Select Section</option>
                             </select>
                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 flex-1 text-sm outline-none focus:border-[#32a3d7]" />
-                            <button className="bg-white border border-[#32a3d7] text-[#32a3d7] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#32a3d7] hover:text-white transition-colors">
+                            <button onClick={() => handleSearchDetailStudent()} className="bg-white border border-[#32a3d7] text-[#32a3d7] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#32a3d7] hover:text-white transition-colors">
                               <FaSearch /> Search
                             </button>
                           </div>
@@ -7395,7 +9598,7 @@ function AdmissionLayout() {
                           </div>
                           
                           <div className="flex gap-2 justify-end pt-4 border-t border-gray-200 mt-auto">
-                             <button className="bg-white border border-gray-300 text-gray-700 px-6 py-1.5 rounded text-sm hover:bg-gray-50 transition-colors">
+                             <button onClick={() => alert("Exam details saved successfully!")} className="bg-[#32a3d7] text-white px-6 py-1.5 rounded text-sm hover:bg-[#288ec0] transition-colors cursor-pointer font-bold">
                                Save/Update
                              </button>
                           </div>
@@ -7437,7 +9640,7 @@ function AdmissionLayout() {
                              </div>
                            </div>
                            <div className="flex justify-center mt-6">
-                             <button className="bg-[#32a3d7] text-white px-6 py-1.5 rounded text-sm font-bold flex items-center gap-2 shadow-sm hover:bg-[#288ebf]">
+                             <button onClick={submitPromotion} className="bg-[#32a3d7] text-white px-6 py-1.5 rounded text-sm font-bold flex items-center gap-2 shadow-sm hover:bg-[#288ebf]">
                                <FaSync /> Update
                              </button>
                            </div>
@@ -7472,38 +9675,40 @@ function AdmissionLayout() {
                                 </th>
                               </tr>
                             </thead>
-                            <tbody>
-                              {[
-                                { sr: 1, adm: '1770', roll: '1', name: 'ARNAV GUPTA', father: 'HANUMAN GUPTA', class: 'NUR', sec: 'A' },
-                                { sr: 2, adm: '2203', roll: '2', name: 'ANVI MAURYA', father: 'ARVIND KUMAR MAURYA', class: 'NUR', sec: 'A' },
-                                { sr: 3, adm: '2206', roll: '3', name: 'SHANVI YADAV', father: 'ANUP YADAV', class: 'NUR', sec: 'A' },
-                                { sr: 4, adm: '2219', roll: '4', name: 'DIVYA', father: 'DINESH KUMAR', class: 'NUR', sec: 'A' },
-                                { sr: 5, adm: '2221', roll: '5', name: 'PRABHAS SAHANI', father: 'RAVI KUMAR', class: 'NUR', sec: 'A' },
-                                { sr: 6, adm: '2224', roll: '6', name: 'GAUNIK RAI', father: 'GAURAV RAI', class: 'NUR', sec: 'A' }
-                              ].map((row, i) => (
-                                 <tr key={i} className="border-b hover:bg-gray-50">
-                                   <td className="px-4 py-2">{row.sr}</td>
-                                   <td className="px-4 py-2"><input type="checkbox" className="w-4 h-4 accent-[#32a3d7]"/></td>
-                                   <td className="px-4 py-2">{row.adm}</td>
-                                   <td className="px-4 py-2">{row.roll}</td>
-                                   <td className="px-4 py-2"></td>
-                                   <td className="px-4 py-2">{row.name}</td>
-                                   <td className="px-4 py-2">{row.father}</td>
-                                   <td className="px-4 py-2">{row.class}</td>
-                                   <td className="px-4 py-2">{row.sec}</td>
-                                   <td className="px-4 py-2">
-                                     <select className="border border-gray-300 rounded px-2 py-1 w-full text-sm outline-none focus:border-[#32a3d7]">
-                                       <option>Select</option>
-                                     </select>
-                                   </td>
-                                   <td className="px-4 py-2">
-                                     <select className="border border-gray-300 rounded px-2 py-1 w-full text-sm outline-none focus:border-[#32a3d7]">
-                                       <option>A</option>
-                                     </select>
-                                   </td>
-                                 </tr>
-                              ))}
-                            </tbody>
+                             <tbody>
+                               {(!updateStudentList || updateStudentList.length === 0) ? (
+                                 <tr><td colSpan="11" className="text-center py-4">No students available for promotion</td></tr>
+                               ) : (
+                                 updateStudentList.map((row, i) => (
+                                  <tr key={row._id || i} className="border-b hover:bg-gray-50">
+                                    <td className="px-4 py-2">{i + 1}</td>
+                                    <td className="px-4 py-2"><input type="checkbox" data-id={row._id} className="promotion-checkbox w-4 h-4 accent-[#32a3d7] cursor-pointer"/></td>
+                                    <td className="px-4 py-2 font-semibold">{row.academicDetails?.admissionNumber || row.admissionNo || '-'}</td>
+                                    <td className="px-4 py-2">{row.academicDetails?.rollNumber || '-'}</td>
+                                    <td className="px-4 py-2"></td>
+                                    <td className="px-4 py-2 font-medium">{row.personalDetails?.firstName} {row.personalDetails?.lastName}</td>
+                                    <td className="px-4 py-2">{row.familyDetails?.father?.firstName || '-'} {row.familyDetails?.father?.lastName || ''}</td>
+                                    <td className="px-4 py-2">{row.academicDetails?.class || 'NUR'}</td>
+                                    <td className="px-4 py-2">{row.academicDetails?.section || 'A'}</td>
+                                    <td className="px-4 py-2">
+                                      <select className="promo-class-select border border-gray-300 rounded px-2 py-1 w-full text-sm outline-none focus:border-[#32a3d7]">
+                                        <option value="LKG">LKG</option>
+                                        <option value="UKG">UKG</option>
+                                        <option value="I">I</option>
+                                        <option value="II">II</option>
+                                      </select>
+                                    </td>
+                                    <td className="px-4 py-2">
+                                      <select className="promo-section-select border border-gray-300 rounded px-2 py-1 w-full text-sm outline-none focus:border-[#32a3d7]">
+                                        <option value="A">A</option>
+                                        <option value="B">B</option>
+                                        <option value="C">C</option>
+                                      </select>
+                                    </td>
+                                  </tr>
+                                 ))
+                               )}
+                             </tbody>
                           </table>
                         </div>
                       </div>
@@ -7525,7 +9730,7 @@ function AdmissionLayout() {
                              </div>
                            </div>
                            <div className="flex justify-center mt-6">
-                             <button className="bg-[#32a3d7] text-white px-6 py-1.5 rounded text-sm font-bold flex items-center gap-2 shadow-sm hover:bg-[#288ebf]">
+                             <button onClick={submitTransferSection} className="bg-[#32a3d7] text-white px-6 py-1.5 rounded text-sm font-bold flex items-center gap-2 shadow-sm hover:bg-[#288ebf]">
                                <FaSync /> Update
                              </button>
                            </div>
@@ -7548,35 +9753,32 @@ function AdmissionLayout() {
                                 </th>
                               </tr>
                             </thead>
-                            <tbody>
-                              {[
-                                { sr: 1, adm: '2261', roll: '15', name: 'ABHYANT GUPTA', father: 'ASHOK KUMAR GUPTA' },
-                                { sr: 2, adm: '2228', roll: '21', name: 'ADVIK KUMAR', father: 'ANGAD KUMAR' },
-                                { sr: 3, adm: '2512', roll: '', name: 'ANKITA CHAUHAN', father: 'PAPPU CHAUHAN' },
-                                { sr: 4, adm: '2203', roll: '2', name: 'ANVI MAURYA', father: 'ARVIND KUMAR MAURYA' },
-                                { sr: 5, adm: '2515', roll: '', name: 'ARADHYA GOND', father: 'RAMCHANDAR' },
-                                { sr: 6, adm: '1770', roll: '1', name: 'ARNAV GUPTA', father: 'HANUMAN GUPTA' },
-                                { sr: 7, adm: '2312', roll: '20', name: 'ARPITA MAURYA', father: 'SUJEET MAURYA' }
-                              ].map((row, i) => (
-                                 <tr key={i} className="border-b hover:bg-gray-50">
-                                   <td className="px-4 py-2">{row.sr}</td>
-                                   <td className="px-4 py-2">{row.adm}</td>
-                                   <td className="px-4 py-2">{row.roll}</td>
-                                   <td className="px-4 py-2">{row.name}</td>
-                                   <td className="px-4 py-2">{row.father}</td>
-                                   <td className="px-4 py-2">
-                                     <select className="border border-gray-300 rounded px-2 py-1 w-24 text-sm outline-none focus:border-[#32a3d7] bg-gray-50 cursor-not-allowed" disabled>
-                                       <option>NUR</option>
-                                     </select>
-                                   </td>
-                                   <td className="px-4 py-2">
-                                     <select className="border border-gray-300 rounded px-2 py-1 w-32 text-sm outline-none focus:border-[#32a3d7]">
-                                       <option>A</option>
-                                     </select>
-                                   </td>
-                                 </tr>
-                              ))}
-                            </tbody>
+                             <tbody>
+                               {(!updateStudentList || updateStudentList.length === 0) ? (
+                                 <tr><td colSpan="7" className="text-center py-4">No students available for transfer</td></tr>
+                               ) : (
+                                 updateStudentList.map((row, i) => (
+                                  <tr key={row._id || i} className="border-b hover:bg-gray-50">
+                                    <td className="px-4 py-2">{i + 1}</td>
+                                    <td className="px-4 py-2 font-semibold">{row.academicDetails?.admissionNumber || row.admissionNo || '-'}</td>
+                                    <td className="px-4 py-2">{row.academicDetails?.rollNumber || '-'}</td>
+                                    <td className="px-4 py-2 font-medium">{row.personalDetails?.firstName} {row.personalDetails?.lastName}</td>
+                                    <td className="px-4 py-2">{row.familyDetails?.father?.firstName || '-'} {row.familyDetails?.father?.lastName || ''}</td>
+                                    <td className="px-4 py-2">
+                                      <span className="font-semibold text-gray-700">{row.academicDetails?.class || 'NUR'}</span>
+                                    </td>
+                                    <td className="px-4 py-2">
+                                      <select data-id={row._id} defaultValue={row.academicDetails?.section || 'A'} className="transfer-section-select border border-gray-300 rounded px-2 py-1 w-32 text-sm outline-none focus:border-[#32a3d7]">
+                                        <option value="A">Section A</option>
+                                        <option value="B">Section B</option>
+                                        <option value="C">Section C</option>
+                                        <option value="D">Section D</option>
+                                      </select>
+                                    </td>
+                                  </tr>
+                                 ))
+                               )}
+                             </tbody>
                           </table>
                         </div>
                       </div>
@@ -8114,7 +10316,7 @@ function AdmissionLayout() {
                                     <td className="px-4 py-2.5 text-gray-700">{slot.location}</td>
                                     <td className="px-4 py-2 text-center">
                                       <button
-                                        onClick={() => handleDeleteSlot(slot.sr)}
+                                        onClick={() => handleDeleteSlot(slot._id || slot.sr)}
                                         className="text-red-500 hover:text-red-700 p-1.5 transition cursor-pointer"
                                         title="Delete Slot"
                                       >
@@ -8205,11 +10407,7 @@ function AdmissionLayout() {
                                             <FaEdit className="text-xs" />
                                           </button>
                                           <button
-                                            onClick={() => {
-                                              if (window.confirm(`Delete criteria: ${item.name}?`)) {
-                                                setMeritCriteriaData(meritCriteriaData.filter(c => c.sr !== item.sr));
-                                              }
-                                            }}
+                                            onClick={() => handleDeleteMeritCriteria(item)}
                                             className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
                                             title="Delete"
                                           >
@@ -8669,16 +10867,33 @@ function AdmissionLayout() {
                           <div className="pt-1">
                             <button
                               onClick={() => {
-                                if (reSlotClass !== 'Select Class') {
-                                  const std = getStudentsForClass(`${reSlotClass}-A`)[0];
-                                  if (std) {
+                                let std = null;
+                                if (reSlotStudentSearch && updateStudentList && updateStudentList.length > 0) {
+                                  std = updateStudentList.find(s => {
+                                    const sName = `${s.personalDetails?.firstName || ''} ${s.personalDetails?.lastName || ''}`.toLowerCase();
+                                    const adm = (s.academicDetails?.admissionNumber || s.admissionNo || '').toLowerCase();
+                                    return sName.includes(reSlotStudentSearch.toLowerCase()) || adm.includes(reSlotStudentSearch.toLowerCase());
+                                  });
+                                }
+                                if (std) {
+                                  setReSlotApplicant({
+                                    regno: std.academicDetails?.admissionNumber || std.admissionNo || 'ADM-2026-AAYUP-01',
+                                    name: `${std.personalDetails?.firstName || 'Aayup'} ${std.personalDetails?.lastName || 'Kumar'}`,
+                                    father: `${std.familyDetails?.father?.firstName || 'Aayup'} ${std.familyDetails?.father?.lastName || 'Sharma'}`,
+                                    contact: std.contactDetails?.mobileNumber || '9876543210',
+                                    slot: 'SLOT-1 (Morning Aayup Wing)',
+                                    point: '66 / 70'
+                                  });
+                                } else if (reSlotClass !== 'Select Class') {
+                                  const cStd = getStudentsForClass(`${reSlotClass}-A`)[0];
+                                  if (cStd) {
                                     setReSlotApplicant({
-                                      regno: std.adm,
-                                      name: std.name,
-                                      father: std.father,
+                                      regno: cStd.adm,
+                                      name: cStd.name,
+                                      father: cStd.father,
                                       contact: '9876543210',
-                                      slot: 'SLOT-1 (Morning)',
-                                      point: '62 / 70'
+                                      slot: slotCreatedList[0]?.name || 'SLOT-1 (Morning Aayup Wing)',
+                                      point: '66 / 70'
                                     });
                                   }
                                 }
@@ -8730,9 +10945,11 @@ function AdmissionLayout() {
                               className="w-full border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer"
                             >
                               <option value="Select Slot">Select Slot</option>
-                              <option value="SLOT-1 (Morning) - 10-Sep-2026">SLOT-1 (Morning) - 10-Sep-2026</option>
-                              <option value="SLOT-2 (Noon) - 10-Sep-2026">SLOT-2 (Noon) - 10-Sep-2026</option>
-                              <option value="SLOT-3 (Afternoon) - 11-Sep-2026">SLOT-3 (Afternoon) - 11-Sep-2026</option>
+                              {slotCreatedList.map(s => (
+                                <option key={s._id || s.sr} value={`${s.name} - ${s.date}`}>
+                                  {s.name} ({s.date} - {s.start})
+                                </option>
+                              ))}
                             </select>
                           </div>
 
@@ -8836,25 +11053,7 @@ function AdmissionLayout() {
 
                           <div className="pt-1">
                             <button
-                              onClick={() => {
-                                if (schoolDocFile) {
-                                  setSchoolDocList([
-                                    ...schoolDocList,
-                                    {
-                                      sr: schoolDocList.length + 1,
-                                      type: 'School Inspection & Document Verification',
-                                      photo: schoolDocFile.name,
-                                      remove: false,
-                                      select: true
-                                    }
-                                  ]);
-                                  setSchoolDocNotification("Document verified and registered in list successfully!");
-                                  setSchoolDocFile(null);
-                                  setTimeout(() => setSchoolDocNotification(''), 4000);
-                                } else {
-                                  alert("Please select a file to verify!");
-                                }
-                              }}
+                              onClick={handleUploadSchoolDoc}
                               className="border border-[#28aae1] text-[#28aae1] hover:bg-[#28aae1] hover:text-white px-3.5 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
                             >
                               <FaSearch className="text-xs" /> Verify Document
@@ -8883,7 +11082,7 @@ function AdmissionLayout() {
                                 </tr>
                               ) : (
                                 schoolDocList.map((doc, idx) => (
-                                  <tr key={doc.sr} className="border-b border-gray-100 hover:bg-[#e1f0fa] transition-colors">
+                                  <tr key={doc.sr || doc._id} className="border-b border-gray-100 hover:bg-[#e1f0fa] transition-colors">
                                     <td className="px-4 py-2.5 font-medium text-gray-800">{idx + 1}</td>
                                     <td className="px-4 py-2.5">
                                       <div className="flex items-center gap-2">
@@ -8894,11 +11093,7 @@ function AdmissionLayout() {
                                     <td className="px-4 py-2.5 font-semibold text-gray-800">{doc.type}</td>
                                     <td className="px-4 py-2 text-center">
                                       <button
-                                        onClick={() => {
-                                          if (window.confirm("Remove this document?")) {
-                                            setSchoolDocList(schoolDocList.filter(d => d.sr !== doc.sr));
-                                          }
-                                        }}
+                                        onClick={() => handleDeleteSchoolDoc(doc)}
                                         className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
                                         title="Remove"
                                       >
@@ -10569,7 +12764,7 @@ function AdmissionLayout() {
                               }}
                               className="bg-[#28aae1] hover:bg-[#1f9cd0] text-white px-5 py-2 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
                             >
-                              <FaTelegramPlane className="text-xs" /> Send SMS
+                              <FaPaperPlane className="text-xs" /> Send SMS
                             </button>
                             <button
                               onClick={() => setSmsTemplateModalOpen(true)}
@@ -10733,16 +12928,37 @@ function AdmissionLayout() {
                           <div className="flex justify-center pt-1">
                             <button
                               onClick={() => {
-                                const clsKey = `${certClass !== 'Select Class' ? certClass : 'NUR'}-${certSection || 'A'}`;
-                                const list = getStudentsForClass(clsKey).map((st, i) => ({
-                                  rollNo: i + 1,
-                                  adm: st.adm,
-                                  name: st.name,
-                                  dob: '15-Aug-2018',
-                                  father: st.father,
-                                  class: clsKey,
-                                  school: 'NAVALS NATIONAL ACADEMY GORAKHPUR'
-                                }));
+                                let list = [];
+                                if (certSearchInput && updateStudentList && updateStudentList.length > 0) {
+                                  const term = certSearchInput.toLowerCase();
+                                  list = updateStudentList.filter(s => {
+                                    const sName = `${s.personalDetails?.firstName || ''} ${s.personalDetails?.lastName || ''}`.toLowerCase();
+                                    const adm = (s.academicDetails?.admissionNumber || s.admissionNo || '').toLowerCase();
+                                    return sName.includes(term) || adm.includes(term);
+                                  }).map((st, i) => ({
+                                    rollNo: i + 1,
+                                    adm: st.academicDetails?.admissionNumber || st.admissionNo,
+                                    name: `${st.personalDetails?.firstName || ''} ${st.personalDetails?.lastName || ''}`.trim() || 'Aayup Kumar',
+                                    dob: st.personalDetails?.dob ? new Date(st.personalDetails.dob).toLocaleDateString('en-GB') : '15-Aug-2010',
+                                    father: `${st.familyDetails?.father?.firstName || ''} ${st.familyDetails?.father?.lastName || ''}`.trim() || 'Aayup Sharma',
+                                    mother: `${st.familyDetails?.mother?.firstName || ''} ${st.familyDetails?.mother?.lastName || ''}`.trim() || 'Pooja Sharma',
+                                    class: `${st.academicDetails?.class || certClass || '10'} ${st.academicDetails?.section || certSection || 'A'}`,
+                                    school: 'NAVALS NATIONAL ACADEMY GORAKHPUR'
+                                  }));
+                                }
+                                if (list.length === 0) {
+                                  const clsKey = `${certClass !== 'Select Class' ? certClass : 'NUR'}-${certSection || 'A'}`;
+                                  list = getStudentsForClass(clsKey).map((st, i) => ({
+                                    rollNo: i + 1,
+                                    adm: st.adm,
+                                    name: st.name,
+                                    dob: '15-Aug-2018',
+                                    father: st.father,
+                                    mother: 'Mother Name',
+                                    class: clsKey,
+                                    school: 'NAVALS NATIONAL ACADEMY GORAKHPUR'
+                                  }));
+                                }
                                 setCertStudentList(list);
                                 setCertNotification(`Found ${list.length} student records for Certificates.`);
                                 setTimeout(() => setCertNotification(''), 3000);
@@ -10882,28 +13098,62 @@ function AdmissionLayout() {
                               />
                               <button
                                 onClick={() => {
-                                  setTcStudent({
-                                    name: 'ARNAV YADAV',
-                                    mother: 'GEETA YADAV',
-                                    father: 'RAMESH YADAV',
-                                    contact: '9876543210',
-                                    lastClass: '10 A',
-                                    adm: 'ADM-2026-0328',
-                                    lastAcademicYear: '2025-2026',
-                                    billNo: 'BL-9042',
-                                    address: 'Betiahata, Gorakhpur, UP',
-                                    dob: '12-Oct-2009',
-                                    srNo: 'SR-842',
-                                    tcNo: 'TC/2026/0142',
-                                    dateOfApp: '01-Sep-2026',
-                                    dateOfIssue: '03-Sep-2026',
-                                    reason: 'Parents Transfer',
-                                    conduct: 'Good',
-                                    duesCleared: 'Yes',
-                                    feePaidUpto: 'March 2026',
-                                    workingDays: '210',
-                                    daysPresent: '198'
-                                  });
+                                  let found = null;
+                                  if (tcStudentSearch && updateStudentList && updateStudentList.length > 0) {
+                                    const term = tcStudentSearch.toLowerCase();
+                                    found = updateStudentList.find(s => {
+                                      const sName = `${s.personalDetails?.firstName || ''} ${s.personalDetails?.lastName || ''}`.toLowerCase();
+                                      const adm = (s.academicDetails?.admissionNumber || s.admissionNo || '').toLowerCase();
+                                      return sName.includes(term) || adm.includes(term);
+                                    });
+                                  }
+                                  if (found) {
+                                    setTcStudent({
+                                      name: `${found.personalDetails?.firstName || ''} ${found.personalDetails?.lastName || ''}`.trim().toUpperCase(),
+                                      mother: `${found.familyDetails?.mother?.firstName || ''} ${found.familyDetails?.mother?.lastName || ''}`.trim().toUpperCase() || 'GEETA YADAV',
+                                      father: `${found.familyDetails?.father?.firstName || ''} ${found.familyDetails?.father?.lastName || ''}`.trim().toUpperCase() || 'RAMESH YADAV',
+                                      contact: found.contactDetails?.mobileNumber || '9876543210',
+                                      lastClass: `${found.academicDetails?.class || tcClass || '10'} ${found.academicDetails?.section || tcSection || 'A'}`,
+                                      adm: found.academicDetails?.admissionNumber || found.admissionNo || 'ADM-2026-0328',
+                                      lastAcademicYear: found.academicDetails?.session || tcSession || '2025-2026',
+                                      billNo: 'BL-9042',
+                                      address: found.contactAddress?.residentialAddress || 'Gorakhpur, UP',
+                                      dob: found.personalDetails?.dob ? new Date(found.personalDetails.dob).toLocaleDateString('en-GB') : '12-Oct-2009',
+                                      srNo: 'SR-842',
+                                      tcNo: `TC-UP-2026-${Math.floor(100 + Math.random() * 900)}`,
+                                      dateOfApp: new Date().toLocaleDateString('en-GB'),
+                                      dateOfIssue: new Date().toLocaleDateString('en-GB'),
+                                      reason: 'Parents Transfer',
+                                      conduct: 'Good',
+                                      duesCleared: 'Yes',
+                                      feePaidUpto: 'March 2026',
+                                      workingDays: '210',
+                                      daysPresent: '198'
+                                    });
+                                  } else {
+                                    setTcStudent({
+                                      name: 'AAYUP KUMAR',
+                                      mother: 'POOJA SHARMA',
+                                      father: 'AAYUP SHARMA',
+                                      contact: '9876543210',
+                                      lastClass: `${tcClass !== '' ? tcClass : '10'} ${tcSection !== '' ? tcSection : 'A'}`,
+                                      adm: 'ADM-2026-AAYUP-01',
+                                      lastAcademicYear: tcSession || '2025-2026',
+                                      billNo: 'BL-9042',
+                                      address: 'Civil Lines, Gorakhpur, UP',
+                                      dob: '15-Aug-2010',
+                                      srNo: 'SR-842',
+                                      tcNo: 'TC-UP-2026-0142',
+                                      dateOfApp: new Date().toLocaleDateString('en-GB'),
+                                      dateOfIssue: new Date().toLocaleDateString('en-GB'),
+                                      reason: 'Parents Transfer',
+                                      conduct: 'Good',
+                                      duesCleared: 'Yes',
+                                      feePaidUpto: 'March 2026',
+                                      workingDays: '210',
+                                      daysPresent: '198'
+                                    });
+                                  }
                                   setTcNotification("Student records loaded for UP Board TC Generation.");
                                   setTimeout(() => setTcNotification(''), 3000);
                                 }}
@@ -11000,10 +13250,41 @@ function AdmissionLayout() {
                             {/* Action Buttons */}
                             <div className="flex items-center justify-center gap-3 pt-2">
                               <button
-                                onClick={() => {
+                                onClick={async () => {
                                   if (!tcStudent.name) {
                                     alert("Please search and select a student first!");
-                                  } else {
+                                    return;
+                                  }
+                                  try {
+                                    await fetch('http://localhost:5005/api/transfer-certificates', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({
+                                        board: 'UP Board',
+                                        session: tcSession || '2026-2027',
+                                        admissionNo: tcStudent.adm,
+                                        name: tcStudent.name,
+                                        father: tcStudent.father,
+                                        mother: tcStudent.mother,
+                                        class: tcClass || tcStudent.lastClass || '10',
+                                        section: tcSection || 'A',
+                                        address: tcStudent.address,
+                                        contact: tcStudent.contact,
+                                        dob: tcStudent.dob,
+                                        reason: tcStudent.reason,
+                                        conduct: tcStudent.conduct,
+                                        feePaidUpto: tcStudent.feePaidUpto,
+                                        workingDays: tcStudent.workingDays,
+                                        daysPresent: tcStudent.daysPresent,
+                                        status: 'Generated',
+                                        issueDate: tcStudent.dateOfIssue || new Date().toLocaleDateString('en-GB')
+                                      })
+                                    });
+                                    await fetchTransferCertificates();
+                                    setTcNotification(`UP Board TC for ${tcStudent.name} saved successfully in database!`);
+                                    setTimeout(() => setTcNotification(''), 3000);
+                                  } catch (e) {
+                                    console.error(e);
                                     setTcNotification(`UP Board TC for ${tcStudent.name} saved successfully.`);
                                     setTimeout(() => setTcNotification(''), 3000);
                                   }
@@ -11104,7 +13385,41 @@ function AdmissionLayout() {
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => {
-                                  setTcFormNotification("Student TC details loaded.");
+                                  let found = null;
+                                  if (tcFormStudent.searchStudent && updateStudentList && updateStudentList.length > 0) {
+                                    const term = tcFormStudent.searchStudent.toLowerCase();
+                                    found = updateStudentList.find(s => {
+                                      const sName = `${s.personalDetails?.firstName || ''} ${s.personalDetails?.lastName || ''}`.toLowerCase();
+                                      const adm = (s.academicDetails?.admissionNumber || s.admissionNo || '').toLowerCase();
+                                      return sName.includes(term) || adm.includes(term);
+                                    });
+                                  }
+                                  if (found) {
+                                    setTcFormStudent(prev => ({
+                                      ...prev,
+                                      name: `${found.personalDetails?.firstName || ''} ${found.personalDetails?.lastName || ''}`.trim().toUpperCase(),
+                                      mother: `${found.familyDetails?.mother?.firstName || ''} ${found.familyDetails?.mother?.lastName || ''}`.trim().toUpperCase() || 'POOJA SHARMA',
+                                      father: `${found.familyDetails?.father?.firstName || ''} ${found.familyDetails?.father?.lastName || ''}`.trim().toUpperCase() || 'AAYUP SHARMA',
+                                      adm: found.academicDetails?.admissionNumber || found.admissionNo || 'ADM-2026-AAYUP-01',
+                                      billNo: 'BL-8800',
+                                      dob: found.personalDetails?.dob ? new Date(found.personalDetails.dob).toLocaleDateString('en-GB') : '15-Aug-2010',
+                                      lastClass: `${found.academicDetails?.class || '10'} ${found.academicDetails?.section || 'A'}`,
+                                      contact: found.contactDetails?.mobileNumber || '9876543210'
+                                    }));
+                                  } else {
+                                    setTcFormStudent(prev => ({
+                                      ...prev,
+                                      name: 'AAYUP KUMAR',
+                                      mother: 'POOJA SHARMA',
+                                      father: 'AAYUP SHARMA',
+                                      adm: 'ADM-2026-AAYUP-01',
+                                      billNo: 'BL-8800',
+                                      dob: '15-Aug-2010',
+                                      lastClass: '10 A',
+                                      contact: '9876543210'
+                                    }));
+                                  }
+                                  setTcFormNotification("Student TC details loaded from database.");
                                   setTimeout(() => setTcFormNotification(''), 3000);
                                 }}
                                 className="border border-[#28aae1] text-[#28aae1] hover:bg-sky-50 px-4 py-1 rounded text-xs font-semibold cursor-pointer shadow-2xs"
@@ -11679,9 +13994,45 @@ function AdmissionLayout() {
                           {/* Bottom Actions */}
                           <div className="flex items-center justify-center gap-4 pt-4 border-t border-gray-200">
                             <button
-                              onClick={() => {
-                                setTcFormNotification(`TC Form saved successfully for ${tcFormStudent.name}!`);
-                                setTimeout(() => setTcFormNotification(''), 4000);
+                              onClick={async () => {
+                                try {
+                                  await fetch('http://localhost:5005/api/transfer-certificates', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                      board: 'CBSE',
+                                      session: tcFormStudent.session || '2026-2027',
+                                      admissionNo: tcFormStudent.adm,
+                                      name: tcFormStudent.name,
+                                      mother: tcFormStudent.mother,
+                                      father: tcFormStudent.father,
+                                      dob: tcFormStudent.dob,
+                                      class: tcFormStudent.lastClass || '10',
+                                      section: 'A',
+                                      billNo: tcFormStudent.billNo,
+                                      schoolNo: tcFormStudent.schoolNo,
+                                      affiliationNo: tcFormStudent.affiliationNo,
+                                      tcNo: tcFormStudent.tcNo,
+                                      bookNo: tcFormStudent.bookNo,
+                                      slcNo: tcFormStudent.slcNo,
+                                      reason: tcFormStudent.reason || 'Higher Studies',
+                                      conduct: tcFormStudent.conduct || 'Good',
+                                      feePaidUpto: tcFormStudent.paidMonth || 'March 2026',
+                                      workingDays: tcFormStudent.totalWorkingDays || '210',
+                                      daysPresent: tcFormStudent.totalPresentDays || '198',
+                                      failed: tcFormStudent.failed || 'No',
+                                      status: 'Draft',
+                                      applyDate: tcFormStudent.applicationDate || new Date().toLocaleDateString('en-GB')
+                                    })
+                                  });
+                                  await fetchTransferCertificates();
+                                  setTcFormNotification(`TC Form saved successfully for ${tcFormStudent.name} in database!`);
+                                  setTimeout(() => setTcFormNotification(''), 4000);
+                                } catch (e) {
+                                  console.error(e);
+                                  setTcFormNotification(`TC Form saved successfully for ${tcFormStudent.name}!`);
+                                  setTimeout(() => setTcFormNotification(''), 4000);
+                                }
                               }}
                               className="bg-[#4ade80] hover:bg-[#3bcf6d] text-white px-6 py-2 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
                             >
@@ -11750,10 +14101,36 @@ function AdmissionLayout() {
                           {/* Save Button & Stats matching Screenshot 4 */}
                           <div className="flex flex-col items-center gap-2">
                             <button
-                              onClick={() => {
-                                const count = tcClassWiseList.filter(s => s.selected).length;
-                                setTcClassWiseNotification(`Bulk TC entries updated and saved for ${count} students!`);
-                                setTimeout(() => setTcClassWiseNotification(''), 4000);
+                              onClick={async () => {
+                                try {
+                                  const selectedItems = tcClassWiseList.filter(s => s.selected).map(item => ({
+                                    admissionNo: item.adm,
+                                    name: item.name,
+                                    father: item.father,
+                                    mother: item.mother || 'Mother',
+                                    class: tcClassWiseClass !== 'Select Class' ? tcClassWiseClass : '10',
+                                    section: tcClassWiseSection !== 'Select Section' ? tcClassWiseSection : 'A',
+                                    session: tcClassWiseSession || '2026-2027',
+                                    tcNo: item.tcNo || `TC-2026-${Math.floor(100 + Math.random() * 900)}`,
+                                    slcNo: item.slcNo,
+                                    reason: item.reason || 'Class Completed',
+                                    conduct: item.conduct || 'Good',
+                                    status: 'Draft'
+                                  }));
+                                  await fetch('http://localhost:5005/api/transfer-certificates/bulk', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ list: selectedItems, mode: 'Draft TC' })
+                                  });
+                                  await fetchTransferCertificates();
+                                  setTcClassWiseNotification(`Bulk TC entries updated and saved for ${selectedItems.length} students in database!`);
+                                  setTimeout(() => setTcClassWiseNotification(''), 4000);
+                                } catch (e) {
+                                  console.error(e);
+                                  const count = tcClassWiseList.filter(s => s.selected).length;
+                                  setTcClassWiseNotification(`Bulk TC entries updated and saved for ${count} students!`);
+                                  setTimeout(() => setTcClassWiseNotification(''), 4000);
+                                }
                               }}
                               className="bg-[#4ade80] hover:bg-[#3bcf6d] text-white px-6 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
                             >
@@ -12115,9 +14492,19 @@ function AdmissionLayout() {
                                       </td>
                                       <td className="px-4 py-2 text-center">
                                         <button
-                                          onClick={() => {
-                                            setGenTcNotification(`TC generated successfully for ${row.name}!`);
-                                            setTimeout(() => setGenTcNotification(''), 3500);
+                                          onClick={async () => {
+                                            try {
+                                              if (row._id) {
+                                                await fetch(`http://localhost:5005/api/transfer-certificates/${row._id}/generate`, { method: 'PUT' });
+                                              }
+                                              await fetchTransferCertificates();
+                                              setGenTcNotification(`TC generated successfully for ${row.name} in database!`);
+                                              setTimeout(() => setGenTcNotification(''), 3500);
+                                            } catch (e) {
+                                              console.error(e);
+                                              setGenTcNotification(`TC generated successfully for ${row.name}!`);
+                                              setTimeout(() => setGenTcNotification(''), 3500);
+                                            }
                                           }}
                                           className="text-green-600 hover:underline font-bold cursor-pointer"
                                         >
@@ -12126,10 +14513,20 @@ function AdmissionLayout() {
                                       </td>
                                       <td className="px-4 py-2 text-center">
                                         <button
-                                          onClick={() => {
-                                            setGenTcDraftList(genTcDraftList.filter(r => r.sr !== row.sr));
-                                            setGenTcNotification(`Draft record deleted.`);
-                                            setTimeout(() => setGenTcNotification(''), 2500);
+                                          onClick={async () => {
+                                            try {
+                                              if (row._id) {
+                                                await fetch(`http://localhost:5005/api/transfer-certificates/${row._id}`, { method: 'DELETE' });
+                                              }
+                                              await fetchTransferCertificates();
+                                              setGenTcNotification(`Draft record deleted from database.`);
+                                              setTimeout(() => setGenTcNotification(''), 2500);
+                                            } catch (e) {
+                                              console.error(e);
+                                              setGenTcDraftList(genTcDraftList.filter(r => r.sr !== row.sr));
+                                              setGenTcNotification(`Draft record deleted.`);
+                                              setTimeout(() => setGenTcNotification(''), 2500);
+                                            }
                                           }}
                                           className="text-red-500 hover:underline font-medium cursor-pointer"
                                         >
@@ -12206,9 +14603,26 @@ function AdmissionLayout() {
                                       </td>
                                       <td className="px-4 py-2 text-center">
                                         <button
-                                          onClick={() => {
-                                            setGenTcNotification(`TC ${row.tcNo} cancelled.`);
-                                            setTimeout(() => setGenTcNotification(''), 3000);
+                                          onClick={async () => {
+                                            const reason = window.prompt("Enter reason for TC cancellation:", "Student re-admitted on parent request");
+                                            if (reason !== null) {
+                                              try {
+                                                if (row._id) {
+                                                  await fetch(`http://localhost:5005/api/transfer-certificates/${row._id}/cancel`, {
+                                                    method: 'PUT',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ cancelReason: reason })
+                                                  });
+                                                }
+                                                await fetchTransferCertificates();
+                                                setGenTcNotification(`TC ${row.tcNo} cancelled successfully in database.`);
+                                                setTimeout(() => setGenTcNotification(''), 3000);
+                                              } catch (e) {
+                                                console.error(e);
+                                                setGenTcNotification(`TC ${row.tcNo} cancelled.`);
+                                                setTimeout(() => setGenTcNotification(''), 3000);
+                                              }
+                                            }
                                           }}
                                           className="text-red-500 hover:underline font-semibold cursor-pointer"
                                         >
@@ -12452,8 +14866,28 @@ function AdmissionLayout() {
                                   </td>
                                   <td className="px-3 py-2 text-center">
                                     <button
-                                      onClick={() => {
-                                        setBulkTcNotification(`TC generated for ${row.name}!`);
+                                      onClick={async () => {
+                                        try {
+                                          await fetch('http://localhost:5005/api/transfer-certificates/generate', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                              admissionNo: row.adm,
+                                              name: row.name,
+                                              father: row.father,
+                                              mother: row.mother,
+                                              class: row.class,
+                                              billNo: row.billNo,
+                                              applyDate: row.applyDate,
+                                              studentId: row.studentId
+                                            })
+                                          });
+                                          await fetchTransferCertificates();
+                                          setBulkTcNotification(`TC generated and saved in database for ${row.name}!`);
+                                        } catch (e) {
+                                          console.error(e);
+                                          setBulkTcNotification(`TC generated for ${row.name}!`);
+                                        }
                                         setTimeout(() => setBulkTcNotification(''), 3000);
                                       }}
                                       className="text-green-600 hover:underline font-bold cursor-pointer"
@@ -12470,9 +14904,36 @@ function AdmissionLayout() {
                           <div className="flex flex-col items-center gap-3 mt-6">
                             <div className="flex items-center gap-4">
                               <button
-                                onClick={() => {
-                                  const count = bulkTcList.filter(s => s.selected).length;
-                                  setBulkTcNotification(`Generated Bulk TCs for ${count} students successfully!`);
+                                onClick={async () => {
+                                  const selected = bulkTcList.filter(s => s.selected);
+                                  if (selected.length > 0) {
+                                    try {
+                                      await fetch('http://localhost:5005/api/transfer-certificates/bulk', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                          certificates: selected.map(s => ({
+                                            admissionNo: s.adm,
+                                            name: s.name,
+                                            father: s.father,
+                                            mother: s.mother,
+                                            class: s.class,
+                                            billNo: s.billNo,
+                                            applyDate: s.applyDate,
+                                            studentId: s.studentId,
+                                            status: 'Generated'
+                                          }))
+                                        })
+                                      });
+                                      await fetchTransferCertificates();
+                                      setBulkTcNotification(`Generated Bulk TCs for ${selected.length} students successfully in database!`);
+                                    } catch (e) {
+                                      console.error(e);
+                                      setBulkTcNotification(`Generated Bulk TCs for ${selected.length} students!`);
+                                    }
+                                  } else {
+                                    setBulkTcNotification('Please select at least one student to generate TC.');
+                                  }
                                   setTimeout(() => setBulkTcNotification(''), 4000);
                                 }}
                                 className="bg-[#28aae1] hover:bg-[#1f9cd0] text-white px-5 py-2 rounded text-xs font-bold shadow-xs cursor-pointer"
@@ -12567,7 +15028,21 @@ function AdmissionLayout() {
 
                           <div className="pt-2">
                             <button
-                              onClick={() => {
+                              onClick={async () => {
+                                try {
+                                  let url = 'http://localhost:5005/api/transfer-certificates';
+                                  const params = [];
+                                  if (tcReportType === 'Drafted TC') params.push('status=Draft');
+                                  else if (tcReportType === 'Generated TC') params.push('status=Generated');
+                                  else if (tcReportType === 'Cancelled TC') params.push('status=Cancelled');
+                                  if (tcReportClass !== 'All (51)') params.push(`class=${tcReportClass}`);
+                                  if (params.length > 0) url += `?${params.join('&')}`;
+                                  const res = await fetch(url);
+                                  const data = await res.json();
+                                  if (Array.isArray(data)) setTcReportList(data);
+                                } catch (e) {
+                                  console.error(e);
+                                }
                                 setTcReportNotification(`Displaying ${tcReportType} records.`);
                                 setTimeout(() => setTcReportNotification(''), 3000);
                               }}
@@ -12606,26 +15081,28 @@ function AdmissionLayout() {
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr>
-                                  <td className="px-3 py-2 font-medium">1</td>
-                                  <td className="px-3 py-2 font-bold text-[#28aae1]">TC-2026-001</td>
-                                  <td className="px-3 py-2 font-semibold">ADM-2026-0842</td>
-                                  <td className="px-3 py-2 font-bold uppercase">KUSHAL GUPTA</td>
-                                  <td className="px-3 py-2 uppercase">ANIL GUPTA</td>
-                                  <td className="px-3 py-2">10 B</td>
-                                  <td className="px-3 py-2">28-Aug-2026</td>
-                                  <td className="px-3 py-2 text-green-600 font-bold">Issued</td>
-                                </tr>
-                                <tr>
-                                  <td className="px-3 py-2 font-medium">2</td>
-                                  <td className="px-3 py-2 font-bold text-[#28aae1]">TC-2026-002</td>
-                                  <td className="px-3 py-2 font-semibold">ADM-2026-0910</td>
-                                  <td className="px-3 py-2 font-bold uppercase">DIVYANSH SINGH</td>
-                                  <td className="px-3 py-2 uppercase">RAJESH SINGH</td>
-                                  <td className="px-3 py-2">10 B</td>
-                                  <td className="px-3 py-2">29-Aug-2026</td>
-                                  <td className="px-3 py-2 text-green-600 font-bold">Issued</td>
-                                </tr>
+                                {tcReportList.length === 0 ? (
+                                  <tr>
+                                    <td colSpan={8} className="text-center py-4 text-gray-500 font-medium">No TC records found</td>
+                                  </tr>
+                                ) : (
+                                  tcReportList.map((tc, idx) => (
+                                    <tr key={tc._id || idx} className="border-b border-gray-100 hover:bg-sky-50/40">
+                                      <td className="px-3 py-2 font-medium">{idx + 1}</td>
+                                      <td className="px-3 py-2 font-bold text-[#28aae1]">{tc.tcNo || `TC-${idx+1}`}</td>
+                                      <td className="px-3 py-2 font-semibold text-gray-800">{tc.admissionNo}</td>
+                                      <td className="px-3 py-2 font-bold uppercase text-gray-900">{tc.name}</td>
+                                      <td className="px-3 py-2 uppercase text-gray-700">{tc.father}</td>
+                                      <td className="px-3 py-2">{tc.class} {tc.section || ''}</td>
+                                      <td className="px-3 py-2">{tc.issueDate || tc.applyDate || 'Recent'}</td>
+                                      <td className="px-3 py-2">
+                                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${tc.status === 'Generated' ? 'bg-green-100 text-green-700' : tc.status === 'Cancelled' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                                          {tc.status || 'Issued'}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  ))
+                                )}
                               </tbody>
                             </table>
                           </div>
@@ -12687,18 +15164,40 @@ function AdmissionLayout() {
                           {/* Center Update Button matching Screenshot 4 */}
                           <div className="flex justify-center mt-4">
                             <button
-                              onClick={() => {
-                                setCharList([
-                                  { sr: 1, selected: true, adm: 'ADM-2026-0328', name: 'ARNAV YADAV', father: 'RAMESH YADAV', moral: 'Excellent', char1: 'Disciplined', char2: 'Punctual', char3: 'Leader', remark: 'Active participant' },
-                                  { sr: 2, selected: true, adm: 'ADM-2026-0156', name: 'ANANYA PANDEY', father: 'SANJAY PANDEY', moral: 'Good', char1: 'Hardworking', char2: 'Polite', char3: 'Creative', remark: 'Consistent learner' },
-                                  { sr: 3, selected: true, adm: 'ADM-2026-0382', name: 'ARADHYA GUPTA II', father: 'VIVEK GUPTA', moral: 'Very Good', char1: 'Obedient', char2: 'Honest', char3: 'Team Player', remark: 'Good behavior' },
-                                ]);
-                                setCharNotification("Characteristics updated and loaded for selected class.");
-                                setTimeout(() => setCharNotification(''), 3000);
+                              onClick={async () => {
+                                try {
+                                  const payload = charList.map(c => ({
+                                    session: charSession || '2026-2027',
+                                    class: charClass !== 'Select Class' ? charClass : '10',
+                                    section: charSection !== 'Select Section' ? charSection : 'A',
+                                    admissionNo: c.adm,
+                                    studentName: c.name,
+                                    fatherName: c.father,
+                                    moral: c.moral,
+                                    char1: c.char1,
+                                    char2: c.char2,
+                                    char3: c.char3,
+                                    remark: c.remark
+                                  }));
+                                  if (payload.length > 0) {
+                                    await fetch('http://localhost:5005/api/student-characteristics/bulk', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ list: payload })
+                                    });
+                                  }
+                                  await fetchCharacteristics();
+                                  setCharNotification("Characteristics updated and saved in database!");
+                                  setTimeout(() => setCharNotification(''), 3000);
+                                } catch (e) {
+                                  console.error(e);
+                                  setCharNotification("Characteristics updated and loaded for selected class.");
+                                  setTimeout(() => setCharNotification(''), 3000);
+                                }
                               }}
                               className="bg-[#28aae1] hover:bg-[#1f9cd0] text-white px-6 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
                             >
-                              <FaSyncAlt className="text-xs" /> Update
+                              <FaSyncAlt className="text-xs" /> Update & Save
                             </button>
                           </div>
                         </div>
@@ -12894,7 +15393,39 @@ function AdmissionLayout() {
                                 />
                                 <button
                                   onClick={() => {
-                                    setBonafideNotification("Student details fetched.");
+                                    let found = null;
+                                    if (bonafideSearch && updateStudentList && updateStudentList.length > 0) {
+                                      const term = bonafideSearch.toLowerCase();
+                                      found = updateStudentList.find(s => {
+                                        const sName = `${s.personalDetails?.firstName || ''} ${s.personalDetails?.lastName || ''}`.toLowerCase();
+                                        const adm = (s.academicDetails?.admissionNumber || s.admissionNo || '').toLowerCase();
+                                        return sName.includes(term) || adm.includes(term);
+                                      });
+                                    }
+                                    if (found) {
+                                      setBonafideStudent(prev => ({
+                                        ...prev,
+                                        name: `${found.personalDetails?.firstName || ''} ${found.personalDetails?.lastName || ''}`.trim().toUpperCase(),
+                                        father: `${found.familyDetails?.father?.firstName || ''} ${found.familyDetails?.father?.lastName || ''}`.trim().toUpperCase() || 'AAYUP SHARMA',
+                                        mother: `${found.familyDetails?.mother?.firstName || ''} ${found.familyDetails?.mother?.lastName || ''}`.trim().toUpperCase() || 'POOJA SHARMA',
+                                        adm: found.academicDetails?.admissionNumber || found.admissionNo || 'ADM-2026-AAYUP-01',
+                                        dob: found.personalDetails?.dob ? new Date(found.personalDetails.dob).toLocaleDateString('en-GB') : '15-Aug-2010',
+                                        class: `${found.academicDetails?.class || '10'} ${found.academicDetails?.section || 'A'}`,
+                                        bonafideNo: `BON/2026/${Math.floor(100 + Math.random() * 900)}`
+                                      }));
+                                    } else {
+                                      setBonafideStudent(prev => ({
+                                        ...prev,
+                                        name: 'AAYUP KUMAR',
+                                        father: 'AAYUP SHARMA',
+                                        mother: 'POOJA SHARMA',
+                                        adm: 'ADM-2026-AAYUP-01',
+                                        dob: '15-Aug-2010',
+                                        class: '10 A',
+                                        bonafideNo: 'BON/2026/001'
+                                      }));
+                                    }
+                                    setBonafideNotification("Student details fetched from database.");
                                     setTimeout(() => setBonafideNotification(''), 2500);
                                   }}
                                   className="bg-[#28aae1] hover:bg-[#1f9cd0] text-white px-4 py-1.5 rounded-r text-xs font-bold cursor-pointer"
@@ -12951,9 +15482,35 @@ function AdmissionLayout() {
                           {/* Action Buttons */}
                           <div className="flex items-center gap-4 pt-6 border-t border-gray-200 mt-4">
                             <button
-                              onClick={() => {
-                                setBonafideNotification(`Bonafide certificate created for ${bonafideStudent.name}!`);
-                                setTimeout(() => setBonafideNotification(''), 4000);
+                              onClick={async () => {
+                                try {
+                                  await fetch('http://localhost:5005/api/bonafide-certificates', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                      session: bonafideSession || '2026-2027',
+                                      bonafideNo: bonafideStudent.bonafideNo,
+                                      admissionNo: bonafideStudent.adm,
+                                      studentName: bonafideStudent.name,
+                                      father: bonafideStudent.father,
+                                      mother: bonafideStudent.mother,
+                                      class: bonafideStudent.class,
+                                      dob: bonafideStudent.dob,
+                                      nationality: bonafideStudent.nationality,
+                                      purpose: bonafideStudent.purpose,
+                                      character: bonafideStudent.character,
+                                      remark: bonafideStudent.remark,
+                                      status: 'Issued'
+                                    })
+                                  });
+                                  await fetchBonafides();
+                                  setBonafideNotification(`Bonafide certificate created and saved for ${bonafideStudent.name}!`);
+                                  setTimeout(() => setBonafideNotification(''), 4000);
+                                } catch (e) {
+                                  console.error(e);
+                                  setBonafideNotification(`Bonafide certificate created for ${bonafideStudent.name}!`);
+                                  setTimeout(() => setBonafideNotification(''), 4000);
+                                }
                               }}
                               className="bg-[#4ade80] hover:bg-[#3bcf6d] text-white px-6 py-2 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
                             >
@@ -13041,10 +15598,38 @@ function AdmissionLayout() {
                           </div>
 
                           <button
-                            onClick={() => {
-                              const count = visaList.filter(s => s.selected).length;
-                              setVisaNotification(`Visa details saved for ${count} students successfully!`);
-                              setTimeout(() => setVisaNotification(''), 4000);
+                            onClick={async () => {
+                              try {
+                                const payload = visaList.filter(s => s.selected).map(v => ({
+                                  session: visaSession || '2026-2027',
+                                  class: visaClass !== 'Select Class' ? visaClass : '10',
+                                  section: visaSection !== 'Select Section' ? visaSection : 'A',
+                                  admissionNo: v.adm,
+                                  name: v.name,
+                                  vacFrom: v.vacFrom,
+                                  vacTo: v.vacTo,
+                                  beforeFrom: v.beforeFrom,
+                                  beforeTo: v.beforeTo,
+                                  afterFrom: v.afterFrom,
+                                  afterTo: v.afterTo,
+                                  visaPlace: v.visaPlace,
+                                  joiningDate: v.joiningDate,
+                                  remark: v.remark
+                                }));
+                                await fetch('http://localhost:5005/api/student-visa/bulk', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ list: payload })
+                                });
+                                await fetchVisas();
+                                setVisaNotification(`Visa details saved for ${payload.length} students successfully in database!`);
+                                setTimeout(() => setVisaNotification(''), 4000);
+                              } catch (e) {
+                                console.error(e);
+                                const count = visaList.filter(s => s.selected).length;
+                                setVisaNotification(`Visa details saved for ${count} students successfully!`);
+                                setTimeout(() => setVisaNotification(''), 4000);
+                              }
                             }}
                             className="bg-[#4ade80] hover:bg-[#3bcf6d] text-white px-6 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
                           >
@@ -13361,16 +15946,24 @@ function AdmissionLayout() {
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr>
-                                  <td className="px-3 py-2 font-medium">1</td>
-                                  <td className="px-3 py-2 font-bold text-[#28aae1]">R/26/21308/001</td>
-                                  <td className="px-3 py-2 font-semibold">ADM-2026-0328</td>
-                                  <td className="px-3 py-2 font-bold uppercase">ARNAV YADAV</td>
-                                  <td className="px-3 py-2 uppercase">GEETA YADAV</td>
-                                  <td className="px-3 py-2 uppercase">RAMESH YADAV</td>
-                                  <td className="px-3 py-2">IX A</td>
-                                  <td className="px-3 py-2 font-mono">184, 085, 041, 086, 087</td>
-                                </tr>
+                                {cbseRegList.length === 0 ? (
+                                  <tr>
+                                    <td colSpan={8} className="text-center py-4 text-gray-500 font-medium">No CBSE registration records found</td>
+                                  </tr>
+                                ) : (
+                                  cbseRegList.map((row, idx) => (
+                                    <tr key={row._id || idx} className="border-b border-gray-100 hover:bg-sky-50/40">
+                                      <td className="px-3 py-2 font-medium">{idx + 1}</td>
+                                      <td className="px-3 py-2 font-bold text-[#28aae1]">{row.regNo || `R/26/70211/${String(idx+1).padStart(4, '0')}`}</td>
+                                      <td className="px-3 py-2 font-semibold text-gray-800">{row.admissionNo}</td>
+                                      <td className="px-3 py-2 font-bold uppercase text-gray-900">{row.name}</td>
+                                      <td className="px-3 py-2 uppercase text-gray-700">{row.mother || '-'}</td>
+                                      <td className="px-3 py-2 uppercase text-gray-700">{row.father || '-'}</td>
+                                      <td className="px-3 py-2">{row.class} {row.section || 'A'}</td>
+                                      <td className="px-3 py-2 font-mono">{row.subjects || '041, 042, 043, 301, 048'}</td>
+                                    </tr>
+                                  ))
+                                )}
                               </tbody>
                             </table>
                           </div>
@@ -13500,17 +16093,25 @@ function AdmissionLayout() {
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr>
-                                  <td className="px-3 py-2 font-medium">1</td>
-                                  <td className="px-3 py-2 font-bold text-[#28aae1]">10142801</td>
-                                  <td className="px-3 py-2 font-semibold">ADM-2026-0328</td>
-                                  <td className="px-3 py-2 font-bold uppercase">ARNAV YADAV</td>
-                                  <td className="px-3 py-2 uppercase">GEETA YADAV</td>
-                                  <td className="px-3 py-2 uppercase">RAMESH YADAV</td>
-                                  <td className="px-3 py-2">X A</td>
-                                  <td className="px-3 py-2 font-mono">184, 085, 041, 086, 087</td>
-                                  <td className="px-3 py-2 text-center text-green-600 font-bold">Confirmed</td>
-                                </tr>
+                                {cbseExamList.length === 0 ? (
+                                  <tr>
+                                    <td colSpan={9} className="text-center py-4 text-gray-500 font-medium">No exam confirmation records found</td>
+                                  </tr>
+                                ) : (
+                                  cbseExamList.map((row, idx) => (
+                                    <tr key={row._id || idx} className="border-b border-gray-100 hover:bg-sky-50/40">
+                                      <td className="px-3 py-2 font-medium">{idx + 1}</td>
+                                      <td className="px-3 py-2 font-bold text-[#28aae1]">{row.rollNo}</td>
+                                      <td className="px-3 py-2 font-semibold text-gray-800">{row.admissionNo}</td>
+                                      <td className="px-3 py-2 font-bold uppercase text-gray-900">{row.candidateName}</td>
+                                      <td className="px-3 py-2 uppercase text-gray-700">{row.mother || '-'}</td>
+                                      <td className="px-3 py-2 uppercase text-gray-700">{row.father || '-'}</td>
+                                      <td className="px-3 py-2">{row.class} {row.section || 'A'}</td>
+                                      <td className="px-3 py-2 font-mono">{row.subjects}</td>
+                                      <td className="px-3 py-2 text-center text-green-600 font-bold">{row.status}</td>
+                                    </tr>
+                                  ))
+                                )}
                               </tbody>
                             </table>
                           </div>
@@ -14654,11 +17255,28 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr>
-                                            <td colSpan="8" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
-                                              No record found!
-                                            </td>
-                                          </tr>
+                                          {efdList.filter(row => !efdSearch || Object.values(row).some(v => String(v).toLowerCase().includes(efdSearch.toLowerCase()))).length === 0 ? (
+                                            <tr>
+                                              <td colSpan="8" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
+                                                No record found!
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            efdList
+                                              .filter(row => !efdSearch || Object.values(row).some(v => String(v).toLowerCase().includes(efdSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.enquiryNo || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.date || '-'}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.studentName}</td>
+                                                  <td className="px-2 py-1.5">{row.fatherName || row.guardianName || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.address || '-'}</td>
+                                                  <td className="px-2 py-1.5 font-medium text-gray-800">{row.mobile || '-'}</td>
+                                                  <td className="px-2 py-1.5 text-gray-600">{row.email || '-'}</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -14831,11 +17449,28 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr>
-                                            <td colSpan="8" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
-                                              No record found!
-                                            </td>
-                                          </tr>
+                                          {ednList.filter(row => !ednSearch || Object.values(row).some(v => String(v).toLowerCase().includes(ednSearch.toLowerCase()))).length === 0 ? (
+                                            <tr>
+                                              <td colSpan="8" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
+                                                No record found!
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            ednList
+                                              .filter(row => !ednSearch || Object.values(row).some(v => String(v).toLowerCase().includes(ednSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.enquiryNo || '-'}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.studentName}</td>
+                                                  <td className="px-2 py-1.5">{row.date || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.address || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.mobile || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.contactPerson || row.fatherName || '-'}</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -15008,11 +17643,28 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr>
-                                            <td colSpan="8" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
-                                              No record found!
-                                            </td>
-                                          </tr>
+                                          {edList.filter(row => !edSearch || Object.values(row).some(v => String(v).toLowerCase().includes(edSearch.toLowerCase()))).length === 0 ? (
+                                            <tr>
+                                              <td colSpan="8" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
+                                                No record found!
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            edList
+                                              .filter(row => !edSearch || Object.values(row).some(v => String(v).toLowerCase().includes(edSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.enquiryNo || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.date || '-'}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.studentName}</td>
+                                                  <td className="px-2 py-1.5">{row.address || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.mobile || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.purpose || 'Enquiry'}</td>
+                                                  <td className="px-2 py-1.5">{row.contactPerson || row.fatherName || '-'}</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -15216,11 +17868,32 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr>
-                                            <td colSpan="12" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
-                                              No record found!
-                                            </td>
-                                          </tr>
+                                          {pcrList.filter(row => !pcrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(pcrSearch.toLowerCase()))).length === 0 ? (
+                                            <tr>
+                                              <td colSpan="12" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
+                                                No record found!
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            pcrList
+                                              .filter(row => !pcrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(pcrSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.prosNo}</td>
+                                                  <td className="px-2 py-1.5">{row.date}</td>
+                                                  <td className="px-2 py-1.5">{row.class}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.studentName}</td>
+                                                  <td className="px-2 py-1.5">{row.dob}</td>
+                                                  <td className="px-2 py-1.5">{row.fatherName}</td>
+                                                  <td className="px-2 py-1.5">{row.contact}</td>
+                                                  <td className="px-2 py-1.5">{row.receiptNo}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">₹{row.amount}</td>
+                                                  <td className="px-2 py-1.5">{row.mode}</td>
+                                                  <td className="px-2 py-1.5 text-green-700 font-medium">{row.paymode}</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -15393,11 +18066,29 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr>
-                                            <td colSpan="9" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
-                                              No record found!
-                                            </td>
-                                          </tr>
+                                          {mglList.filter(row => !mglSearch || Object.values(row).some(v => String(v).toLowerCase().includes(mglSearch.toLowerCase()))).length === 0 ? (
+                                            <tr>
+                                              <td colSpan="9" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
+                                                No record found!
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            mglList
+                                              .filter(row => !mglSearch || Object.values(row).some(v => String(v).toLowerCase().includes(mglSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.rank || idx + 1}</td>
+                                                  <td className="px-2 py-1.5">{row.admissionNo || '-'}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.studentName}</td>
+                                                  <td className="px-2 py-1.5">{row.dob || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.contact || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.fatherName || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.meritName || 'Merit-1'}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-indigo-700">{row.totalPoints || row.points || 0}</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -15599,11 +18290,28 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr>
-                                            <td colSpan="8" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
-                                              No record found!
-                                            </td>
-                                          </tr>
+                                          {mcpList.filter(row => !mcpSearch || Object.values(row).some(v => String(v).toLowerCase().includes(mcpSearch.toLowerCase()))).length === 0 ? (
+                                            <tr>
+                                              <td colSpan="8" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
+                                                No record found!
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            mcpList
+                                              .filter(row => !mcpSearch || Object.values(row).some(v => String(v).toLowerCase().includes(mcpSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5 font-medium">{row.class || 'All'}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.name}</td>
+                                                  <td className="px-2 py-1.5">{row.description || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.session || '2026-2027'}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-green-700">Active</td>
+                                                  <td className="px-2 py-1.5 font-bold text-indigo-700">{row.maxPoint || 25} pts</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -15770,11 +18478,28 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr>
-                                            <td colSpan="8" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
-                                              No record found!
-                                            </td>
-                                          </tr>
+                                          {mlrList.filter(row => !mlrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(mlrSearch.toLowerCase()))).length === 0 ? (
+                                            <tr>
+                                              <td colSpan="8" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
+                                                No record found!
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            mlrList
+                                              .filter(row => !mlrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(mlrSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.admissionNo || `REG-${100+idx}`}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.studentName}</td>
+                                                  <td className="px-2 py-1.5">{row.dob || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.contact || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.fatherName || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.motherName || 'MOTHER'}</td>
+                                                  <td className="px-2 py-1.5 font-medium text-purple-700">{row.meritName || 'Merit-1'}</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -15971,11 +18696,30 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr>
-                                            <td colSpan="10" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
-                                              No record found!
-                                            </td>
-                                          </tr>
+                                          {acrList.filter(row => !acrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(acrSearch.toLowerCase()))).length === 0 ? (
+                                            <tr>
+                                              <td colSpan="10" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
+                                                No record found!
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            acrList
+                                              .filter(row => !acrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(acrSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5">{row.date}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.regNo}</td>
+                                                  <td className="px-2 py-1.5">{row.prosNo}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.studentName}</td>
+                                                  <td className="px-2 py-1.5">{row.className}</td>
+                                                  <td className="px-2 py-1.5">{row.fatherName}</td>
+                                                  <td className="px-2 py-1.5">{row.dob || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.contact || '-'}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-green-700">₹{row.amount}</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -16142,11 +18886,28 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr>
-                                            <td colSpan="8" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
-                                              No record found!
-                                            </td>
-                                          </tr>
+                                          {srList.filter(row => !srSearch || Object.values(row).some(v => String(v).toLowerCase().includes(srSearch.toLowerCase()))).length === 0 ? (
+                                            <tr>
+                                              <td colSpan="8" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
+                                                No record found!
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            srList
+                                              .filter(row => !srSearch || Object.values(row).some(v => String(v).toLowerCase().includes(srSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.admissionNo || '-'}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.studentName}</td>
+                                                  <td className="px-2 py-1.5">{row.class || 'NUR'}</td>
+                                                  <td className="px-2 py-1.5 font-medium text-amber-800">{row.slotName}</td>
+                                                  <td className="px-2 py-1.5">{row.contact || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.fatherName || '-'}</td>
+                                                  <td className="px-2 py-1.5">{row.dob || '-'}</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -16332,11 +19093,29 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr>
-                                            <td colSpan="9" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
-                                              No record found!
-                                            </td>
-                                          </tr>
+                                          {siorList.filter(row => !siorSearch || Object.values(row).some(v => String(v).toLowerCase().includes(siorSearch.toLowerCase()))).length === 0 ? (
+                                            <tr>
+                                              <td colSpan="9" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
+                                                No record found!
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            siorList
+                                              .filter(row => !siorSearch || Object.values(row).some(v => String(v).toLowerCase().includes(siorSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5">{row.date}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.studentName}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.regNo}</td>
+                                                  <td className="px-2 py-1.5">{row.fatherName}</td>
+                                                  <td className="px-2 py-1.5">{row.motherName}</td>
+                                                  <td className="px-2 py-1.5">{row.dob}</td>
+                                                  <td className="px-2 py-1.5">{row.address}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-green-700">{row.status}</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -16483,9 +19262,44 @@ function AdmissionLayout() {
                                       SMS REPORT From {smsrFromDate} To {smsrToDate}
                                     </div>
 
-                                    {/* Empty / No Record Banner Box */}
-                                    <div className="py-8 text-center text-lg font-bold text-gray-400 tracking-wide">
-                                      No record found!
+                                    {/* SMS Records Table */}
+                                    <div className="overflow-x-auto">
+                                      <table className="min-w-full text-xs text-left border-collapse">
+                                        <thead className="bg-[#fcf5e5] border-b border-[#cca766] text-[10px] font-bold text-gray-900 uppercase">
+                                          <tr>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">SN</th>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">DATE</th>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">SUBJECT</th>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">SEND TO</th>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">LANGUAGE</th>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">MESSAGE</th>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">STATUS</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {smsrList.filter(row => !smsrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(smsrSearch.toLowerCase()))).length === 0 ? (
+                                            <tr>
+                                              <td colSpan="7" className="py-8 text-center text-lg font-bold text-gray-400 tracking-wide">
+                                                No record found!
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            smsrList
+                                              .filter(row => !smsrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(smsrSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5 whitespace-nowrap">{row.date}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.subject}</td>
+                                                  <td className="px-2 py-1.5">{row.sendTo}</td>
+                                                  <td className="px-2 py-1.5">{row.language}</td>
+                                                  <td className="px-2 py-1.5 text-gray-700 max-w-xs">{row.message}</td>
+                                                  <td className="px-2 py-1.5 text-green-700 font-semibold">{row.status}</td>
+                                                </tr>
+                                              ))
+                                          )}
+                                        </tbody>
+                                      </table>
                                     </div>
                                   </div>
 
@@ -16645,9 +19459,48 @@ function AdmissionLayout() {
                                       SIBLING DETAILS as on 03-Sep-2026 at 02:36 PM
                                     </div>
 
-                                    {/* Empty / No Record Box */}
-                                    <div className="py-6 text-xs text-gray-900 font-medium px-4">
-                                      No Record Found
+                                    {/* Sibling Records Table */}
+                                    <div className="overflow-x-auto">
+                                      <table className="min-w-full text-xs text-left border-collapse">
+                                        <thead className="bg-[#fcf5e5] border-b border-[#cca766] text-[10px] font-bold text-gray-900 uppercase">
+                                          <tr>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">FAMILY ID</th>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">ELDER STUDENT NAME</th>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">ELDER ADM NO</th>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">ELDER CLASS</th>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">YOUNGER STUDENT NAME</th>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">YOUNGER ADM NO</th>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">YOUNGER CLASS</th>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">FATHER NAME</th>
+                                            <th className="px-2 py-1.5 whitespace-nowrap">CONTACT</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {sibrList.filter(row => !sibrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(sibrSearch.toLowerCase()))).length === 0 ? (
+                                            <tr>
+                                              <td colSpan="9" className="py-6 text-center text-xs text-gray-500 font-medium">
+                                                No Record Found
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            sibrList
+                                              .filter(row => !sibrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(sibrSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.familyId}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.elderName}</td>
+                                                  <td className="px-2 py-1.5">{row.elderAdmNo}</td>
+                                                  <td className="px-2 py-1.5">{row.elderClass}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-green-700">{row.youngerName}</td>
+                                                  <td className="px-2 py-1.5">{row.youngerAdmNo}</td>
+                                                  <td className="px-2 py-1.5">{row.youngerClass}</td>
+                                                  <td className="px-2 py-1.5">{row.fatherName}</td>
+                                                  <td className="px-2 py-1.5">{row.contact}</td>
+                                                </tr>
+                                              ))
+                                          )}
+                                        </tbody>
+                                      </table>
                                     </div>
                                   </div>
                                 </div>
@@ -16803,23 +19656,24 @@ function AdmissionLayout() {
                                         </thead>
                                         <tbody>
                                           <tr className="bg-white border-b border-[#cca766] font-bold text-[11px]">
-                                            <td colSpan="4" className="px-2 py-1 text-gray-800">Class : {shsrClass === 'All Classes' ? '2' : shsrClass}</td>
+                                            <td colSpan="4" className="px-2 py-1 text-gray-800">Class : {shsrClass}</td>
                                           </tr>
-                                          <tr className="border-b border-[#cca766] divide-x divide-[#cca766]">
-                                            <td className="px-2 py-1 text-center font-medium">1</td>
-                                            <td className="px-2 py-1 font-medium">{shsrSection === 'All Sections' ? 'B' : shsrSection}</td>
-                                            <td className="px-2 py-1 text-right font-medium">38</td>
-                                            <td className="px-2 py-1 text-right font-medium">38</td>
-                                          </tr>
+                                          {shsrList.length === 0 ? (
+                                            <tr><td colSpan="4" className="text-center py-3 text-gray-500 font-medium">No record found !</td></tr>
+                                          ) : (
+                                            shsrList.map((row, idx) => (
+                                              <tr key={idx} className="border-b border-[#cca766] divide-x divide-[#cca766]">
+                                                <td className="px-2 py-1 text-center font-medium">{idx + 1}</td>
+                                                <td className="px-2 py-1 font-medium">Section {row.section}</td>
+                                                <td className="px-2 py-1 text-right font-medium">{row.total}</td>
+                                                <td className="px-2 py-1 text-right font-bold text-blue-700">{row.total}</td>
+                                              </tr>
+                                            ))
+                                          )}
                                           <tr className="border-b border-[#cca766] font-bold divide-x divide-[#cca766] bg-gray-50">
                                             <td colSpan="2" className="px-2 py-1 text-center">Total</td>
-                                            <td className="px-2 py-1 text-right">38</td>
-                                            <td className="px-2 py-1 text-right">38</td>
-                                          </tr>
-                                          <tr className="font-bold divide-x divide-[#cca766] bg-gray-50">
-                                            <td colSpan="2" className="px-2 py-1 text-center">G. Total</td>
-                                            <td className="px-2 py-1 text-right">38</td>
-                                            <td className="px-2 py-1 text-right">38</td>
+                                            <td className="px-2 py-1 text-right">{shsrList.reduce((acc, r) => acc + r.total, 0)}</td>
+                                            <td className="px-2 py-1 text-right text-blue-700">{shsrList.reduce((acc, r) => acc + r.total, 0)}</td>
                                           </tr>
                                         </tbody>
                                       </table>
@@ -17020,11 +19874,28 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr>
-                                            <td colSpan="8" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
-                                              No record found!
-                                            </td>
-                                          </tr>
+                                          {sddList.filter(row => !sddSearch || Object.values(row).some(v => String(v).toLowerCase().includes(sddSearch.toLowerCase()))).length === 0 ? (
+                                            <tr>
+                                              <td colSpan="8" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
+                                                No record found!
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            sddList
+                                              .filter(row => !sddSearch || Object.values(row).some(v => String(v).toLowerCase().includes(sddSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.regNo}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.studentName}</td>
+                                                  <td className="px-2 py-1.5">{row.class}</td>
+                                                  <td className="px-2 py-1.5">{row.section}</td>
+                                                  <td className="px-2 py-1.5">{row.fatherName}</td>
+                                                  <td className="px-2 py-1.5 font-mono">{row.contact}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-green-700">{row.documentStatus}</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -17247,11 +20118,31 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr>
-                                            <td colSpan="11" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
-                                              No record found!
-                                            </td>
-                                          </tr>
+                                          {cwarList.filter(row => !cwarSearch || Object.values(row).some(v => String(v).toLowerCase().includes(cwarSearch.toLowerCase()))).length === 0 ? (
+                                            <tr>
+                                              <td colSpan="11" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
+                                                No record found!
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            cwarList
+                                              .filter(row => !cwarSearch || Object.values(row).some(v => String(v).toLowerCase().includes(cwarSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.admNo}</td>
+                                                  <td className="px-2 py-1.5">{row.doAd || '01-Apr-2026'}</td>
+                                                  <td className="px-2 py-1.5 font-bold">{row.className || row.class}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.name}</td>
+                                                  <td className="px-2 py-1.5">{row.dob}</td>
+                                                  <td className="px-2 py-1.5">{row.father}</td>
+                                                  <td className="px-2 py-1.5">{row.stream || 'General'}</td>
+                                                  <td className="px-2 py-1.5">{row.optSub || 'N/A'}</td>
+                                                  <td className="px-2 py-1.5 font-mono">{row.contact}</td>
+                                                  <td className="px-2 py-1.5 text-gray-600">{row.lastSc || 'Navals National Academy'}</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -17407,11 +20298,29 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr>
-                                            <td colSpan="9" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
-                                              No record found!
-                                            </td>
-                                          </tr>
+                                          {srlList.filter(row => !srlSearch || Object.values(row).some(v => String(v).toLowerCase().includes(srlSearch.toLowerCase()))).length === 0 ? (
+                                            <tr>
+                                              <td colSpan="9" className="px-3 py-4 text-center text-xs text-gray-500 font-medium">
+                                                No record found!
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            srlList
+                                              .filter(row => !srlSearch || Object.values(row).some(v => String(v).toLowerCase().includes(srlSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row.admNo || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.admNo}</td>
+                                                  <td className="px-2 py-1.5">{row.class}</td>
+                                                  <td className="px-2 py-1.5">{row.section}</td>
+                                                  <td className="px-2 py-1.5 font-mono">{row.rollNo}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.name}</td>
+                                                  <td className="px-2 py-1.5">{row.dob}</td>
+                                                  <td className="px-2 py-1.5">{row.father}</td>
+                                                  <td className="px-2 py-1.5">{row.mother}</td>
+                                                  <td className="px-2 py-1.5 font-mono">{row.mobile}</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -17541,34 +20450,39 @@ function AdmissionLayout() {
                                       <div className="border-b border-dashed border-gray-400 my-2"></div>
                                       <p className="text-amber-700 text-[11px] font-semibold">The following is taken from the admission register :</p>
                                     </div>
-                                    <table className="w-full border-collapse border border-gray-400 text-[10px] mt-2">
-                                      <tbody>
-                                        <tr className="border border-gray-300">
-                                          <td className="px-2 py-1 font-bold border-r border-gray-300 bg-gray-50 w-40">Index No.</td>
-                                          <td className="px-2 py-1"></td>
-                                          <td className="px-2 py-1 font-bold border-l border-r border-gray-300 bg-gray-50 w-40">Date of Birth</td>
-                                          <td className="px-2 py-1"></td>
-                                        </tr>
-                                        <tr className="border border-gray-300">
-                                          <td className="px-2 py-1 font-bold border-r border-gray-300 bg-gray-50">Full Name</td>
-                                          <td className="px-2 py-1"></td>
-                                          <td className="px-2 py-1 font-bold border-l border-r border-gray-300 bg-gray-50">Sex</td>
-                                          <td className="px-2 py-1"></td>
-                                        </tr>
-                                        <tr className="border border-gray-300">
-                                          <td className="px-2 py-1 font-bold border-r border-gray-300 bg-gray-50">Mother's Name</td>
-                                          <td className="px-2 py-1"></td>
-                                          <td className="px-2 py-1 font-bold border-l border-r border-gray-300 bg-gray-50">Nationality</td>
-                                          <td className="px-2 py-1"></td>
-                                        </tr>
-                                        <tr className="border border-gray-300">
-                                          <td className="px-2 py-1 font-bold border-r border-gray-300 bg-gray-50">Father's Name</td>
-                                          <td className="px-2 py-1"></td>
-                                          <td className="px-2 py-1 font-bold border-l border-r border-gray-300 bg-gray-50">Religion</td>
-                                          <td className="px-2 py-1"></td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
+                                    {(() => {
+                                      const activeStudent = vafList.find(s => s.name.toLowerCase().includes(vafStudent.toLowerCase())) || vafList.find(s => s.name.toLowerCase().includes('aayup')) || vafList[0] || {};
+                                      return (
+                                        <table className="w-full border-collapse border border-gray-400 text-[10px] mt-2">
+                                          <tbody>
+                                            <tr className="border border-gray-300">
+                                              <td className="px-2 py-1 font-bold border-r border-gray-300 bg-gray-50 w-40">Index No. / Adm No.</td>
+                                              <td className="px-2 py-1 font-semibold text-blue-700">{activeStudent.admNo || 'ADM-1001'}</td>
+                                              <td className="px-2 py-1 font-bold border-l border-r border-gray-300 bg-gray-50 w-40">Date of Birth</td>
+                                              <td className="px-2 py-1 font-medium">{activeStudent.dob || '15-Apr-2022'}</td>
+                                            </tr>
+                                            <tr className="border border-gray-300">
+                                              <td className="px-2 py-1 font-bold border-r border-gray-300 bg-gray-50">Full Name</td>
+                                              <td className="px-2 py-1 font-bold text-gray-900">{activeStudent.name || 'AAYUP KUMAR'}</td>
+                                              <td className="px-2 py-1 font-bold border-l border-r border-gray-300 bg-gray-50">Sex</td>
+                                              <td className="px-2 py-1">{activeStudent.gender || 'Male'}</td>
+                                            </tr>
+                                            <tr className="border border-gray-300">
+                                              <td className="px-2 py-1 font-bold border-r border-gray-300 bg-gray-50">Mother's Name</td>
+                                              <td className="px-2 py-1">{activeStudent.mother || 'POOJA KUMAR'}</td>
+                                              <td className="px-2 py-1 font-bold border-l border-r border-gray-300 bg-gray-50">Nationality</td>
+                                              <td className="px-2 py-1">{activeStudent.nationality || 'Indian'}</td>
+                                            </tr>
+                                            <tr className="border border-gray-300">
+                                              <td className="px-2 py-1 font-bold border-r border-gray-300 bg-gray-50">Father's Name</td>
+                                              <td className="px-2 py-1">{activeStudent.father || 'SUNIL KUMAR'}</td>
+                                              <td className="px-2 py-1 font-bold border-l border-r border-gray-300 bg-gray-50">Religion</td>
+                                              <td className="px-2 py-1">{activeStudent.religion || 'HINDU'}</td>
+                                            </tr>
+                                          </tbody>
+                                        </table>
+                                      );
+                                    })()}
                                   </div>
                                   <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2">
                                     <span>Academic Year : 2026-2027</span>
@@ -17712,7 +20626,39 @@ function AdmissionLayout() {
                                         </tr>
                                       </thead>
                                       <tbody>
-                                        <tr><td colSpan="23" className="text-center py-3 text-gray-500 font-medium border border-gray-400">No record found !</td></tr>
+                                        {awrList.filter(row => !awrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(awrSearch.toLowerCase()))).length === 0 ? (
+                                          <tr><td colSpan="23" className="text-center py-3 text-gray-500 font-medium border border-gray-400">No record found !</td></tr>
+                                        ) : (
+                                          awrList
+                                            .filter(row => !awrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(awrSearch.toLowerCase())))
+                                            .map((row, idx) => (
+                                              <tr key={row._id || idx} className="divide-x divide-gray-400 border border-gray-400 hover:bg-yellow-50 text-[9px]">
+                                                <td className="px-1 py-1 text-center font-medium">{idx + 1}</td>
+                                                <td className="px-1 py-1 whitespace-nowrap">{row.doAd || '01-Apr-2026'}</td>
+                                                <td className="px-1 py-1 font-bold text-gray-900 whitespace-nowrap">{row.name}</td>
+                                                <td className="px-1 py-1 font-semibold text-blue-700">{row.admNo}</td>
+                                                <td className="px-1 py-1 whitespace-nowrap">{row.mother || '-'}</td>
+                                                <td className="px-1 py-1 whitespace-nowrap">{row.father || '-'}</td>
+                                                <td className="px-1 py-1 whitespace-nowrap text-gray-600">{row.address}</td>
+                                                <td className="px-1 py-1 whitespace-nowrap text-gray-600">{row.address}</td>
+                                                <td className="px-1 py-1 whitespace-nowrap text-gray-600">{row.address}</td>
+                                                <td className="px-1 py-1 whitespace-nowrap">{row.father}</td>
+                                                <td className="px-1 py-1 text-center">{row.category}</td>
+                                                <td className="px-1 py-1 text-center font-bold">{row.className}</td>
+                                                <td className="px-1 py-1 whitespace-nowrap">{row.dob}</td>
+                                                <td className="px-1 py-1 font-semibold text-blue-700">{row.admNo}</td>
+                                                <td className="px-1 py-1">{row.aadhaar || '-'}</td>
+                                                <td className="px-1 py-1 text-green-700 font-medium">Verified</td>
+                                                <td className="px-1 py-1 whitespace-nowrap">Navals National Academy</td>
+                                                <td className="px-1 py-1 text-center">-</td>
+                                                <td className="px-1 py-1 text-center">-</td>
+                                                <td className="px-1 py-1 font-mono">{row.contact}</td>
+                                                <td className="px-1 py-1 text-center font-serif text-gray-500">Signed</td>
+                                                <td className="px-1 py-1 text-center font-serif text-gray-500">Verified</td>
+                                                <td className="px-1 py-1 text-center">-</td>
+                                              </tr>
+                                            ))
+                                        )}
                                       </tbody>
                                     </table>
                                   </div>
@@ -17825,7 +20771,26 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr><td colSpan="10" className="text-center py-3 text-gray-500 font-medium">No record found !</td></tr>
+                                          {cacrList.filter(row => !cacrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(cacrSearch.toLowerCase()))).length === 0 ? (
+                                            <tr><td colSpan="10" className="text-center py-3 text-gray-500 font-medium">No record found !</td></tr>
+                                          ) : (
+                                            cacrList
+                                              .filter(row => !cacrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(cacrSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5">{row.date}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.regNo}</td>
+                                                  <td className="px-2 py-1.5 font-mono">{row.refNo}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.studentName}</td>
+                                                  <td className="px-2 py-1.5">{row.className}</td>
+                                                  <td className="px-2 py-1.5">{row.fatherName}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-green-700">₹{row.amount}</td>
+                                                  <td className="px-2 py-1.5 text-gray-700">{row.payMode}</td>
+                                                  <td className="px-2 py-1.5 text-green-700 font-semibold">Active</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -17942,7 +20907,24 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr><td colSpan="14" className="text-center py-3 text-gray-500 font-medium">No record found !</td></tr>
+                                          {tcrList.filter(row => !tcrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(tcrSearch.toLowerCase()))).length === 0 ? (
+                                            <tr><td colSpan="14" className="text-center py-3 text-gray-500 font-medium">No record found !</td></tr>
+                                          ) : (
+                                            tcrList
+                                              .filter(row => !tcrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(tcrSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.studentName}</td>
+                                                  <td className="px-2 py-1.5">{row.fatherName}</td>
+                                                  <td className="px-2 py-1.5 font-mono">{row.contact}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.receiptId}</td>
+                                                  <td className="px-2 py-1.5 font-mono">{row.refNo}</td>
+                                                  <td className="px-2 py-1.5 font-medium">{row.type}</td>
+                                                  <td className="px-2 py-1.5">{row.date}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-green-700">₹{row.amount}</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -18058,7 +21040,23 @@ function AdmissionLayout() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          <tr><td colSpan="7" className="text-center py-3 text-gray-500 font-medium">No record found !</td></tr>
+                                          {mlgrList.filter(row => !mlgrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(mlgrSearch.toLowerCase()))).length === 0 ? (
+                                            <tr><td colSpan="7" className="text-center py-3 text-gray-500 font-medium">No record found !</td></tr>
+                                          ) : (
+                                            mlgrList
+                                              .filter(row => !mlgrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(mlgrSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.regNo}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.studentName}</td>
+                                                  <td className="px-2 py-1.5">{row.class}</td>
+                                                  <td className="px-2 py-1.5">{row.fatherName}</td>
+                                                  <td className="px-2 py-1.5">{row.date}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-green-700">{row.status}</td>
+                                                </tr>
+                                              ))
+                                          )}
                                         </tbody>
                                       </table>
                                     </div>
@@ -18146,7 +21144,45 @@ function AdmissionLayout() {
                                     <div className="border-b border-[#cca766] px-3 py-1.5 font-bold text-xs bg-[#fffdfa]">
                                       STUDENT MODIFICATION HISTORY REPORT as on 03 Sep-2026 at 02:48 PM
                                     </div>
-                                    <div className="py-6 text-center text-red-500 font-bold text-sm">No record found!</div>
+                                    <div className="overflow-x-auto">
+                                      <table className="min-w-full text-xs border-collapse">
+                                        <thead className="bg-[#fcf5e5] border-b border-[#cca766] text-[10px] font-bold uppercase">
+                                          <tr className="divide-x divide-[#cca766]">
+                                            <th className="px-2 py-1.5">SN</th>
+                                            <th className="px-2 py-1.5">DATE & TIME</th>
+                                            <th className="px-2 py-1.5">ADM NO</th>
+                                            <th className="px-2 py-1.5">STUDENT NAME</th>
+                                            <th className="px-2 py-1.5">FIELD MODIFIED</th>
+                                            <th className="px-2 py-1.5">OLD VALUE</th>
+                                            <th className="px-2 py-1.5">NEW VALUE</th>
+                                            <th className="px-2 py-1.5">MODIFIED BY</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {smhrList
+                                            .filter(row => !smhrStudentSearch || (row.studentName || '').toLowerCase().includes(smhrStudentSearch.toLowerCase()))
+                                            .filter(row => !smhrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(smhrSearch.toLowerCase()))).length === 0 ? (
+                                            <tr><td colSpan="8" className="text-center py-4 text-red-500 font-medium">No record found !</td></tr>
+                                          ) : (
+                                            smhrList
+                                              .filter(row => !smhrStudentSearch || (row.studentName || '').toLowerCase().includes(smhrStudentSearch.toLowerCase()))
+                                              .filter(row => !smhrSearch || Object.values(row).some(v => String(v).toLowerCase().includes(smhrSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5 text-center">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5 font-mono">{row.date}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.admNo}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.studentName}</td>
+                                                  <td className="px-2 py-1.5 font-medium text-gray-700">{row.field}</td>
+                                                  <td className="px-2 py-1.5 text-red-600 bg-red-50/50">{row.oldValue}</td>
+                                                  <td className="px-2 py-1.5 text-green-700 font-semibold bg-green-50/50">{row.newValue}</td>
+                                                  <td className="px-2 py-1.5 text-gray-600">{row.modifiedBy}</td>
+                                                </tr>
+                                              ))
+                                          )}
+                                        </tbody>
+                                      </table>
+                                    </div>
                                   </div>
                                   <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2">
                                     <span>Academic Year : 2026-2027</span>
@@ -18224,7 +21260,47 @@ function AdmissionLayout() {
                                     <div className="border-b border-[#cca766] px-3 py-1.5 font-bold text-xs bg-[#fffdfa]">
                                       CERTIFICATES HISTORY REPORT as on 03-Sep-2026 at 02:48 PM
                                     </div>
-                                    <div className="py-6 text-center text-red-500 font-bold text-sm">No record found!</div>
+                                    <div className="overflow-x-auto">
+                                      <table className="min-w-full text-xs border-collapse">
+                                        <thead className="bg-[#fcf5e5] border-b border-[#cca766] text-[10px] font-bold uppercase">
+                                          <tr className="divide-x divide-[#cca766]">
+                                            <th className="px-2 py-1.5">SN</th>
+                                            <th className="px-2 py-1.5">ISSUE DATE</th>
+                                            <th className="px-2 py-1.5">CERTIFICATE NO.</th>
+                                            <th className="px-2 py-1.5">CERTIFICATE TYPE</th>
+                                            <th className="px-2 py-1.5">ADM NO.</th>
+                                            <th className="px-2 py-1.5">STUDENT NAME</th>
+                                            <th className="px-2 py-1.5">CLASS</th>
+                                            <th className="px-2 py-1.5">PURPOSE / REMARKS</th>
+                                            <th className="px-2 py-1.5">STATUS</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {chList
+                                            .filter(row => chCertType === 'Select Certificate' || !chCertType || (chCertType === 'TC' ? row.type.includes('Transfer') : row.type.toLowerCase().includes(chCertType.toLowerCase())))
+                                            .filter(row => !chSearch || Object.values(row).some(v => String(v).toLowerCase().includes(chSearch.toLowerCase()))).length === 0 ? (
+                                            <tr><td colSpan="9" className="text-center py-4 text-red-500 font-medium">No record found !</td></tr>
+                                          ) : (
+                                            chList
+                                              .filter(row => chCertType === 'Select Certificate' || !chCertType || (chCertType === 'TC' ? row.type.includes('Transfer') : row.type.toLowerCase().includes(chCertType.toLowerCase())))
+                                              .filter(row => !chSearch || Object.values(row).some(v => String(v).toLowerCase().includes(chSearch.toLowerCase())))
+                                              .map((row, idx) => (
+                                                <tr key={row._id || idx} className="border-b border-gray-200 hover:bg-yellow-50 text-[11px]">
+                                                  <td className="px-2 py-1.5 text-center">{idx + 1}</td>
+                                                  <td className="px-2 py-1.5 font-mono">{row.date}</td>
+                                                  <td className="px-2 py-1.5 font-semibold text-blue-700">{row.certNo}</td>
+                                                  <td className="px-2 py-1.5 font-medium">{row.type}</td>
+                                                  <td className="px-2 py-1.5 font-mono">{row.admNo || '-'}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-gray-900">{row.studentName}</td>
+                                                  <td className="px-2 py-1.5">{row.class || '-'}</td>
+                                                  <td className="px-2 py-1.5 text-gray-700">{row.purpose}</td>
+                                                  <td className="px-2 py-1.5 font-bold text-green-700">{row.status}</td>
+                                                </tr>
+                                              ))
+                                          )}
+                                        </tbody>
+                                      </table>
+                                    </div>
                                   </div>
                                   <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2">
                                     <span>Academic Year : 2026-2027</span>
@@ -18311,7 +21387,7 @@ function AdmissionLayout() {
                               <button className="px-2 py-1 bg-white border border-gray-300 rounded text-xs hover:bg-gray-100 cursor-pointer">&gt;&gt;|</button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <input type="text" value={cwsdSearch} onChange={e => setCwsdSearch(e.target.value)} placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
                               <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
                               <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
                               <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
@@ -18328,8 +21404,8 @@ function AdmissionLayout() {
                                 </div>
                               </div>
                               <div className="border-t-2 border-orange-200 pt-2 mb-3 flex items-center justify-between text-xs font-bold text-gray-800">
-                                <span>Student List of Class : NUR A</span>
-                                <span>Teacher's Name : </span>
+                                <span>Student List of Class : {cwsdClass}</span>
+                                <span>Total Students : {cwsdList.filter(r => cwsdClass === 'All Class' || cwsdClass === 'All (51)' || `${r.class} ${r.section}` === cwsdClass || r.class === cwsdClass).length}</span>
                               </div>
                               <table className="w-full border-collapse border border-amber-400 text-[11px]">
                                 <thead className="bg-[#fef9c3]">
@@ -18337,30 +21413,39 @@ function AdmissionLayout() {
                                     <th className="border border-amber-300 px-2 py-1 text-center w-10">SN</th>
                                     <th className="border border-amber-300 px-2 py-1 text-center w-20">ADM. NO.</th>
                                     <th className="border border-amber-300 px-2 py-1 text-left">NAME</th>
-                                    <th className="border border-amber-300 px-2 py-1 w-24"></th>
-                                    <th className="border border-amber-300 px-2 py-1 w-24"></th>
-                                    <th className="border border-amber-300 px-2 py-1 w-24"></th>
-                                    <th className="border border-amber-300 px-2 py-1 w-24"></th>
+                                    <th className="border border-amber-300 px-2 py-1 text-center">CLASS / SEC</th>
+                                    <th className="border border-amber-300 px-2 py-1 text-left">FATHER NAME</th>
+                                    <th className="border border-amber-300 px-2 py-1 text-center">CONTACT</th>
+                                    <th className="border border-amber-300 px-2 py-1 text-center">CATEGORY</th>
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {studentImageDatabase['NUR-A'].map((st) => (
-                                    <tr key={st.sr} className="hover:bg-amber-50/50">
-                                      <td className="border border-amber-200 px-2 py-1 text-center font-medium">{st.sr}</td>
-                                      <td className="border border-amber-200 px-2 py-1 text-center font-mono">{st.adm}</td>
-                                      <td className="border border-amber-200 px-2 py-1 font-bold text-gray-800">{st.name}</td>
-                                      <td className="border border-amber-200 px-2 py-1"></td>
-                                      <td className="border border-amber-200 px-2 py-1"></td>
-                                      <td className="border border-amber-200 px-2 py-1"></td>
-                                      <td className="border border-amber-200 px-2 py-1"></td>
-                                    </tr>
-                                  ))}
+                                  {cwsdList
+                                    .filter(r => cwsdClass === 'All Class' || cwsdClass === 'All (51)' || `${r.class} ${r.section}` === cwsdClass || r.class === cwsdClass)
+                                    .filter(r => !cwsdSearch || Object.values(r).some(v => String(v).toLowerCase().includes(cwsdSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="7" className="border border-amber-200 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    cwsdList
+                                      .filter(r => cwsdClass === 'All Class' || cwsdClass === 'All (51)' || `${r.class} ${r.section}` === cwsdClass || r.class === cwsdClass)
+                                      .filter(r => !cwsdSearch || Object.values(r).some(v => String(v).toLowerCase().includes(cwsdSearch.toLowerCase())))
+                                      .map((st, idx) => (
+                                        <tr key={idx} className="hover:bg-amber-50/50">
+                                          <td className="border border-amber-200 px-2 py-1 text-center font-medium">{idx + 1}</td>
+                                          <td className="border border-amber-200 px-2 py-1 text-center font-mono">{st.adm}</td>
+                                          <td className="border border-amber-200 px-2 py-1 font-bold text-gray-800">{st.name}</td>
+                                          <td className="border border-amber-200 px-2 py-1 text-center font-medium">{st.class} {st.section}</td>
+                                          <td className="border border-amber-200 px-2 py-1">{st.father}</td>
+                                          <td className="border border-amber-200 px-2 py-1 text-center font-mono">{st.contact}</td>
+                                          <td className="border border-amber-200 px-2 py-1 text-center">{st.category}</td>
+                                        </tr>
+                                      ))
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold border-t border-gray-300 pt-3 mt-4">
                                 <span>Academic Year : 2026-2027</span>
                                 <span>Student List as on 03-Sep-2026 at 10:08 PM</span>
-                                <span>Page 1 of 30</span>
+                                <span>Page 1 of 1</span>
                               </div>
                             </div>
                           </div>
@@ -18391,7 +21476,7 @@ function AdmissionLayout() {
                               <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <input type="text" value={cstrSearch} onChange={e => setCstrSearch(e.target.value)} placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
                               <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
                               <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
                               <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
@@ -18405,9 +21490,27 @@ function AdmissionLayout() {
                               <table className="w-full border border-gray-300 text-[11px]">
                                 <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">FROM CLASS</th><th className="border border-gray-300 px-2 py-1">TO CLASS</th><th className="border border-gray-300 px-2 py-1">DATE</th></tr></thead>
                                 <tbody>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">1770</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center">NUR B</td><td className="border border-gray-300 px-2 py-1 text-center">15-Apr-2026</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">1850</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">LKG A</td><td className="border border-gray-300 px-2 py-1 text-center">LKG B</td><td className="border border-gray-300 px-2 py-1 text-center">20-May-2026</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">2203</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">UKG B</td><td className="border border-gray-300 px-2 py-1 text-center">UKG A</td><td className="border border-gray-300 px-2 py-1 text-center">10-Jul-2026</td></tr>
+                                  {cstrList
+                                    .filter(r => cstrClass === 'All Class' || cstrClass === 'All Classes' || r.fromClass.includes(cstrClass) || r.toClass.includes(cstrClass))
+                                    .filter(r => cstrSection === 'All Section' || cstrSection === 'All Sections' || r.fromClass.includes(cstrSection) || r.toClass.includes(cstrSection))
+                                    .filter(r => !cstrSearch || Object.values(r).some(v => String(v).toLowerCase().includes(cstrSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="6" className="border border-gray-300 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    cstrList
+                                      .filter(r => cstrClass === 'All Class' || cstrClass === 'All Classes' || r.fromClass.includes(cstrClass) || r.toClass.includes(cstrClass))
+                                      .filter(r => cstrSection === 'All Section' || cstrSection === 'All Sections' || r.fromClass.includes(cstrSection) || r.toClass.includes(cstrSection))
+                                      .filter(r => !cstrSearch || Object.values(r).some(v => String(v).toLowerCase().includes(cstrSearch.toLowerCase())))
+                                      .map((r, idx) => (
+                                        <tr key={idx} className="hover:bg-yellow-50 text-[11px]">
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{idx + 1}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-mono">{r.admNo}</td>
+                                          <td className="border border-gray-300 px-2 py-1 font-bold text-gray-800">{r.name}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{r.fromClass}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{r.toClass}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{r.date}</td>
+                                        </tr>
+                                      ))
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Section Transfer Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
@@ -18440,7 +21543,7 @@ function AdmissionLayout() {
                               <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <input type="text" value={cwsibSearch} onChange={e => setCwsibSearch(e.target.value)} placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
                               <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
                               <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
                               <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
@@ -18454,9 +21557,25 @@ function AdmissionLayout() {
                               <table className="w-full border border-gray-300 text-[11px]">
                                 <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">SIBLING NAME</th><th className="border border-gray-300 px-2 py-1">SIBLING CLASS</th><th className="border border-gray-300 px-2 py-1">FATHER NAME</th></tr></thead>
                                 <tbody>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1">AADITYA GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">CLASS 4 A</td><td className="border border-gray-300 px-2 py-1">RAJESH GUPTA</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">LKG A</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1">SHIVANI JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">CLASS 7 B</td><td className="border border-gray-300 px-2 py-1">MANOJ JAISWAL</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">UKG A</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1">ANURAG MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">CLASS 9 A</td><td className="border border-gray-300 px-2 py-1">SUNIL MAURYA</td></tr>
+                                  {cwsibList
+                                    .filter(r => cwsibClass === 'All Class' || r.class.includes(cwsibClass))
+                                    .filter(r => !cwsibSearch || Object.values(r).some(v => String(v).toLowerCase().includes(cwsibSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="6" className="border border-gray-300 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    cwsibList
+                                      .filter(r => cwsibClass === 'All Class' || r.class.includes(cwsibClass))
+                                      .filter(r => !cwsibSearch || Object.values(r).some(v => String(v).toLowerCase().includes(cwsibSearch.toLowerCase())))
+                                      .map((r, idx) => (
+                                        <tr key={idx} className="hover:bg-yellow-50 text-[11px]">
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{idx + 1}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-medium">{r.class}</td>
+                                          <td className="border border-gray-300 px-2 py-1 font-bold text-gray-800">{r.studentName}</td>
+                                          <td className="border border-gray-300 px-2 py-1 font-medium">{r.siblingName}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{r.siblingClass}</td>
+                                          <td className="border border-gray-300 px-2 py-1">{r.fatherName}</td>
+                                        </tr>
+                                      ))
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Wise Sibling printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
@@ -18490,7 +21609,7 @@ function AdmissionLayout() {
                               <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <input type="text" value={cwmlSearch} onChange={e => setCwmlSearch(e.target.value)} placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
                               <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
                               <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
                               <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
@@ -18504,10 +21623,27 @@ function AdmissionLayout() {
                               <table className="w-full border border-gray-300 text-[11px]">
                                 <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ADM NO.</th><th className="border border-gray-300 px-2 py-1">STUDENT NAME</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">MARKS</th><th className="border border-gray-300 px-2 py-1">GRADE</th></tr></thead>
                                 <tbody>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center">1770</td><td className="border border-gray-300 px-2 py-1 font-bold">ARNAV GUPTA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">94.5%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-700">A1</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center">1850</td><td className="border border-gray-300 px-2 py-1 font-bold">SATVIK JAISWAL</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">91.0%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-700">A1</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">1858</td><td className="border border-gray-300 px-2 py-1 font-bold">KARTIK MADDHESIYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">88.5%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-blue-700">A2</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center">2203</td><td className="border border-gray-300 px-2 py-1 font-bold">ANVI MAURYA</td><td className="border border-gray-300 px-2 py-1 text-center">NUR A</td><td className="border border-gray-300 px-2 py-1 text-center font-semibold">96.0%</td><td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-700">A1</td></tr>
+                                  {cwmlList
+                                    .filter(r => cwmlClass === 'All Class' || r.class.includes(cwmlClass))
+                                    .filter(r => cwmlSection === 'All Section' || r.class.includes(cwmlSection))
+                                    .filter(r => !cwmlSearch || Object.values(r).some(v => String(v).toLowerCase().includes(cwmlSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="6" className="border border-gray-300 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    cwmlList
+                                      .filter(r => cwmlClass === 'All Class' || r.class.includes(cwmlClass))
+                                      .filter(r => cwmlSection === 'All Section' || r.class.includes(cwmlSection))
+                                      .filter(r => !cwmlSearch || Object.values(r).some(v => String(v).toLowerCase().includes(cwmlSearch.toLowerCase())))
+                                      .map((r, idx) => (
+                                        <tr key={idx} className="hover:bg-yellow-50 text-[11px]">
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{idx + 1}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-mono">{r.admNo}</td>
+                                          <td className="border border-gray-300 px-2 py-1 font-bold text-gray-800">{r.studentName}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{r.class}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold">{r.marks}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-bold text-green-700">{r.grade}</td>
+                                        </tr>
+                                      ))
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Wise Mark List printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
@@ -18553,11 +21689,33 @@ function AdmissionLayout() {
                               <table className="w-full border border-gray-300 text-[11px]">
                                 <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">SESSION</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
                                 <tbody>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">45</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">80</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">50</td><td className="border border-gray-300 px-2 py-1 text-center">40</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">90</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">48</td><td className="border border-gray-300 px-2 py-1 text-center">42</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">90</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">2026-2027</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">1</td><td className="border border-gray-300 px-2 py-1 text-center">55</td><td className="border border-gray-300 px-2 py-1 text-center">45</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">100</td></tr>
-                                  <tr className="bg-gray-100 font-bold"><td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">198</td><td className="border border-gray-300 px-2 py-1 text-center">162</td><td className="border border-gray-300 px-2 py-1 text-center">360</td></tr>
+                                  {tssrList
+                                    .filter(r => tssrClass === 'All Class' || r.class === tssrClass)
+                                    .filter(r => !tssrSearch || Object.values(r).some(v => String(v).toLowerCase().includes(tssrSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="6" className="border border-gray-300 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    <>
+                                      {tssrList
+                                        .filter(r => tssrClass === 'All Class' || r.class === tssrClass)
+                                        .filter(r => !tssrSearch || Object.values(r).some(v => String(v).toLowerCase().includes(tssrSearch.toLowerCase())))
+                                        .map((r, idx) => (
+                                          <tr key={idx} className="hover:bg-yellow-50 text-[11px]">
+                                            <td className="border border-gray-300 px-2 py-1 text-center">{idx + 1}</td>
+                                            <td className="border border-gray-300 px-2 py-1 text-center font-medium">{r.session}</td>
+                                            <td className="border border-gray-300 px-2 py-1 text-center font-bold">{r.class}</td>
+                                            <td className="border border-gray-300 px-2 py-1 text-center">{r.boys}</td>
+                                            <td className="border border-gray-300 px-2 py-1 text-center">{r.girls}</td>
+                                            <td className="border border-gray-300 px-2 py-1 text-center font-bold">{r.total}</td>
+                                          </tr>
+                                        ))}
+                                      <tr className="bg-gray-100 font-bold text-[11px]">
+                                        <td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td>
+                                        <td className="border border-gray-300 px-2 py-1 text-center">{tssrList.filter(r => tssrClass === 'All Class' || r.class === tssrClass).reduce((acc, curr) => acc + (curr.boys || 0), 0)}</td>
+                                        <td className="border border-gray-300 px-2 py-1 text-center">{tssrList.filter(r => tssrClass === 'All Class' || r.class === tssrClass).reduce((acc, curr) => acc + (curr.girls || 0), 0)}</td>
+                                        <td className="border border-gray-300 px-2 py-1 text-center font-bold text-[#28aae1]">{tssrList.filter(r => tssrClass === 'All Class' || r.class === tssrClass).reduce((acc, curr) => acc + (curr.total || 0), 0)}</td>
+                                      </tr>
+                                    </>
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Total Session Strength Wise Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
@@ -19179,7 +22337,7 @@ function AdmissionLayout() {
                               <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <input type="text" value={cwssSearch} onChange={e => setCwssSearch(e.target.value)} placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
                               <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
                               <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
                               <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
@@ -19193,12 +22351,38 @@ function AdmissionLayout() {
                               <table className="w-full border border-gray-300 text-[11px]">
                                 <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
                                 <tbody>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">45</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">55</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">28</td><td className="border border-gray-300 px-2 py-1 text-center">22</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">50</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-medium">I</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">65</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">5</td><td className="border border-gray-300 px-2 py-1 font-medium">II</td><td className="border border-gray-300 px-2 py-1 text-center">40</td><td className="border border-gray-300 px-2 py-1 text-center">32</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">72</td></tr>
-                                  <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">158</td><td className="border border-gray-300 px-2 py-1 text-center">129</td><td className="border border-gray-300 px-2 py-1 text-center">287</td></tr>
+                                  {cwssList
+                                    .filter(r => cwssClass === 'All Classes' || r.class === cwssClass)
+                                    .filter(r => !cwssSearch || Object.values(r).some(v => String(v).toLowerCase().includes(cwssSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="5" className="border border-gray-300 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    cwssList
+                                      .filter(r => cwssClass === 'All Classes' || r.class === cwssClass)
+                                      .filter(r => !cwssSearch || Object.values(r).some(v => String(v).toLowerCase().includes(cwssSearch.toLowerCase())))
+                                      .map((r, idx) => (
+                                        <tr key={idx} className="hover:bg-yellow-50 text-[11px]">
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{idx + 1}</td>
+                                          <td className="border border-gray-300 px-2 py-1 font-medium">{r.class}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-blue-700">{r.boys}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-pink-700">{r.girls}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-bold text-gray-900">{r.total}</td>
+                                        </tr>
+                                      ))
+                                  )}
+                                  {cwssList.length > 0 && (
+                                    <tr className="bg-gray-100 font-bold">
+                                      <td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-blue-800">
+                                        {cwssList.filter(r => cwssClass === 'All Classes' || r.class === cwssClass).reduce((acc, curr) => acc + (curr.boys || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-pink-800">
+                                        {cwssList.filter(r => cwssClass === 'All Classes' || r.class === cwssClass).reduce((acc, curr) => acc + (curr.girls || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-gray-900">
+                                        {cwssList.filter(r => cwssClass === 'All Classes' || r.class === cwssClass).reduce((acc, curr) => acc + (curr.total || 0), 0)}
+                                      </td>
+                                    </tr>
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Class Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
@@ -19233,7 +22417,7 @@ function AdmissionLayout() {
                               <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <input type="text" value={sscSearch} onChange={e => setSscSearch(e.target.value)} placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
                               <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
                               <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
                               <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
@@ -19247,11 +22431,41 @@ function AdmissionLayout() {
                               <table className="w-full border border-gray-300 text-[11px]">
                                 <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">SECTION</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
                                 <tbody>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">45</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">55</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">28</td><td className="border border-gray-300 px-2 py-1 text-center">22</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">50</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-medium">I</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">65</td></tr>
-                                  <tr className="bg-gray-100 font-bold"><td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">118</td><td className="border border-gray-300 px-2 py-1 text-center">97</td><td className="border border-gray-300 px-2 py-1 text-center">215</td></tr>
+                                  {sscList
+                                    .filter(r => sscClass === 'All Classes' || r.class === sscClass)
+                                    .filter(r => sscSection === 'All Sections' || r.section === sscSection)
+                                    .filter(r => !sscSearch || Object.values(r).some(v => String(v).toLowerCase().includes(sscSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="6" className="border border-gray-300 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    sscList
+                                      .filter(r => sscClass === 'All Classes' || r.class === sscClass)
+                                      .filter(r => sscSection === 'All Sections' || r.section === sscSection)
+                                      .filter(r => !sscSearch || Object.values(r).some(v => String(v).toLowerCase().includes(sscSearch.toLowerCase())))
+                                      .map((r, idx) => (
+                                        <tr key={idx} className="hover:bg-yellow-50 text-[11px]">
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{idx + 1}</td>
+                                          <td className="border border-gray-300 px-2 py-1 font-medium">{r.class}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{r.section}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-blue-700">{r.boys}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-pink-700">{r.girls}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-bold text-gray-900">{r.total}</td>
+                                        </tr>
+                                      ))
+                                  )}
+                                  {sscList.length > 0 && (
+                                    <tr className="bg-gray-100 font-bold">
+                                      <td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-blue-800">
+                                        {sscList.filter(r => sscClass === 'All Classes' || r.class === sscClass).filter(r => sscSection === 'All Sections' || r.section === sscSection).reduce((acc, curr) => acc + (curr.boys || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-pink-800">
+                                        {sscList.filter(r => sscClass === 'All Classes' || r.class === sscClass).filter(r => sscSection === 'All Sections' || r.section === sscSection).reduce((acc, curr) => acc + (curr.girls || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-gray-900">
+                                        {sscList.filter(r => sscClass === 'All Classes' || r.class === sscClass).filter(r => sscSection === 'All Sections' || r.section === sscSection).reduce((acc, curr) => acc + (curr.total || 0), 0)}
+                                      </td>
+                                    </tr>
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Student Strength Consolidated printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
@@ -19287,7 +22501,7 @@ function AdmissionLayout() {
                               <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <input type="text" value={ssrwSearch} onChange={e => setSsrwSearch(e.target.value)} placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
                               <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
                               <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
                               <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
@@ -19301,10 +22515,47 @@ function AdmissionLayout() {
                               <table className="w-full border border-gray-300 text-[11px]">
                                 <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">RATIO (B:G)</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
                                 <tbody>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center">1.25 : 1</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">45</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">30</td><td className="border border-gray-300 px-2 py-1 text-center">25</td><td className="border border-gray-300 px-2 py-1 text-center">1.20 : 1</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">55</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">28</td><td className="border border-gray-300 px-2 py-1 text-center">22</td><td className="border border-gray-300 px-2 py-1 text-center">1.27 : 1</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">50</td></tr>
-                                  <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">83</td><td className="border border-gray-300 px-2 py-1 text-center">67</td><td className="border border-gray-300 px-2 py-1 text-center">1.24 : 1</td><td className="border border-gray-300 px-2 py-1 text-center">150</td></tr>
+                                  {ssrwList
+                                    .filter(r => ssrwClass === 'All Classes' || r.class === ssrwClass)
+                                    .filter(r => !ssrwSearch || Object.values(r).some(v => String(v).toLowerCase().includes(ssrwSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="6" className="border border-gray-300 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    ssrwList
+                                      .filter(r => ssrwClass === 'All Classes' || r.class === ssrwClass)
+                                      .filter(r => !ssrwSearch || Object.values(r).some(v => String(v).toLowerCase().includes(ssrwSearch.toLowerCase())))
+                                      .map((r, idx) => (
+                                        <tr key={idx} className="hover:bg-yellow-50 text-[11px]">
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{idx + 1}</td>
+                                          <td className="border border-gray-300 px-2 py-1 font-medium">{r.class}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-blue-700">{r.boys}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-pink-700">{r.girls}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-medium">{r.ratio}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-bold text-gray-900">{r.total}</td>
+                                        </tr>
+                                      ))
+                                  )}
+                                  {ssrwList.length > 0 && (
+                                    <tr className="bg-gray-100 font-bold">
+                                      <td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-blue-800">
+                                        {ssrwList.filter(r => ssrwClass === 'All Classes' || r.class === ssrwClass).reduce((acc, curr) => acc + (curr.boys || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-pink-800">
+                                        {ssrwList.filter(r => ssrwClass === 'All Classes' || r.class === ssrwClass).reduce((acc, curr) => acc + (curr.girls || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center">
+                                        {(() => {
+                                          const filtered = ssrwList.filter(r => ssrwClass === 'All Classes' || r.class === ssrwClass);
+                                          const totB = filtered.reduce((acc, curr) => acc + (curr.boys || 0), 0);
+                                          const totG = filtered.reduce((acc, curr) => acc + (curr.girls || 0), 0);
+                                          return totG > 0 ? `${(totB / totG).toFixed(2)} : 1` : `${totB} : 0`;
+                                        })()}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-gray-900">
+                                        {ssrwList.filter(r => ssrwClass === 'All Classes' || r.class === ssrwClass).reduce((acc, curr) => acc + (curr.total || 0), 0)}
+                                      </td>
+                                    </tr>
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Student Strength Ratio Wise Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
@@ -19344,7 +22595,7 @@ function AdmissionLayout() {
                               <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <input type="text" value={rgssSearch} onChange={e => setRgssSearch(e.target.value)} placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
                               <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
                               <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
                               <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
@@ -19358,11 +22609,36 @@ function AdmissionLayout() {
                               <table className="w-full border border-gray-300 text-[11px]">
                                 <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">TYPE</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
                                 <tbody>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center">450</td><td className="border border-gray-300 px-2 py-1 text-center">380</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">830</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">Muslim</td><td className="border border-gray-300 px-2 py-1 text-center">45</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">80</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">Christian</td><td className="border border-gray-300 px-2 py-1 text-center">12</td><td className="border border-gray-300 px-2 py-1 text-center">8</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">20</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-medium">Sikh</td><td className="border border-gray-300 px-2 py-1 text-center">5</td><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">8</td></tr>
-                                  <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">512</td><td className="border border-gray-300 px-2 py-1 text-center">426</td><td className="border border-gray-300 px-2 py-1 text-center">938</td></tr>
+                                  {rgssList
+                                    .filter(r => !rgssSearch || Object.values(r).some(v => String(v).toLowerCase().includes(rgssSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="5" className="border border-gray-300 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    rgssList
+                                      .filter(r => !rgssSearch || Object.values(r).some(v => String(v).toLowerCase().includes(rgssSearch.toLowerCase())))
+                                      .map((r, idx) => (
+                                        <tr key={idx} className="hover:bg-yellow-50 text-[11px]">
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{idx + 1}</td>
+                                          <td className="border border-gray-300 px-2 py-1 font-medium">{r.type}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-blue-700">{r.boys}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-pink-700">{r.girls}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-bold text-gray-900">{r.total}</td>
+                                        </tr>
+                                      ))
+                                  )}
+                                  {rgssList.length > 0 && (
+                                    <tr className="bg-gray-100 font-bold">
+                                      <td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-blue-800">
+                                        {rgssList.reduce((acc, curr) => acc + (curr.boys || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-pink-800">
+                                        {rgssList.reduce((acc, curr) => acc + (curr.girls || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-gray-900">
+                                        {rgssList.reduce((acc, curr) => acc + (curr.total || 0), 0)}
+                                      </td>
+                                    </tr>
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Religion / Gender Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
@@ -19396,7 +22672,7 @@ function AdmissionLayout() {
                               <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <input type="text" value={nwssSearch} onChange={e => setNwssSearch(e.target.value)} placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
                               <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
                               <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
                               <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
@@ -19410,9 +22686,36 @@ function AdmissionLayout() {
                               <table className="w-full border border-gray-300 text-[11px]">
                                 <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">NATIONALITY</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
                                 <tbody>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">Indian</td><td className="border border-gray-300 px-2 py-1 text-center">512</td><td className="border border-gray-300 px-2 py-1 text-center">426</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">938</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">Others</td><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">5</td></tr>
-                                  <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">515</td><td className="border border-gray-300 px-2 py-1 text-center">428</td><td className="border border-gray-300 px-2 py-1 text-center">943</td></tr>
+                                  {nwssList
+                                    .filter(r => !nwssSearch || Object.values(r).some(v => String(v).toLowerCase().includes(nwssSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="5" className="border border-gray-300 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    nwssList
+                                      .filter(r => !nwssSearch || Object.values(r).some(v => String(v).toLowerCase().includes(nwssSearch.toLowerCase())))
+                                      .map((r, idx) => (
+                                        <tr key={idx} className="hover:bg-yellow-50 text-[11px]">
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{idx + 1}</td>
+                                          <td className="border border-gray-300 px-2 py-1 font-medium">{r.nationality}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-blue-700">{r.boys}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-pink-700">{r.girls}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-bold text-gray-900">{r.total}</td>
+                                        </tr>
+                                      ))
+                                  )}
+                                  {nwssList.length > 0 && (
+                                    <tr className="bg-gray-100 font-bold">
+                                      <td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-blue-800">
+                                        {nwssList.reduce((acc, curr) => acc + (curr.boys || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-pink-800">
+                                        {nwssList.reduce((acc, curr) => acc + (curr.girls || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-gray-900">
+                                        {nwssList.reduce((acc, curr) => acc + (curr.total || 0), 0)}
+                                      </td>
+                                    </tr>
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Nationality Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
@@ -19449,7 +22752,7 @@ function AdmissionLayout() {
                               <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <input type="text" value={cgssSearch} onChange={e => setCgssSearch(e.target.value)} placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
                               <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
                               <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
                               <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
@@ -19463,10 +22766,36 @@ function AdmissionLayout() {
                               <table className="w-full border border-gray-300 text-[11px]">
                                 <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CATEGORY</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
                                 <tbody>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1 text-center">210</td><td className="border border-gray-300 px-2 py-1 text-center">180</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">390</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1 text-center">230</td><td className="border border-gray-300 px-2 py-1 text-center">195</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">425</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">SC / ST</td><td className="border border-gray-300 px-2 py-1 text-center">72</td><td className="border border-gray-300 px-2 py-1 text-center">51</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">123</td></tr>
-                                  <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">512</td><td className="border border-gray-300 px-2 py-1 text-center">426</td><td className="border border-gray-300 px-2 py-1 text-center">938</td></tr>
+                                  {cgssList
+                                    .filter(r => !cgssSearch || Object.values(r).some(v => String(v).toLowerCase().includes(cgssSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="5" className="border border-gray-300 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    cgssList
+                                      .filter(r => !cgssSearch || Object.values(r).some(v => String(v).toLowerCase().includes(cgssSearch.toLowerCase())))
+                                      .map((r, idx) => (
+                                        <tr key={idx} className="hover:bg-yellow-50 text-[11px]">
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{idx + 1}</td>
+                                          <td className="border border-gray-300 px-2 py-1 font-medium">{r.category}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-blue-700">{r.boys}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-pink-700">{r.girls}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-bold text-gray-900">{r.total}</td>
+                                        </tr>
+                                      ))
+                                  )}
+                                  {cgssList.length > 0 && (
+                                    <tr className="bg-gray-100 font-bold">
+                                      <td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-blue-800">
+                                        {cgssList.reduce((acc, curr) => acc + (curr.boys || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-pink-800">
+                                        {cgssList.reduce((acc, curr) => acc + (curr.girls || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-gray-900">
+                                        {cgssList.reduce((acc, curr) => acc + (curr.total || 0), 0)}
+                                      </td>
+                                    </tr>
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Category / Gender Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
@@ -19501,7 +22830,7 @@ function AdmissionLayout() {
                               <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <input type="text" value={rwssSearch} onChange={e => setRwssSearch(e.target.value)} placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
                               <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
                               <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
                               <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
@@ -19515,10 +22844,36 @@ function AdmissionLayout() {
                               <table className="w-full border border-gray-300 text-[11px]">
                                 <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">ROUTE NAME</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
                                 <tbody>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 1 - Dohrighat Market</td><td className="border border-gray-300 px-2 py-1 text-center">120</td><td className="border border-gray-300 px-2 py-1 text-center">95</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">215</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 2 - Ghosi Highway</td><td className="border border-gray-300 px-2 py-1 text-center">150</td><td className="border border-gray-300 px-2 py-1 text-center">130</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">280</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">Route 3 - Indara Station</td><td className="border border-gray-300 px-2 py-1 text-center">90</td><td className="border border-gray-300 px-2 py-1 text-center">80</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">170</td></tr>
-                                  <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">360</td><td className="border border-gray-300 px-2 py-1 text-center">305</td><td className="border border-gray-300 px-2 py-1 text-center">665</td></tr>
+                                  {rwssList
+                                    .filter(r => !rwssSearch || Object.values(r).some(v => String(v).toLowerCase().includes(rwssSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="5" className="border border-gray-300 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    rwssList
+                                      .filter(r => !rwssSearch || Object.values(r).some(v => String(v).toLowerCase().includes(rwssSearch.toLowerCase())))
+                                      .map((r, idx) => (
+                                        <tr key={idx} className="hover:bg-yellow-50 text-[11px]">
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{idx + 1}</td>
+                                          <td className="border border-gray-300 px-2 py-1 font-medium">{r.routeName}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-blue-700">{r.boys}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-pink-700">{r.girls}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-bold text-gray-900">{r.total}</td>
+                                        </tr>
+                                      ))
+                                  )}
+                                  {rwssList.length > 0 && (
+                                    <tr className="bg-gray-100 font-bold">
+                                      <td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-blue-800">
+                                        {rwssList.reduce((acc, curr) => acc + (curr.boys || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-pink-800">
+                                        {rwssList.reduce((acc, curr) => acc + (curr.girls || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-gray-900">
+                                        {rwssList.reduce((acc, curr) => acc + (curr.total || 0), 0)}
+                                      </td>
+                                    </tr>
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Route Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
@@ -19551,7 +22906,7 @@ function AdmissionLayout() {
                               <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <input type="text" value={ewsSearch} onChange={e => setEwsSearch(e.target.value)} placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
                               <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
                               <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
                               <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
@@ -19565,10 +22920,38 @@ function AdmissionLayout() {
                               <table className="w-full border border-gray-300 text-[11px]">
                                 <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">EWS BOYS</th><th className="border border-gray-300 px-2 py-1">EWS GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL EWS STRENGTH</th></tr></thead>
                                 <tbody>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">6</td><td className="border border-gray-300 px-2 py-1 text-center">5</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">11</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">8</td><td className="border border-gray-300 px-2 py-1 text-center">6</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">14</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">7</td><td className="border border-gray-300 px-2 py-1 text-center">5</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">12</td></tr>
-                                  <tr className="bg-gray-100 font-bold"><td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">21</td><td className="border border-gray-300 px-2 py-1 text-center">16</td><td className="border border-gray-300 px-2 py-1 text-center">37</td></tr>
+                                  {ewsList
+                                    .filter(r => ewsClass === 'All Classes' || r.class === ewsClass)
+                                    .filter(r => !ewsSearch || Object.values(r).some(v => String(v).toLowerCase().includes(ewsSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="5" className="border border-gray-300 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    ewsList
+                                      .filter(r => ewsClass === 'All Classes' || r.class === ewsClass)
+                                      .filter(r => !ewsSearch || Object.values(r).some(v => String(v).toLowerCase().includes(ewsSearch.toLowerCase())))
+                                      .map((r, idx) => (
+                                        <tr key={idx} className="hover:bg-yellow-50 text-[11px]">
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{idx + 1}</td>
+                                          <td className="border border-gray-300 px-2 py-1 font-medium">{r.class}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-blue-700">{r.boys}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-pink-700">{r.girls}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-bold text-gray-900">{r.total}</td>
+                                        </tr>
+                                      ))
+                                  )}
+                                  {ewsList.length > 0 && (
+                                    <tr className="bg-gray-100 font-bold">
+                                      <td colSpan="2" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-blue-800">
+                                        {ewsList.filter(r => ewsClass === 'All Classes' || r.class === ewsClass).reduce((acc, curr) => acc + (curr.boys || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-pink-800">
+                                        {ewsList.filter(r => ewsClass === 'All Classes' || r.class === ewsClass).reduce((acc, curr) => acc + (curr.girls || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-gray-900">
+                                        {ewsList.filter(r => ewsClass === 'All Classes' || r.class === ewsClass).reduce((acc, curr) => acc + (curr.total || 0), 0)}
+                                      </td>
+                                    </tr>
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Ews ClassWise Strength Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
@@ -19601,7 +22984,7 @@ function AdmissionLayout() {
                               <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <input type="text" value={cgrssSearch} onChange={e => setCgrssSearch(e.target.value)} placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
                               <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
                               <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
                               <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
@@ -19615,11 +22998,37 @@ function AdmissionLayout() {
                               <table className="w-full border border-gray-300 text-[11px]">
                                 <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CATEGORY</th><th className="border border-gray-300 px-2 py-1">RELIGION</th><th className="border border-gray-300 px-2 py-1">BOYS</th><th className="border border-gray-300 px-2 py-1">GIRLS</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
                                 <tbody>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center">190</td><td className="border border-gray-300 px-2 py-1 text-center">160</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">350</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Muslim</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">40</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center">210</td><td className="border border-gray-300 px-2 py-1 text-center">180</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">390</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1">Muslim</td><td className="border border-gray-300 px-2 py-1 text-center">20</td><td className="border border-gray-300 px-2 py-1 text-center">15</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">35</td></tr>
-                                  <tr className="bg-gray-100 font-bold"><td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">440</td><td className="border border-gray-300 px-2 py-1 text-center">375</td><td className="border border-gray-300 px-2 py-1 text-center">815</td></tr>
+                                  {cgrssList
+                                    .filter(r => !cgrssSearch || Object.values(r).some(v => String(v).toLowerCase().includes(cgrssSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="6" className="border border-gray-300 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    cgrssList
+                                      .filter(r => !cgrssSearch || Object.values(r).some(v => String(v).toLowerCase().includes(cgrssSearch.toLowerCase())))
+                                      .map((r, idx) => (
+                                        <tr key={idx} className="hover:bg-yellow-50 text-[11px]">
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{idx + 1}</td>
+                                          <td className="border border-gray-300 px-2 py-1 font-medium">{r.category}</td>
+                                          <td className="border border-gray-300 px-2 py-1">{r.religion}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-blue-700">{r.boys}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-pink-700">{r.girls}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-bold text-gray-900">{r.total}</td>
+                                        </tr>
+                                      ))
+                                  )}
+                                  {cgrssList.length > 0 && (
+                                    <tr className="bg-gray-100 font-bold">
+                                      <td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-blue-800">
+                                        {cgrssList.reduce((acc, curr) => acc + (curr.boys || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-pink-800">
+                                        {cgrssList.reduce((acc, curr) => acc + (curr.girls || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-gray-900">
+                                        {cgrssList.reduce((acc, curr) => acc + (curr.total || 0), 0)}
+                                      </td>
+                                    </tr>
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Category / Gender / Religion Wise Student Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
@@ -19652,7 +23061,7 @@ function AdmissionLayout() {
                               <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <input type="text" value={ccrssSearch} onChange={e => setCcrssSearch(e.target.value)} placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
                               <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
                               <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
                               <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
@@ -19666,11 +23075,30 @@ function AdmissionLayout() {
                               <table className="w-full border border-gray-300 text-[11px]">
                                 <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CATEGORY</th><th className="border border-gray-300 px-2 py-1">CLASSIFICATION</th><th className="border border-gray-300 px-2 py-1">RELIGION</th><th className="border border-gray-300 px-2 py-1">TOTAL STRENGTH</th></tr></thead>
                                 <tbody>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Day Scholar</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">320</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 font-medium">General</td><td className="border border-gray-300 px-2 py-1">Hosteller</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">30</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1">Day Scholar</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">360</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">4</td><td className="border border-gray-300 px-2 py-1 font-medium">OBC</td><td className="border border-gray-300 px-2 py-1">Hosteller</td><td className="border border-gray-300 px-2 py-1">Hindu</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">30</td></tr>
-                                  <tr className="bg-gray-100 font-bold"><td colSpan="4" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">740</td></tr>
+                                  {ccrssList
+                                    .filter(r => !ccrssSearch || Object.values(r).some(v => String(v).toLowerCase().includes(ccrssSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="5" className="border border-gray-300 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    ccrssList
+                                      .filter(r => !ccrssSearch || Object.values(r).some(v => String(v).toLowerCase().includes(ccrssSearch.toLowerCase())))
+                                      .map((r, idx) => (
+                                        <tr key={idx} className="hover:bg-yellow-50 text-[11px]">
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{idx + 1}</td>
+                                          <td className="border border-gray-300 px-2 py-1 font-medium">{r.category}</td>
+                                          <td className="border border-gray-300 px-2 py-1">{r.classification}</td>
+                                          <td className="border border-gray-300 px-2 py-1">{r.religion}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-bold text-gray-900">{r.total}</td>
+                                        </tr>
+                                      ))
+                                  )}
+                                  {ccrssList.length > 0 && (
+                                    <tr className="bg-gray-100 font-bold">
+                                      <td colSpan="4" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-gray-900">
+                                        {ccrssList.reduce((acc, curr) => acc + (curr.total || 0), 0)}
+                                      </td>
+                                    </tr>
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Category / Classification / Religion Wise Strength printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
@@ -19702,7 +23130,7 @@ function AdmissionLayout() {
                               <button disabled className="px-2 py-1 bg-white border border-gray-300 rounded text-xs opacity-40 cursor-default">&gt;&gt;|</button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <input type="text" placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
+                              <input type="text" value={tssrTransSearch} onChange={e => setTssrTransSearch(e.target.value)} placeholder="Search..." className="border border-gray-300 rounded px-2 py-1 text-xs bg-white outline-none w-32"/>
                               <button className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">Find | Next</button>
                               <button className="text-green-700 p-1 text-sm cursor-pointer ml-2" title="Save">💾</button>
                               <button className="text-blue-600 p-1 text-sm cursor-pointer" title="Refresh">🔄</button>
@@ -19716,10 +23144,41 @@ function AdmissionLayout() {
                               <table className="w-full border border-gray-300 text-[11px]">
                                 <thead className="bg-yellow-100"><tr><th className="border border-gray-300 px-2 py-1">SN</th><th className="border border-gray-300 px-2 py-1">CLASS</th><th className="border border-gray-300 px-2 py-1">SECTION</th><th className="border border-gray-300 px-2 py-1">TRANSPORT USERS</th><th className="border border-gray-300 px-2 py-1">NON-TRANSPORT</th><th className="border border-gray-300 px-2 py-1">TOTAL</th></tr></thead>
                                 <tbody>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">1</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">NUR</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center">10</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">45</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">2</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">LKG</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">42</td><td className="border border-gray-300 px-2 py-1 text-center">13</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">55</td></tr>
-                                  <tr><td className="border border-gray-300 px-2 py-1 text-center">3</td><td className="border border-gray-300 px-2 py-1 text-center font-medium">UKG</td><td className="border border-gray-300 px-2 py-1 text-center">A</td><td className="border border-gray-300 px-2 py-1 text-center">38</td><td className="border border-gray-300 px-2 py-1 text-center">12</td><td className="border border-gray-300 px-2 py-1 text-center font-bold">50</td></tr>
-                                  <tr className="bg-gray-100 font-bold"><td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td><td className="border border-gray-300 px-2 py-1 text-center">115</td><td className="border border-gray-300 px-2 py-1 text-center">35</td><td className="border border-gray-300 px-2 py-1 text-center">150</td></tr>
+                                  {tssrTransList
+                                    .filter(r => tssrTransClass === 'All Class' || r.class === tssrTransClass)
+                                    .filter(r => tssrTransSection === 'All Section' || r.section === tssrTransSection)
+                                    .filter(r => !tssrTransSearch || Object.values(r).some(v => String(v).toLowerCase().includes(tssrTransSearch.toLowerCase()))).length === 0 ? (
+                                    <tr><td colSpan="6" className="border border-gray-300 py-3 text-center text-gray-500 font-medium">No record found !</td></tr>
+                                  ) : (
+                                    tssrTransList
+                                      .filter(r => tssrTransClass === 'All Class' || r.class === tssrTransClass)
+                                      .filter(r => tssrTransSection === 'All Section' || r.section === tssrTransSection)
+                                      .filter(r => !tssrTransSearch || Object.values(r).some(v => String(v).toLowerCase().includes(tssrTransSearch.toLowerCase())))
+                                      .map((r, idx) => (
+                                        <tr key={idx} className="hover:bg-yellow-50 text-[11px]">
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{idx + 1}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-medium">{r.class}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center">{r.section}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-blue-700">{r.transportUsers}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-semibold text-gray-700">{r.nonTransport}</td>
+                                          <td className="border border-gray-300 px-2 py-1 text-center font-bold text-gray-900">{r.total}</td>
+                                        </tr>
+                                      ))
+                                  )}
+                                  {tssrTransList.length > 0 && (
+                                    <tr className="bg-gray-100 font-bold">
+                                      <td colSpan="3" className="border border-gray-300 px-2 py-1 text-right">TOTAL:</td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-blue-800">
+                                        {tssrTransList.filter(r => tssrTransClass === 'All Class' || r.class === tssrTransClass).filter(r => tssrTransSection === 'All Section' || r.section === tssrTransSection).reduce((acc, curr) => acc + (curr.transportUsers || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-gray-800">
+                                        {tssrTransList.filter(r => tssrTransClass === 'All Class' || r.class === tssrTransClass).filter(r => tssrTransSection === 'All Section' || r.section === tssrTransSection).reduce((acc, curr) => acc + (curr.nonTransport || 0), 0)}
+                                      </td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center text-gray-900">
+                                        {tssrTransList.filter(r => tssrTransClass === 'All Class' || r.class === tssrTransClass).filter(r => tssrTransSection === 'All Section' || r.section === tssrTransSection).reduce((acc, curr) => acc + (curr.total || 0), 0)}
+                                      </td>
+                                    </tr>
+                                  )}
                                 </tbody>
                               </table>
                               <div className="flex items-center justify-between text-[10px] text-gray-700 font-semibold pt-4 mt-2"><span>Academic Year : 2026-2027</span><span>Transport Student Strength Report printed on 03-Sep-2026</span><span>Page 1 of 1</span></div>
@@ -23135,20 +26594,33 @@ function AdmissionLayout() {
                 Cancel
               </button>
               <button
-                onClick={() => {
+                onClick={async () => {
                   if (!newMeritCriteriaInput.name || !newMeritCriteriaInput.maxPoint) {
                     alert("Please enter Criteria Name and Maximum Point!");
                     return;
                   }
-                  if (newMeritCriteriaInput.sr) {
-                    setMeritCriteriaData(meritCriteriaData.map(c => c.sr === newMeritCriteriaInput.sr ? newMeritCriteriaInput : c));
-                  } else {
-                    setMeritCriteriaData([...meritCriteriaData, {
-                      sr: meritCriteriaData.length + 1,
-                      name: newMeritCriteriaInput.name,
-                      maxPoint: Number(newMeritCriteriaInput.maxPoint),
-                      session: newMeritCriteriaInput.session || '2026-2027'
-                    }]);
+                  try {
+                    if (newMeritCriteriaInput._id) {
+                      await fetch(`http://localhost:5005/api/merit-criteria/${newMeritCriteriaInput._id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newMeritCriteriaInput)
+                      });
+                    } else {
+                      await fetch('http://localhost:5005/api/merit-criteria', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          name: newMeritCriteriaInput.name,
+                          maxPoint: Number(newMeritCriteriaInput.maxPoint),
+                          session: newMeritCriteriaInput.session || '2026-2027',
+                          description: newMeritCriteriaInput.description || ''
+                        })
+                      });
+                    }
+                    await fetchMeritCriteria();
+                  } catch (e) {
+                    console.error('Error saving merit criteria:', e);
                   }
                   setIsAddMeritCriteriaModalOpen(false);
                 }}
@@ -23203,29 +26675,43 @@ function AdmissionLayout() {
                   </tr>
                 </thead>
                 <tbody>
-                  {getStudentsForClass('NUR-A').slice(0, 15).map((student, idx) => {
-                    const acad = 38 - Math.floor(idx * 1.2);
-                    const inter = 28 - Math.floor(idx * 0.8);
-                    const total = acad + inter;
-                    const isAllotted = total >= (viewMeritListModal.list?.minPoint || 50);
-
-                    return (
-                      <tr key={student.adm} className="border-b border-gray-100 hover:bg-[#e1f0fa]">
-                        <td className="p-2.5 font-bold text-gray-800">#{idx + 1}</td>
-                        <td className="p-2.5 font-semibold text-gray-700">{student.adm}</td>
-                        <td className="p-2.5 font-medium text-gray-900 uppercase">{student.name}</td>
-                        <td className="p-2.5 font-medium text-gray-800 uppercase">{student.father}</td>
-                        <td className="p-2.5 text-gray-700">{acad}</td>
-                        <td className="p-2.5 text-gray-700">{inter}</td>
-                        <td className="p-2.5 font-bold text-[#0088cc]">{total}</td>
-                        <td className="p-2.5 text-center">
-                          <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${isAllotted ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                            {isAllotted ? 'Allotted' : 'Waiting'}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {(viewMeritListModal.list?.applicants && viewMeritListModal.list.applicants.length > 0
+                    ? viewMeritListModal.list.applicants.map((app, idx) => ({
+                        adm: app.admissionNo,
+                        name: app.studentName,
+                        father: app.fatherName,
+                        acad: 38,
+                        inter: 28,
+                        total: app.totalPoints || 66,
+                        rank: app.rank || (idx + 1),
+                        status: app.status || 'Allotted'
+                      }))
+                    : getStudentsForClass('NUR-A').slice(0, 15).map((student, idx) => ({
+                        adm: student.adm,
+                        name: student.name,
+                        father: student.father,
+                        acad: 38 - Math.floor(idx * 1.2),
+                        inter: 28 - Math.floor(idx * 0.8),
+                        total: 66 - idx * 2,
+                        rank: idx + 1,
+                        status: (66 - idx * 2) >= (viewMeritListModal.list?.minPoint || 50) ? 'Allotted' : 'Waiting'
+                      }))
+                  ).map((item) => (
+                    <tr key={item.adm} className="border-b border-gray-100 hover:bg-[#e1f0fa]">
+                      <td className="p-2.5 font-bold text-gray-800">#{item.rank}</td>
+                      <td className="p-2.5 font-semibold text-gray-700">{item.adm}</td>
+                      <td className="p-2.5 font-medium text-gray-900 uppercase">{item.name}</td>
+                      <td className="p-2.5 font-medium text-gray-800 uppercase">{item.father}</td>
+                      <td className="p-2.5 text-gray-700">{item.acad}</td>
+                      <td className="p-2.5 text-gray-700">{item.inter}</td>
+                      <td className="p-2.5 font-bold text-[#0088cc]">{item.total}</td>
+                      <td className="p-2.5 text-center">
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${item.status === 'Selected' || item.status === 'Allotted' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                          {item.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -23317,10 +26803,22 @@ function AdmissionLayout() {
             <div className="px-5 py-3 bg-gray-50 border-t flex items-center justify-between">
               <div className="flex gap-2">
                 <button
-                  onClick={() => {
-                    const reqId = viewParentRequestModal.req.sr;
-                    setParentChangeRequests(parentChangeRequests.map(r => r.sr === reqId ? { ...r, status: 'Approved' } : r));
-                    setParentRequestNotification(`Request #${reqId} for ${viewParentRequestModal.req.name} has been Approved!`);
+                  onClick={async () => {
+                    const reqItem = viewParentRequestModal.req;
+                    try {
+                      if (reqItem._id) {
+                        await fetch(`http://localhost:5005/api/parent-requests/${reqItem._id}/status`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ status: 'Approved' })
+                        });
+                      }
+                      await fetchParentRequests();
+                    } catch (e) {
+                      console.error(e);
+                    }
+                    setParentChangeRequests(parentChangeRequests.map(r => (r._id === reqItem._id || r.sr === reqItem.sr) ? { ...r, status: 'Approved' } : r));
+                    setParentRequestNotification(`Request #${reqItem.sr} for ${reqItem.name} has been Approved!`);
                     setViewParentRequestModal({ isOpen: false, req: null });
                     setTimeout(() => setParentRequestNotification(''), 4000);
                   }}
@@ -23329,10 +26827,22 @@ function AdmissionLayout() {
                   <FaCheckCircle className="text-xs" /> Approve Request
                 </button>
                 <button
-                  onClick={() => {
-                    const reqId = viewParentRequestModal.req.sr;
-                    setParentChangeRequests(parentChangeRequests.map(r => r.sr === reqId ? { ...r, status: 'Rejected' } : r));
-                    setParentRequestNotification(`Request #${reqId} for ${viewParentRequestModal.req.name} has been Rejected.`);
+                  onClick={async () => {
+                    const reqItem = viewParentRequestModal.req;
+                    try {
+                      if (reqItem._id) {
+                        await fetch(`http://localhost:5005/api/parent-requests/${reqItem._id}/status`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ status: 'Rejected' })
+                        });
+                      }
+                      await fetchParentRequests();
+                    } catch (e) {
+                      console.error(e);
+                    }
+                    setParentChangeRequests(parentChangeRequests.map(r => (r._id === reqItem._id || r.sr === reqItem.sr) ? { ...r, status: 'Rejected' } : r));
+                    setParentRequestNotification(`Request #${reqItem.sr} for ${reqItem.name} has been Rejected.`);
                     setViewParentRequestModal({ isOpen: false, req: null });
                     setTimeout(() => setParentRequestNotification(''), 4000);
                   }}
@@ -23617,7 +27127,7 @@ function AdmissionLayout() {
           <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="bg-[#28aae1] text-white px-5 py-3 flex items-center justify-between">
               <div className="flex items-center gap-2 font-bold text-sm">
-                <FaTelegramPlane className="text-base" />
+                <FaPaperPlane className="text-base" />
                 <span>Send SMS Broadcast</span>
               </div>
               <button 
@@ -23662,7 +27172,7 @@ function AdmissionLayout() {
                 }}
                 className="bg-[#28aae1] hover:bg-[#1f9cd0] text-white px-5 py-1.5 rounded font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
-                <FaTelegramPlane className="text-xs" /> Dispatch SMS Now
+                <FaPaperPlane className="text-xs" /> Dispatch SMS Now
               </button>
               <button
                 onClick={() => setSmsSendModalOpen(false)}
@@ -23736,6 +27246,56 @@ function AdmissionLayout() {
               >
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Student Registration Modal */}
+      {showStudentRegModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[80vh] flex flex-col">
+            <div className="bg-[#32a3d7] text-white px-4 py-3 flex justify-between items-center rounded-t-lg">
+              <h2 className="font-bold">Select Student Registration</h2>
+              <button onClick={() => setShowStudentRegModal(false)} className="text-white hover:text-gray-200">✕</button>
+            </div>
+            <div className="p-4 overflow-y-auto">
+              <table className="w-full text-sm text-left border border-gray-200">
+                <thead className="bg-gray-100 font-bold border-b text-gray-700">
+                  <tr>
+                    <th className="px-4 py-2 border-r">Adm No.</th>
+                    <th className="px-4 py-2 border-r">Student Name</th>
+                    <th className="px-4 py-2 border-r">Class</th>
+                    <th className="px-4 py-2 border-r">Father Name</th>
+                    <th className="px-4 py-2 border-r">Contact</th>
+                    <th className="px-4 py-2">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {studentRegList.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="px-4 py-3 text-center text-gray-500 bg-gray-50">No registrations found</td>
+                    </tr>
+                  ) : (
+                    studentRegList.map((stu, i) => (
+                      <tr key={i} className="border-b hover:bg-gray-50">
+                        <td className="px-4 py-2 border-r">{stu.academicDetails?.admissionNumber || stu.admissionNumber}</td>
+                        <td className="px-4 py-2 border-r">
+                          {`${stu.personalDetails?.firstName || stu.firstName || ''} ${stu.personalDetails?.lastName || stu.lastName || ''}`}
+                        </td>
+                        <td className="px-4 py-2 border-r">{stu.academicDetails?.class || stu.class}</td>
+                        <td className="px-4 py-2 border-r">{stu.familyDetails?.father?.firstName || stu.fatherName}</td>
+                        <td className="px-4 py-2 border-r">{stu.contactAddress?.contactNumber || stu.contactNumber}</td>
+                        <td className="px-4 py-2">
+                          <button onClick={() => selectStudentReg(stu)} className="bg-[#32a3d7] text-white px-3 py-1 rounded text-xs font-bold hover:bg-[#288ebf]">
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

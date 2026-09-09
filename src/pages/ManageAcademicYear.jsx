@@ -22,8 +22,17 @@ function ManageAcademicYear() {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/academic-years`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (res.ok) { const data = await res.json(); setItems(data || []); }
-    } catch (e) { console.error(e); }
+      if (res.ok) { 
+        const data = await res.json(); 
+        setItems(Array.isArray(data) ? data : []); 
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(`Failed to load data: ${err.message || res.statusText}`);
+      }
+    } catch (e) { 
+      console.error(e); 
+      alert(`Network error: Could not connect to backend at ${import.meta.env.VITE_API_BASE_URL}`);
+    }
     finally { setLoading(false); }
   };
 
