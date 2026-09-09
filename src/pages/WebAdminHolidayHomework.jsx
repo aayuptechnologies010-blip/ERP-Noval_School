@@ -33,7 +33,7 @@ export default function WebAdminHolidayHomework() {
   const fetchHomeworks = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/holiday-homework');
+      const res = await fetch(`${API_BASE}/api/web-admin/holiday-homework`);
       const data = await res.json();
       if (data.success) {
         setHomeworks(data.data);
@@ -89,7 +89,7 @@ export default function WebAdminHolidayHomework() {
         status: status ? 'Active' : 'Inactive'
       };
       
-      const res = await fetch('/api/web-admin/holiday-homework', {
+      const res = await fetch(`${API_BASE}/api/web-admin/holiday-homework`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -115,7 +115,7 @@ export default function WebAdminHolidayHomework() {
     if (!window.confirm('Are you sure you want to delete this homework?')) return;
     
     try {
-      const res = await fetch(`/api/web-admin/holiday-homework/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/holiday-homework/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

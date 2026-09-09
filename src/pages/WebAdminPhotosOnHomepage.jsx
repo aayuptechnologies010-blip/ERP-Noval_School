@@ -26,7 +26,7 @@ export default function WebAdminPhotosOnHomepage() {
   const fetchPhotos = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/photos-homepage');
+      const res = await fetch(`${API_BASE}/api/web-admin/photos-homepage`);
       const data = await res.json();
       if (data.success) {
         setPhotos(data.data);
@@ -72,7 +72,7 @@ export default function WebAdminPhotosOnHomepage() {
         status: status ? 'Active' : 'Inactive'
       };
       
-      const res = await fetch('/api/web-admin/photos-homepage', {
+      const res = await fetch(`${API_BASE}/api/web-admin/photos-homepage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -97,7 +97,7 @@ export default function WebAdminPhotosOnHomepage() {
   const handleToggleStatus = async (id, currentStatus) => {
     try {
       const newStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
-      const res = await fetch(`/api/web-admin/photos-homepage/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/photos-homepage/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -115,7 +115,7 @@ export default function WebAdminPhotosOnHomepage() {
     if (!window.confirm('Are you sure you want to delete this photo?')) return;
     
     try {
-      const res = await fetch(`/api/web-admin/photos-homepage/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/photos-homepage/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

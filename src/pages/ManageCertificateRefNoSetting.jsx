@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaEdit, FaTrash, FaPlus, FaSpinner, FaAngleUp } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function ManageCertificateRefNoSetting() {
   const [data, setData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,7 +16,7 @@ export default function ManageCertificateRefNoSetting() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/certificate-ref-no-settings');
+      const res = await fetch(`${API_BASE}/api/certificate-ref-no-settings`);
       const json = await res.json();
       setData(json);
     } catch (err) {
@@ -27,13 +29,13 @@ export default function ManageCertificateRefNoSetting() {
     setIsLoading(true);
     try {
       if (editItem) {
-        await fetch(`http://localhost:5005/api/certificate-ref-no-settings/${editItem._id}`, {
+        await fetch(`${API_BASE}/api/certificate-ref-no-settings/${editItem._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: inputValue })
         });
       } else {
-        await fetch('http://localhost:5005/api/certificate-ref-no-settings', {
+        await fetch(`${API_BASE}/api/certificate-ref-no-settings`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: inputValue })
@@ -53,7 +55,7 @@ export default function ManageCertificateRefNoSetting() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       try {
-        await fetch(`http://localhost:5005/api/certificate-ref-no-settings/${id}`, { method: 'DELETE' });
+        await fetch(`${API_BASE}/api/certificate-ref-no-settings/${id}`, { method: 'DELETE' });
         fetchData();
       } catch (err) {
         console.error(err);

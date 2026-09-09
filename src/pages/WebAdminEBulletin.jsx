@@ -28,7 +28,7 @@ export default function WebAdminEBulletin() {
   const fetchBulletins = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/e-bulletin');
+      const res = await fetch(`${API_BASE}/api/web-admin/e-bulletin`);
       const data = await res.json();
       if (data.success) {
         setBulletins(data.data);
@@ -76,7 +76,7 @@ export default function WebAdminEBulletin() {
         status: status ? 'Active' : 'Inactive'
       };
 
-      const res = await fetch('/api/web-admin/e-bulletin', {
+      const res = await fetch(`${API_BASE}/api/web-admin/e-bulletin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -102,7 +102,7 @@ export default function WebAdminEBulletin() {
     if (!window.confirm('Are you sure you want to delete this e-bulletin?')) return;
 
     try {
-      const res = await fetch(`/api/web-admin/e-bulletin/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/e-bulletin/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

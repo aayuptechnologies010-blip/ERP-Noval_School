@@ -31,7 +31,7 @@ export default function WebAdminAchievements() {
   const fetchAchievements = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/achievements');
+      const res = await fetch(`${API_BASE}/api/web-admin/achievements`);
       const data = await res.json();
       if (data.success && data.data) {
         setAchievements(data.data);
@@ -81,7 +81,7 @@ export default function WebAdminAchievements() {
 
     setSaving(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/achievements', {
+      const res = await fetch(`${API_BASE}/api/web-admin/achievements`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -116,7 +116,7 @@ export default function WebAdminAchievements() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this achievement?')) return;
     try {
-      const res = await fetch(`http://localhost:5005/api/web-admin/achievements/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/achievements/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

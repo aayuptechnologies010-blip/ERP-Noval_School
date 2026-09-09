@@ -28,7 +28,7 @@ export default function WebAdminKidsAlbums() {
   const fetchKidsAlbums = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/kids-albums');
+      const res = await fetch(`${API_BASE}/api/web-admin/kids-albums`);
       const data = await res.json();
       if (data.success && data.data) {
         setAlbums(data.data);
@@ -86,7 +86,7 @@ export default function WebAdminKidsAlbums() {
 
     setSaving(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/kids-albums', {
+      const res = await fetch(`${API_BASE}/api/web-admin/kids-albums`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -122,7 +122,7 @@ export default function WebAdminKidsAlbums() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this Kids Album?')) return;
     try {
-      const res = await fetch(`http://localhost:5005/api/web-admin/kids-albums/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/kids-albums/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

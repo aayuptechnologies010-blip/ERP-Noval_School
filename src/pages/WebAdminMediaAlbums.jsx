@@ -33,7 +33,7 @@ export default function WebAdminMediaAlbums() {
   const fetchMedia = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/media');
+      const res = await fetch(`${API_BASE}/api/web-admin/media`);
       const data = await res.json();
       if (data.success && data.data) {
         setAlbums(data.data);
@@ -84,7 +84,7 @@ export default function WebAdminMediaAlbums() {
       if (mediaSource === 'embed') finalFileUrl = embedCode;
       else if (mediaSource === 'image' || mediaSource === 'pdf') finalFileUrl = fileData;
 
-      const res = await fetch('http://localhost:5005/api/web-admin/media', {
+      const res = await fetch(`${API_BASE}/api/web-admin/media`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -120,7 +120,7 @@ export default function WebAdminMediaAlbums() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this media album?')) return;
     try {
-      const res = await fetch(`http://localhost:5005/api/web-admin/media/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/media/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

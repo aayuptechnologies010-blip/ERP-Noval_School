@@ -28,7 +28,7 @@ export default function WebAdminGuestbook() {
   const fetchGuestbook = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/guestbook');
+      const res = await fetch(`${API_BASE}/api/web-admin/guestbook`);
       const data = await res.json();
       if (data.success && data.data) {
         setComments(data.data);
@@ -93,7 +93,7 @@ export default function WebAdminGuestbook() {
 
     setSaving(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/guestbook', {
+      const res = await fetch(`${API_BASE}/api/web-admin/guestbook`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -125,7 +125,7 @@ export default function WebAdminGuestbook() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this guestbook comment?')) return;
     try {
-      const res = await fetch(`http://localhost:5005/api/web-admin/guestbook/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/guestbook/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

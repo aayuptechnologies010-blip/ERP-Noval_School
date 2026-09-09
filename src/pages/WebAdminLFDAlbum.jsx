@@ -23,7 +23,7 @@ export default function WebAdminLFDAlbum() {
 
   const fetchConfig = async () => {
     try {
-      const res = await fetch('/api/web-admin/lfd/album-config');
+      const res = await fetch(`${API_BASE}/api/web-admin/lfd/album-config`);
       const data = await res.json();
       if (data.success && data.data) {
         setAlbumMethod(data.data.method || 'latest');
@@ -39,7 +39,7 @@ export default function WebAdminLFDAlbum() {
     setError('');
     
     try {
-      const res = await fetch('/api/web-admin/lfd/album-config', {
+      const res = await fetch(`${API_BASE}/api/web-admin/lfd/album-config`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

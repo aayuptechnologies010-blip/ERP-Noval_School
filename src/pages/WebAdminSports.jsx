@@ -33,7 +33,7 @@ export default function WebAdminSports() {
   const fetchSports = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/sports');
+      const res = await fetch(`${API_BASE}/api/web-admin/sports`);
       const data = await res.json();
       if (data.success && data.data) {
         setSports(data.data);
@@ -97,7 +97,7 @@ export default function WebAdminSports() {
 
     setSaving(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/sports', {
+      const res = await fetch(`${API_BASE}/api/web-admin/sports`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -134,7 +134,7 @@ export default function WebAdminSports() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this sports record?')) return;
     try {
-      const res = await fetch(`http://localhost:5005/api/web-admin/sports/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/sports/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

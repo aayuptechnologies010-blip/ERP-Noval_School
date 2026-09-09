@@ -27,7 +27,7 @@ export default function WebAdminWebsiteThoughts() {
   const fetchThoughts = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/website-thoughts');
+      const res = await fetch(`${API_BASE}/api/web-admin/website-thoughts`);
       const data = await res.json();
       if (data.success) {
         setThoughts(data.data);
@@ -62,7 +62,7 @@ export default function WebAdminWebsiteThoughts() {
         status: status ? 'Active' : 'Inactive'
       };
       
-      const res = await fetch('/api/web-admin/website-thoughts', {
+      const res = await fetch(`${API_BASE}/api/web-admin/website-thoughts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -88,7 +88,7 @@ export default function WebAdminWebsiteThoughts() {
     if (!window.confirm('Are you sure you want to delete this thought?')) return;
     
     try {
-      const res = await fetch(`/api/web-admin/website-thoughts/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/website-thoughts/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

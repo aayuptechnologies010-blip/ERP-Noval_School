@@ -31,7 +31,7 @@ export default function WebAdminWebsiteToppers() {
   const fetchToppers = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/website-toppers');
+      const res = await fetch(`${API_BASE}/api/web-admin/website-toppers`);
       const data = await res.json();
       if (data.success) {
         setToppers(data.data);
@@ -77,7 +77,7 @@ export default function WebAdminWebsiteToppers() {
         status: status ? 'Active' : 'Inactive'
       };
       
-      const res = await fetch('/api/web-admin/website-toppers', {
+      const res = await fetch(`${API_BASE}/api/web-admin/website-toppers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -103,7 +103,7 @@ export default function WebAdminWebsiteToppers() {
     if (!window.confirm('Are you sure you want to delete this topper?')) return;
     
     try {
-      const res = await fetch(`/api/web-admin/website-toppers/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/website-toppers/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

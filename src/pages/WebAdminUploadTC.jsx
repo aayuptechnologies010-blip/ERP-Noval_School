@@ -30,7 +30,7 @@ export default function WebAdminUploadTC() {
   const fetchCertificates = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/upload-tc');
+      const res = await fetch(`${API_BASE}/api/web-admin/upload-tc`);
       const data = await res.json();
       if (data.success) {
         setCertificates(data.data);
@@ -75,7 +75,7 @@ export default function WebAdminUploadTC() {
         status: status ? 'Active' : 'Inactive'
       };
       
-      const res = await fetch('/api/web-admin/upload-tc', {
+      const res = await fetch(`${API_BASE}/api/web-admin/upload-tc`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -101,7 +101,7 @@ export default function WebAdminUploadTC() {
     if (!window.confirm('Are you sure you want to delete this certificate?')) return;
     
     try {
-      const res = await fetch(`/api/web-admin/upload-tc/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/upload-tc/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

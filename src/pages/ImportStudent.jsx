@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { FaUpload, FaFileExcel, FaSpinner } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function ImportStudent() {
   const [uploadOption, setUploadOption] = useState('current');
   const [selectedFile, setSelectedFile] = useState(null);
@@ -34,7 +36,7 @@ export default function ImportStudent() {
     formData.append('academicYearType', uploadOption); // Optional metadata
 
     try {
-      const res = await fetch('http://localhost:5005/api/students/import', {
+      const res = await fetch(`${API_BASE}/api/students/import`, {
         method: 'POST',
         body: formData,
       });

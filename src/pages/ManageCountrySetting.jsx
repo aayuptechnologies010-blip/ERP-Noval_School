@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaSave, FaAngleUp } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function ManageCountrySetting() {
   const [countrySetting, setCountrySetting] = useState('India');
   const [isLoading, setIsLoading] = useState(false);
@@ -14,7 +16,7 @@ export default function ManageCountrySetting() {
   const fetchCountrySetting = async () => {
     try {
       // Replace with actual endpoint if exists, e.g., /api/country-setting
-      const res = await fetch('http://localhost:5005/api/country-setting');
+      const res = await fetch(`${API_BASE}/api/country-setting`);
       if (res.ok) {
         const data = await res.json();
         if (data && data.country) {
@@ -30,7 +32,7 @@ export default function ManageCountrySetting() {
     setIsLoading(true);
     setMessage('');
     try {
-      const res = await fetch('http://localhost:5005/api/country-setting', {
+      const res = await fetch(`${API_BASE}/api/country-setting`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ country: countrySetting })

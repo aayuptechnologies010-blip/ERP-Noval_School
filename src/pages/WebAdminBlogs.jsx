@@ -29,7 +29,7 @@ export default function WebAdminBlogs() {
   const fetchBlogs = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/blogs');
+      const res = await fetch(`${API_BASE}/api/web-admin/blogs`);
       const data = await res.json();
       if (data.success && data.data) {
         setBlogs(data.data);
@@ -93,7 +93,7 @@ export default function WebAdminBlogs() {
 
     setSaving(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/blogs', {
+      const res = await fetch(`${API_BASE}/api/web-admin/blogs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -125,7 +125,7 @@ export default function WebAdminBlogs() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this blog?')) return;
     try {
-      const res = await fetch(`http://localhost:5005/api/web-admin/blogs/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/blogs/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

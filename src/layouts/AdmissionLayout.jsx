@@ -10,6 +10,8 @@ import ManageLastResult from '../pages/ManageLastResult';
 import ManageTermMaster from '../pages/ManageTermMaster';
 import ManageMoral from '../pages/ManageMoral';
 import ManageMotherTongue from '../pages/ManageMotherTongue';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 import { 
   FaBook, FaGraduationCap, FaChartPie, FaQuestionCircle, 
   FaInfoCircle, FaCog, FaAngleDown, FaAngleUp, FaSearch, FaBars,
@@ -455,7 +457,7 @@ function AdmissionLayout() {
 
   const getFollowupData = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/inquiries');
+      const res = await fetch(`${API_BASE}/api/inquiries`);
       const data = await res.json();
       let filtered = data;
       if (followupType === 'Enquiry Date wise' && followupFilters.enquiryDate) {
@@ -477,7 +479,7 @@ function AdmissionLayout() {
     e.preventDefault();
     if (!prospectusFormData.enquiryNo) { alert("Please enter Enquiry No."); return; }
     try {
-      const res = await fetch('http://localhost:5005/api/inquiries');
+      const res = await fetch(`${API_BASE}/api/inquiries`);
       const data = await res.json();
       const found = data.find(enq => enq.enquiryNo === prospectusFormData.enquiryNo);
       if (found) {
@@ -499,7 +501,7 @@ function AdmissionLayout() {
 
   const submitProspectus = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/prospectus', {
+      const res = await fetch(`${API_BASE}/api/prospectus`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(prospectusFormData)
@@ -516,7 +518,7 @@ function AdmissionLayout() {
 
   const viewProspectus = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/prospectus');
+      const res = await fetch(`${API_BASE}/api/prospectus`);
       const data = await res.json();
       setProspectusList(data.data || data); // handle standard or wrapped response
       setShowProspectusModal(true);
@@ -527,7 +529,7 @@ function AdmissionLayout() {
     e.preventDefault();
     if (!searchProsOrEnqNo) { alert("Please enter Prospectus/Enquiry No."); return; }
     try {
-      const res = await fetch('http://localhost:5005/api/prospectus');
+      const res = await fetch(`${API_BASE}/api/prospectus`);
       const data = await res.json();
       const list = data.data || data;
       const found = list.find(p => p.regNo === searchProsOrEnqNo || p.prospectusNo === searchProsOrEnqNo || p.enquiryNo === searchProsOrEnqNo);
@@ -552,7 +554,7 @@ function AdmissionLayout() {
 
   const submitAdmissionForm = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/admission-forms', {
+      const res = await fetch(`${API_BASE}/api/admission-forms`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(admissionFormData)
@@ -569,7 +571,7 @@ function AdmissionLayout() {
 
   const viewAdmissionForm = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/admission-forms');
+      const res = await fetch(`${API_BASE}/api/admission-forms`);
       const data = await res.json();
       setAdmissionList(data.data || data); 
       setShowAdmissionModal(true);
@@ -580,7 +582,7 @@ function AdmissionLayout() {
   const fetchPossibleSiblings = async () => {
     setLoadingSiblings(true);
     try {
-      const res = await fetch('http://localhost:5005/api/students');
+      const res = await fetch(`${API_BASE}/api/students`);
       if (res.ok) {
         const data = await res.json();
         const students = data.data || data;
@@ -621,7 +623,7 @@ function AdmissionLayout() {
 
   const getMeritListStudents = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/admission-forms');
+      const res = await fetch(`${API_BASE}/api/admission-forms`);
       if (res.ok) {
         const data = await res.json();
         const forms = data.data || data;
@@ -639,7 +641,7 @@ function AdmissionLayout() {
 
   const updateManualListStatus = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/admission-forms/bulk-update', {
+      const res = await fetch(`${API_BASE}/api/admission-forms/bulk-update`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: meritListStudents.map(s => s._id), status: 'Admitted' })
@@ -666,7 +668,7 @@ function AdmissionLayout() {
     e.preventDefault();
     if (!studentRegData.admNo) { alert("Please enter Reg No / Admission No"); return; }
     try {
-      const res = await fetch('http://localhost:5005/api/admission-forms');
+      const res = await fetch(`${API_BASE}/api/admission-forms`);
       const data = await res.json();
       const list = data.data || data;
       const found = list.find(f => f.regNo === studentRegData.admNo || f.prospectusNo === studentRegData.admNo || f.enquiryNo === studentRegData.admNo);
@@ -692,7 +694,7 @@ function AdmissionLayout() {
 
   const submitStudentRegistration = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/students', {
+      const res = await fetch(`${API_BASE}/api/students`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(studentRegData)
@@ -709,7 +711,7 @@ function AdmissionLayout() {
 
   const viewStudentRegistration = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/students');
+      const res = await fetch(`${API_BASE}/api/students`);
       const data = await res.json();
       setStudentRegList(data.data || data);
       setShowStudentRegModal(true);
@@ -752,7 +754,7 @@ function AdmissionLayout() {
 
   const submitDobRequest = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/dob-requests', {
+      const res = await fetch(`${API_BASE}/api/dob-requests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dobRequestFormData)
@@ -768,7 +770,7 @@ function AdmissionLayout() {
 
   const fetchDobRequests = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/dob-requests');
+      const res = await fetch(`${API_BASE}/api/dob-requests`);
       if (res.ok) {
         const data = await res.json();
         setDobRequestsList(data.data || data);
@@ -778,7 +780,7 @@ function AdmissionLayout() {
 
   const submitEnquiry = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/inquiries', {
+      const res = await fetch(`${API_BASE}/api/inquiries`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(enquiryFormData)
@@ -800,7 +802,7 @@ function AdmissionLayout() {
   const getLastEnquiryNo = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:5005/api/inquiries');
+      const res = await fetch(`${API_BASE}/api/inquiries`);
       const data = await res.json();
       if (data && data.length > 0) {
         const lastEnq = data[data.length - 1];
@@ -816,7 +818,7 @@ function AdmissionLayout() {
 
   const viewEnquiry = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/inquiries');
+      const res = await fetch(`${API_BASE}/api/inquiries`);
       const data = await res.json();
       setEnquiryList(data);
       setShowEnquiryModal(true);
@@ -941,7 +943,7 @@ function AdmissionLayout() {
   const fetchStudents = async () => {
     setIsLoadingStudents(true);
     try {
-      const res = await fetch('http://localhost:5005/api/students');
+      const res = await fetch(`${API_BASE}/api/students`);
       const json = await res.json();
       const rawList = json.data || json;
       setUpdateStudentList(rawList);
@@ -1329,7 +1331,7 @@ function AdmissionLayout() {
 
   const fetchInquiriesReport = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/inquiries');
+      const res = await fetch(`${API_BASE}/api/inquiries`);
       if (res.ok) {
         const data = await res.json();
         const list = (data.data || data).map((item, idx) => ({
@@ -1357,7 +1359,7 @@ function AdmissionLayout() {
 
   const fetchProspectusesReport = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/prospectuses');
+      const res = await fetch(`${API_BASE}/api/prospectuses`);
       if (res.ok) {
         const data = await res.json();
         const list = (data.data || data).map((p, idx) => ({
@@ -1383,8 +1385,8 @@ function AdmissionLayout() {
   const fetchMeritReports = async () => {
     try {
       const [resLists, resCrit] = await Promise.all([
-        fetch('http://localhost:5005/api/merit-lists'),
-        fetch('http://localhost:5005/api/merit-criteria')
+        fetch(`${API_BASE}/api/merit-lists`),
+        fetch(`${API_BASE}/api/merit-criteria`)
       ]);
       if (resLists.ok) {
         const data = await resLists.json();
@@ -1412,7 +1414,7 @@ function AdmissionLayout() {
 
   const fetchAdmissionFeesReport = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/admission-fees');
+      const res = await fetch(`${API_BASE}/api/admission-fees`);
       if (res.ok) {
         const data = await res.json();
         const list = (data.data || data).map((f, idx) => ({
@@ -1436,7 +1438,7 @@ function AdmissionLayout() {
 
   const fetchAdmissionSlotsReport = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/admission-slots');
+      const res = await fetch(`${API_BASE}/api/admission-slots`);
       if (res.ok) {
         const data = await res.json();
         const slots = data.data || data;
@@ -1459,7 +1461,7 @@ function AdmissionLayout() {
 
   const fetchAdmissionFormsReport = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/admission-forms');
+      const res = await fetch(`${API_BASE}/api/admission-forms`);
       if (res.ok) {
         const data = await res.json();
         const list = (data.data || data).map((f, idx) => ({
@@ -1482,7 +1484,7 @@ function AdmissionLayout() {
 
   const fetchSmsReport = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/sms');
+      const res = await fetch(`${API_BASE}/api/sms`);
       if (res.ok) {
         const data = await res.json();
         const list = (Array.isArray(data) ? data : (data.data || [])).map((s, idx) => ({
@@ -1502,7 +1504,7 @@ function AdmissionLayout() {
 
   const fetchChallansReport = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/admission-challans');
+      const res = await fetch(`${API_BASE}/api/admission-challans`);
       if (res.ok) {
         const data = await res.json();
         const list = (data.data || data).map((c, idx) => ({
@@ -1525,8 +1527,8 @@ function AdmissionLayout() {
   const fetchTotalCollectionReport = async () => {
     try {
       const [resFees, resPros] = await Promise.all([
-        fetch('http://localhost:5005/api/admission-fees'),
-        fetch('http://localhost:5005/api/prospectuses')
+        fetch(`${API_BASE}/api/admission-fees`),
+        fetch(`${API_BASE}/api/prospectuses`)
       ]);
       const list = [];
       if (resFees.ok) {
@@ -1565,7 +1567,7 @@ function AdmissionLayout() {
 
   const fetchManualListReport = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/admission-forms');
+      const res = await fetch(`${API_BASE}/api/admission-forms`);
       if (res.ok) {
         const data = await res.json();
         const list = (data.data || data).map((f, idx) => ({
@@ -1586,8 +1588,8 @@ function AdmissionLayout() {
   const fetchCertificatesHistoryReport = async () => {
     try {
       const [resTc, resBona] = await Promise.all([
-        fetch('http://localhost:5005/api/transfer-certificates'),
-        fetch('http://localhost:5005/api/bonafide-certificates')
+        fetch(`${API_BASE}/api/transfer-certificates`),
+        fetch(`${API_BASE}/api/bonafide-certificates`)
       ]);
       const list = [];
       if (resTc.ok) {
@@ -1630,7 +1632,7 @@ function AdmissionLayout() {
     const checkboxes = document.querySelectorAll('.status-checkbox');
     try {
       await Promise.all(Array.from(checkboxes).map(cb => 
-        fetch(`http://localhost:5005/api/students/${cb.dataset.id}`, {
+        fetch(`${API_BASE}/api/students/${cb.dataset.id}`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ personalDetails: { isNew: cb.checked ? 'Yes' : 'No' } })
         })
@@ -1649,7 +1651,7 @@ function AdmissionLayout() {
     const status = statusCheckbox?.checked ? 'STUDYING' : 'LEFT';
     
     try {
-      await fetch('http://localhost:5005/api/students/bulk/status', {
+      await fetch(`${API_BASE}/api/students/bulk/status`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ studentIds, status })
       });
@@ -1662,7 +1664,7 @@ function AdmissionLayout() {
     const input = document.querySelector(`.comp-no-input[data-id="${studentId}"]`);
     if (!input) return;
     try {
-      await fetch(`http://localhost:5005/api/students/bulk/computer-numbers`, {
+      await fetch(`${API_BASE}/api/students/bulk/computer-numbers`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ updates: [{ studentId, computerNumber: input.value }] })
       });
@@ -1676,7 +1678,7 @@ function AdmissionLayout() {
     if (updates.length === 0) return alert("No updates provided");
     
     try {
-      await fetch(`http://localhost:5005/api/students/bulk/roll-numbers`, {
+      await fetch(`${API_BASE}/api/students/bulk/roll-numbers`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ updates })
       });
@@ -1687,7 +1689,7 @@ function AdmissionLayout() {
 
   const fetchAdmissionSlots = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/admission-slots');
+      const res = await fetch(`${API_BASE}/api/admission-slots`);
       const json = await res.json();
       if (Array.isArray(json)) {
         setSlotCreatedList(json.map((s, idx) => ({
@@ -1710,7 +1712,7 @@ function AdmissionLayout() {
 
   const fetchMeritCriteria = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/merit-criteria');
+      const res = await fetch(`${API_BASE}/api/merit-criteria`);
       const json = await res.json();
       if (Array.isArray(json)) {
         setMeritCriteriaData(json.map((c, idx) => ({
@@ -1729,7 +1731,7 @@ function AdmissionLayout() {
 
   const fetchMeritLists = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/merit-lists');
+      const res = await fetch(`${API_BASE}/api/merit-lists`);
       const json = await res.json();
       if (Array.isArray(json)) {
         setMeritListCreatedList(json.map((m, idx) => ({
@@ -1752,7 +1754,7 @@ function AdmissionLayout() {
 
   const fetchSchoolDocuments = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/school-documents');
+      const res = await fetch(`${API_BASE}/api/school-documents`);
       const json = await res.json();
       if (Array.isArray(json)) {
         setSchoolDocList(json.map((d, idx) => ({
@@ -1772,7 +1774,7 @@ function AdmissionLayout() {
 
   const fetchParentRequests = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/parent-requests');
+      const res = await fetch(`${API_BASE}/api/parent-requests`);
       const json = await res.json();
       if (Array.isArray(json)) {
         setParentChangeRequests(json.map((r, idx) => ({
@@ -1796,7 +1798,7 @@ function AdmissionLayout() {
 
   const fetchAdmissionFees = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/admission-fees');
+      const res = await fetch(`${API_BASE}/api/admission-fees`);
       const json = await res.json();
       if (Array.isArray(json) && json.length > 0) {
         const latest = json[0];
@@ -1824,7 +1826,7 @@ function AdmissionLayout() {
 
   const fetchAdmissionStructures = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/admission-fees/structures');
+      const res = await fetch(`${API_BASE}/api/admission-fees/structures`);
       const json = await res.json();
       if (Array.isArray(json) && json.length > 0) {
         const struct = json[0];
@@ -1843,7 +1845,7 @@ function AdmissionLayout() {
 
   const fetchAdmissionChallans = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/admission-challans');
+      const res = await fetch(`${API_BASE}/api/admission-challans`);
       const json = await res.json();
       if (Array.isArray(json) && json.length > 0) {
         const first = json[0];
@@ -1863,7 +1865,7 @@ function AdmissionLayout() {
 
   const fetchTransferCertificates = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/transfer-certificates');
+      const res = await fetch(`${API_BASE}/api/transfer-certificates`);
       const data = await res.json();
       if (Array.isArray(data)) {
         const drafts = data.filter(d => d.status === 'Draft').map((d, i) => ({
@@ -1932,7 +1934,7 @@ function AdmissionLayout() {
 
   const fetchBonafides = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/bonafide-certificates');
+      const res = await fetch(`${API_BASE}/api/bonafide-certificates`);
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
         const first = data[0];
@@ -1959,7 +1961,7 @@ function AdmissionLayout() {
 
   const fetchCharacteristics = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/student-characteristics');
+      const res = await fetch(`${API_BASE}/api/student-characteristics`);
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
         setCharList(data.map((d, i) => ({
@@ -1983,7 +1985,7 @@ function AdmissionLayout() {
 
   const fetchVisas = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/student-visa');
+      const res = await fetch(`${API_BASE}/api/student-visa`);
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
         setVisaList(data.map((d, i) => ({
@@ -2010,7 +2012,7 @@ function AdmissionLayout() {
 
   const fetchCbseRegistrations = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/cbse-registrations');
+      const res = await fetch(`${API_BASE}/api/cbse-registrations`);
       const data = await res.json();
       if (Array.isArray(data)) {
         setCbseRegList(data);
@@ -2022,7 +2024,7 @@ function AdmissionLayout() {
 
   const fetchCbseExamConfirmations = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/cbse-exam-confirmations');
+      const res = await fetch(`${API_BASE}/api/cbse-exam-confirmations`);
       const data = await res.json();
       if (Array.isArray(data)) {
         setCbseExamList(data);
@@ -2325,7 +2327,7 @@ function AdmissionLayout() {
     if (window.confirm(`Are you sure you want to delete student: ${student.name} (Adm: ${student.adm})?`)) {
       if (student._id) {
         try {
-          await fetch(`http://localhost:5005/api/students/${student._id}`, { method: 'DELETE' });
+          await fetch(`${API_BASE}/api/students/${student._id}`, { method: 'DELETE' });
           await fetchStudents();
         } catch (e) {
           console.error(e);
@@ -2353,7 +2355,7 @@ function AdmissionLayout() {
 
     try {
       await Promise.all(updates.map(u => 
-        fetch('http://localhost:5005/api/students/bulk/promote', {
+        fetch(`${API_BASE}/api/students/bulk/promote`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -2386,7 +2388,7 @@ function AdmissionLayout() {
 
     try {
       await Promise.all(updates.map(u => 
-        fetch('http://localhost:5005/api/students/bulk/transfer-section', {
+        fetch(`${API_BASE}/api/students/bulk/transfer-section`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -2444,7 +2446,7 @@ function AdmissionLayout() {
       return;
     }
     try {
-      await fetch('http://localhost:5005/api/students/bulk/bank-details', {
+      await fetch(`${API_BASE}/api/students/bulk/bank-details`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2502,7 +2504,7 @@ function AdmissionLayout() {
           if (parentPhotoType === 'Father') formData.append('fatherPhoto', fileData.file);
           else if (parentPhotoType === 'Mother') formData.append('motherPhoto', fileData.file);
           else if (parentPhotoType === 'Family') formData.append('familyPhoto', fileData.file);
-          await fetch(`http://localhost:5005/api/students/${st._id}`, {
+          await fetch(`${API_BASE}/api/students/${st._id}`, {
             method: 'PUT',
             body: formData
           });
@@ -2563,7 +2565,7 @@ function AdmissionLayout() {
     try {
       for (let i = 1; i <= numSlots; i++) {
         const nextSr = slotCreatedList.length + i;
-        await fetch('http://localhost:5005/api/admission-slots', {
+        await fetch(`${API_BASE}/api/admission-slots`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -2592,7 +2594,7 @@ function AdmissionLayout() {
       try {
         const slotItem = slotCreatedList.find(s => s._id === slotIdOrSr || s.sr === slotIdOrSr);
         if (slotItem && slotItem._id) {
-          await fetch(`http://localhost:5005/api/admission-slots/${slotItem._id}`, { method: 'DELETE' });
+          await fetch(`${API_BASE}/api/admission-slots/${slotItem._id}`, { method: 'DELETE' });
         }
         await fetchAdmissionSlots();
       } catch (err) {
@@ -2618,7 +2620,7 @@ function AdmissionLayout() {
     if (window.confirm(`Delete criteria: ${item.name}?`)) {
       try {
         if (item._id) {
-          await fetch(`http://localhost:5005/api/merit-criteria/${item._id}`, { method: 'DELETE' });
+          await fetch(`${API_BASE}/api/merit-criteria/${item._id}`, { method: 'DELETE' });
         }
         await fetchMeritCriteria();
       } catch (e) {
@@ -2644,7 +2646,7 @@ function AdmissionLayout() {
         for (const [admNo, pts] of Object.entries(slotStudentPoints)) {
           const applicant = selectedSlotObj.applicants?.find(a => a.admissionNo === admNo);
           if (applicant && applicant._id) {
-            await fetch(`http://localhost:5005/api/admission-slots/${selectedSlotObj._id}/applicant-points`, {
+            await fetch(`${API_BASE}/api/admission-slots/${selectedSlotObj._id}/applicant-points`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -2685,7 +2687,7 @@ function AdmissionLayout() {
       return;
     }
     try {
-      await fetch('http://localhost:5005/api/merit-lists', {
+      await fetch(`${API_BASE}/api/merit-lists`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2733,7 +2735,7 @@ function AdmissionLayout() {
       return;
     }
     try {
-      await fetch('http://localhost:5005/api/admission-slots/re-slot', {
+      await fetch(`${API_BASE}/api/admission-slots/re-slot`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2777,7 +2779,7 @@ function AdmissionLayout() {
       return;
     }
     try {
-      await fetch('http://localhost:5005/api/school-documents', {
+      await fetch(`${API_BASE}/api/school-documents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2804,7 +2806,7 @@ function AdmissionLayout() {
     if (window.confirm("Remove this document?")) {
       try {
         if (doc._id) {
-          await fetch(`http://localhost:5005/api/school-documents/${doc._id}`, { method: 'DELETE' });
+          await fetch(`${API_BASE}/api/school-documents/${doc._id}`, { method: 'DELETE' });
         }
         await fetchSchoolDocuments();
       } catch (e) {
@@ -13256,7 +13258,7 @@ function AdmissionLayout() {
                                     return;
                                   }
                                   try {
-                                    await fetch('http://localhost:5005/api/transfer-certificates', {
+                                    await fetch(`${API_BASE}/api/transfer-certificates`, {
                                       method: 'POST',
                                       headers: { 'Content-Type': 'application/json' },
                                       body: JSON.stringify({
@@ -13996,7 +13998,7 @@ function AdmissionLayout() {
                             <button
                               onClick={async () => {
                                 try {
-                                  await fetch('http://localhost:5005/api/transfer-certificates', {
+                                  await fetch(`${API_BASE}/api/transfer-certificates`, {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
@@ -14117,7 +14119,7 @@ function AdmissionLayout() {
                                     conduct: item.conduct || 'Good',
                                     status: 'Draft'
                                   }));
-                                  await fetch('http://localhost:5005/api/transfer-certificates/bulk', {
+                                  await fetch(`${API_BASE}/api/transfer-certificates/bulk`, {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ list: selectedItems, mode: 'Draft TC' })
@@ -14495,7 +14497,7 @@ function AdmissionLayout() {
                                           onClick={async () => {
                                             try {
                                               if (row._id) {
-                                                await fetch(`http://localhost:5005/api/transfer-certificates/${row._id}/generate`, { method: 'PUT' });
+                                                await fetch(`${API_BASE}/api/transfer-certificates/${row._id}/generate`, { method: 'PUT' });
                                               }
                                               await fetchTransferCertificates();
                                               setGenTcNotification(`TC generated successfully for ${row.name} in database!`);
@@ -14516,7 +14518,7 @@ function AdmissionLayout() {
                                           onClick={async () => {
                                             try {
                                               if (row._id) {
-                                                await fetch(`http://localhost:5005/api/transfer-certificates/${row._id}`, { method: 'DELETE' });
+                                                await fetch(`${API_BASE}/api/transfer-certificates/${row._id}`, { method: 'DELETE' });
                                               }
                                               await fetchTransferCertificates();
                                               setGenTcNotification(`Draft record deleted from database.`);
@@ -14608,7 +14610,7 @@ function AdmissionLayout() {
                                             if (reason !== null) {
                                               try {
                                                 if (row._id) {
-                                                  await fetch(`http://localhost:5005/api/transfer-certificates/${row._id}/cancel`, {
+                                                  await fetch(`${API_BASE}/api/transfer-certificates/${row._id}/cancel`, {
                                                     method: 'PUT',
                                                     headers: { 'Content-Type': 'application/json' },
                                                     body: JSON.stringify({ cancelReason: reason })
@@ -14868,7 +14870,7 @@ function AdmissionLayout() {
                                     <button
                                       onClick={async () => {
                                         try {
-                                          await fetch('http://localhost:5005/api/transfer-certificates/generate', {
+                                          await fetch(`${API_BASE}/api/transfer-certificates/generate`, {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({
@@ -14908,7 +14910,7 @@ function AdmissionLayout() {
                                   const selected = bulkTcList.filter(s => s.selected);
                                   if (selected.length > 0) {
                                     try {
-                                      await fetch('http://localhost:5005/api/transfer-certificates/bulk', {
+                                      await fetch(`${API_BASE}/api/transfer-certificates/bulk`, {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({
@@ -15030,7 +15032,7 @@ function AdmissionLayout() {
                             <button
                               onClick={async () => {
                                 try {
-                                  let url = 'http://localhost:5005/api/transfer-certificates';
+                                  let url = `${API_BASE}/api/transfer-certificates`;
                                   const params = [];
                                   if (tcReportType === 'Drafted TC') params.push('status=Draft');
                                   else if (tcReportType === 'Generated TC') params.push('status=Generated');
@@ -15180,7 +15182,7 @@ function AdmissionLayout() {
                                     remark: c.remark
                                   }));
                                   if (payload.length > 0) {
-                                    await fetch('http://localhost:5005/api/student-characteristics/bulk', {
+                                    await fetch(`${API_BASE}/api/student-characteristics/bulk`, {
                                       method: 'POST',
                                       headers: { 'Content-Type': 'application/json' },
                                       body: JSON.stringify({ list: payload })
@@ -15484,7 +15486,7 @@ function AdmissionLayout() {
                             <button
                               onClick={async () => {
                                 try {
-                                  await fetch('http://localhost:5005/api/bonafide-certificates', {
+                                  await fetch(`${API_BASE}/api/bonafide-certificates`, {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
@@ -15616,7 +15618,7 @@ function AdmissionLayout() {
                                   joiningDate: v.joiningDate,
                                   remark: v.remark
                                 }));
-                                await fetch('http://localhost:5005/api/student-visa/bulk', {
+                                await fetch(`${API_BASE}/api/student-visa/bulk`, {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ list: payload })
@@ -26601,13 +26603,13 @@ function AdmissionLayout() {
                   }
                   try {
                     if (newMeritCriteriaInput._id) {
-                      await fetch(`http://localhost:5005/api/merit-criteria/${newMeritCriteriaInput._id}`, {
+                      await fetch(`${API_BASE}/api/merit-criteria/${newMeritCriteriaInput._id}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(newMeritCriteriaInput)
                       });
                     } else {
-                      await fetch('http://localhost:5005/api/merit-criteria', {
+                      await fetch(`${API_BASE}/api/merit-criteria`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -26807,7 +26809,7 @@ function AdmissionLayout() {
                     const reqItem = viewParentRequestModal.req;
                     try {
                       if (reqItem._id) {
-                        await fetch(`http://localhost:5005/api/parent-requests/${reqItem._id}/status`, {
+                        await fetch(`${API_BASE}/api/parent-requests/${reqItem._id}/status`, {
                           method: 'PUT',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ status: 'Approved' })
@@ -26831,7 +26833,7 @@ function AdmissionLayout() {
                     const reqItem = viewParentRequestModal.req;
                     try {
                       if (reqItem._id) {
-                        await fetch(`http://localhost:5005/api/parent-requests/${reqItem._id}/status`, {
+                        await fetch(`${API_BASE}/api/parent-requests/${reqItem._id}/status`, {
                           method: 'PUT',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ status: 'Rejected' })

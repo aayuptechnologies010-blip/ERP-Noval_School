@@ -31,7 +31,7 @@ export default function WebAdminFeedbackSubjectClass() {
   const fetchClassRelations = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/web-admin/feedback/subject-class?className=${encodeURIComponent(selectedClass)}`);
+      const res = await fetch(`${API_BASE}/api/web-admin/feedback/subject-class?className=${encodeURIComponent(selectedClass)}`);
       const data = await res.json();
       if (data.success) {
         // filter or sort
@@ -53,7 +53,7 @@ export default function WebAdminFeedbackSubjectClass() {
     }
 
     try {
-      const res = await fetch('/api/web-admin/feedback/subject-class', {
+      const res = await fetch(`${API_BASE}/api/web-admin/feedback/subject-class`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -82,7 +82,7 @@ export default function WebAdminFeedbackSubjectClass() {
 
   const handleToggleEnable = async (item) => {
     try {
-      const res = await fetch(`/api/web-admin/feedback/subject-class/${item._id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/feedback/subject-class/${item._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isEnabled: !item.isEnabled })
@@ -99,7 +99,7 @@ export default function WebAdminFeedbackSubjectClass() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to remove this subject mapping?')) return;
     try {
-      const res = await fetch(`/api/web-admin/feedback/subject-class/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/feedback/subject-class/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

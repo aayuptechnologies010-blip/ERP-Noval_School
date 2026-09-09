@@ -33,7 +33,7 @@ export default function WebAdminFeedbackQuestionMaster() {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/feedback/questions');
+      const res = await fetch(`${API_BASE}/api/web-admin/feedback/questions`);
       const data = await res.json();
       if (data.success) {
         setQuestions(data.data || []);
@@ -53,7 +53,7 @@ export default function WebAdminFeedbackQuestionMaster() {
     }
 
     try {
-      const res = await fetch('/api/web-admin/feedback/questions', {
+      const res = await fetch(`${API_BASE}/api/web-admin/feedback/questions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
@@ -80,7 +80,7 @@ export default function WebAdminFeedbackQuestionMaster() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this question?')) return;
     try {
-      const res = await fetch(`/api/web-admin/feedback/questions/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/feedback/questions/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

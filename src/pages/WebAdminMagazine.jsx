@@ -27,7 +27,7 @@ export default function WebAdminMagazine() {
   const fetchMagazines = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/magazine');
+      const res = await fetch(`${API_BASE}/api/web-admin/magazine`);
       if (!res.ok) {
         throw new Error(`Server returned status ${res.status}`);
       }
@@ -75,7 +75,7 @@ export default function WebAdminMagazine() {
         status: status ? 'Active' : 'Inactive'
       };
       
-      const res = await fetch('/api/web-admin/magazine', {
+      const res = await fetch(`${API_BASE}/api/web-admin/magazine`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -101,7 +101,7 @@ export default function WebAdminMagazine() {
     if (!window.confirm('Are you sure you want to delete this magazine?')) return;
     
     try {
-      const res = await fetch(`/api/web-admin/magazine/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/magazine/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

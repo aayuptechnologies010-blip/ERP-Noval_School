@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { FaExchangeAlt, FaSpinner } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function ManageSessionTransfer() {
   const [formData, setFormData] = useState({
     currentSession: '',
@@ -56,7 +58,7 @@ export default function ManageSessionTransfer() {
     setMessage({ type: '', text: '' });
 
     try {
-      const res = await fetch('http://localhost:5005/api/session-transfer', {
+      const res = await fetch(`${API_BASE}/api/session-transfer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
