@@ -3,6 +3,8 @@ import {
   FaSitemap, FaInfoCircle, FaBars, FaArrowUp, FaArrowDown, FaFilter, FaUsers, FaSearch
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminStaffVisibility() {
   const [activeTab, setActiveTab] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -48,7 +50,7 @@ export default function WebAdminStaffVisibility() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/staff-visibility');
+      const res = await fetch(`${API_BASE}/api/web-admin/staff-visibility`);
       const data = await res.json();
       if (data.success && data.data && data.data.length > 0) {
         const desigDoc = data.data.find(d => d.type === 'designation');
@@ -72,7 +74,7 @@ export default function WebAdminStaffVisibility() {
     setError('');
     setSuccess('');
     try {
-      const res = await fetch('/api/web-admin/staff-visibility', {
+      const res = await fetch(`${API_BASE}/api/web-admin/staff-visibility`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'designation', designations })
@@ -96,7 +98,7 @@ export default function WebAdminStaffVisibility() {
     setError('');
     setSuccess('');
     try {
-      const res = await fetch('/api/web-admin/staff-visibility', {
+      const res = await fetch(`${API_BASE}/api/web-admin/staff-visibility`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'staff', staffList })

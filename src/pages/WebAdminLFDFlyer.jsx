@@ -3,6 +3,8 @@ import {
   FaImage, FaCalendarAlt, FaCloudUploadAlt, FaListUl, FaInfoCircle, FaExclamationTriangle, FaArrowsAltV, FaCheckCircle, FaTrash
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminLFDFlyer() {
   const [status, setStatus] = useState(true);
   const [flyers, setFlyers] = useState([]);
@@ -28,7 +30,7 @@ export default function WebAdminLFDFlyer() {
   const fetchFlyers = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/lfd/flyers');
+      const res = await fetch(`${API_BASE}/api/web-admin/lfd/flyers`);
       const data = await res.json();
       if (data.success) {
         setFlyers(data.data);
@@ -73,7 +75,7 @@ export default function WebAdminLFDFlyer() {
         status: status ? 'Active' : 'Inactive'
       };
       
-      const res = await fetch('/api/web-admin/lfd/flyers', {
+      const res = await fetch(`${API_BASE}/api/web-admin/lfd/flyers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -100,7 +102,7 @@ export default function WebAdminLFDFlyer() {
     if (!window.confirm('Are you sure you want to delete this flyer?')) return;
     
     try {
-      const res = await fetch(`/api/web-admin/lfd/flyers/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/lfd/flyers/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaEdit, FaTrash, FaPlus, FaSpinner, FaAngleUp } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function ManageDocumentType() {
   const [data, setData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,7 +16,7 @@ export default function ManageDocumentType() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/document-types');
+      const res = await fetch(`${API_BASE}/api/document-types`);
       const json = await res.json();
       setData(json);
     } catch (err) {
@@ -27,13 +29,13 @@ export default function ManageDocumentType() {
     setIsLoading(true);
     try {
       if (editItem) {
-        await fetch(`http://localhost:5005/api/document-types/${editItem._id}`, {
+        await fetch(`${API_BASE}/api/document-types/${editItem._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: inputValue })
         });
       } else {
-        await fetch('http://localhost:5005/api/document-types', {
+        await fetch(`${API_BASE}/api/document-types`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: inputValue })
@@ -53,7 +55,7 @@ export default function ManageDocumentType() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       try {
-        await fetch(`http://localhost:5005/api/document-types/${id}`, { method: 'DELETE' });
+        await fetch(`${API_BASE}/api/document-types/${id}`, { method: 'DELETE' });
         fetchData();
       } catch (err) {
         console.error(err);

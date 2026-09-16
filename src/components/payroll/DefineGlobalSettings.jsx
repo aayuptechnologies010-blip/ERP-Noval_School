@@ -1,7 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Save, AlertCircle, CheckCircle } from 'lucide-react';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function DefineGlobalSettings() {
   const [activeTab, setActiveTab] = useState('main');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
+  
+  const [formData, setFormData] = useState({
+    rebateOnTaFor12Months: true,
+    rebateOnTaAmount: 0,
+    hraMetroPercent: 40.00,
+    hraNonMetroPercent: 50.00,
+    rebateOnHillAllowance: 0,
+  });
+
+  const token = localStorage.getItem('token');
+  const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/global-payroll-settings`, { headers });
+        if (res.ok) {
+          const data = await res.json();
+          setFormData({
+            rebateOnTaFor12Months: data.rebateOnTaFor12Months ?? true,
+            rebateOnTaAmount: data.rebateOnTaAmount ?? 0,
+            hraMetroPercent: data.hraMetroPercent ?? 40.00,
+            hraNonMetroPercent: data.hraNonMetroPercent ?? 50.00,
+            rebateOnHillAllowance: data.rebateOnHillAllowance ?? 0,
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const res = await fetch(`${API_BASE}/api/global-payroll-settings`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(formData)
+      });
+      if (res.ok) {
+        setMessage({ type: 'success', text: 'Global settings updated successfully' });
+      } else {
+        setMessage({ type: 'error', text: 'Failed to update settings' });
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Network error' });
+    } finally {
+      setSaving(false);
+      setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+    }
+  };
+
+  if (loading) {
+    return <div style={{ padding: '40px', textAlign: 'center' }}>Loading settings...</div>;
+  }
 
   return (
     <div className="global-settings-container">
@@ -21,6 +87,19 @@ export default function DefineGlobalSettings() {
         </div>
       </div>
 
+      {message.text && (
+        <div style={{
+          margin: '20px', padding: '12px 16px', borderRadius: '4px',
+          display: 'flex', alignItems: 'center', gap: '8px',
+          backgroundColor: message.type === 'success' ? '#d4edda' : '#f8d7da',
+          color: message.type === 'success' ? '#155724' : '#721c24',
+          border: `1px solid ${message.type === 'success' ? '#c3e6cb' : '#f5c6cb'}`
+        }}>
+          {message.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+          {message.text}
+        </div>
+      )}
+
       {activeTab === 'main' && (
         <>
           <div className="settings-section">
@@ -30,330 +109,89 @@ export default function DefineGlobalSettings() {
                 <label style={{ display: 'flex', justifyContent: 'space-between' }}>
                   Rebate on Travelling Allowance (TA)
                   <span className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}>
-                    <input type="checkbox" defaultChecked /> For 12 Month
+                    <input 
+                      type="checkbox" 
+                      checked={formData.rebateOnTaFor12Months} 
+                      onChange={(e) => setFormData({...formData, rebateOnTaFor12Months: e.target.checked})}
+                    /> For 12 Month
                   </span>
                 </label>
-                <input type="text" className="settings-input" defaultValue="0" />
+                <input 
+                  type="number" 
+                  className="settings-input" 
+                  value={formData.rebateOnTaAmount}
+                  onChange={(e) => setFormData({...formData, rebateOnTaAmount: Number(e.target.value)})}
+                />
               </div>
               <div className="form-group">
                 <label>HRA For Metropolitan Cities (in %)</label>
-                <input type="text" className="settings-input" defaultValue="40.00" />
+                <input 
+                  type="number" 
+                  className="settings-input" 
+                  value={formData.hraMetroPercent}
+                  onChange={(e) => setFormData({...formData, hraMetroPercent: Number(e.target.value)})}
+                />
               </div>
               <div className="form-group">
                 <label>HRA For Non Metropolitan Cities (in %)</label>
-                <input type="text" className="settings-input" defaultValue="50.00" />
+                <input 
+                  type="number" 
+                  className="settings-input" 
+                  value={formData.hraNonMetroPercent}
+                  onChange={(e) => setFormData({...formData, hraNonMetroPercent: Number(e.target.value)})}
+                />
               </div>
             </div>
             <div className="settings-row row-3-cols">
               <div className="form-group">
                 <label>Rebate on Hill Allowance (HA)</label>
-                <input type="text" className="settings-input" defaultValue="0" />
+                <input 
+                  type="number" 
+                  className="settings-input" 
+                  value={formData.rebateOnHillAllowance}
+                  onChange={(e) => setFormData({...formData, rebateOnHillAllowance: Number(e.target.value)})}
+                />
               </div>
             </div>
           </div>
-
+          
           <div className="settings-section">
-            <div className="section-header">Provident Fund</div>
+            <div className="section-header">Signatures</div>
             <div className="settings-row row-3-cols">
               <div className="form-group">
-                <label style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  PF Basic Limit
-                  <span className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}>
-                    <input type="checkbox" defaultChecked /> Apply PF Min. Basic Rule
-                  </span>
-                </label>
-                <input type="text" className="settings-input" defaultValue="15000.00" />
+                <label>Signature 1 Header (Optional)</label>
+                <input type="text" className="settings-input" />
               </div>
               <div className="form-group">
-                <label>Employee's PF Contribution (in %)</label>
-                <input type="text" className="settings-input" defaultValue="12.00" />
+                <label>Signature 2 Header (Optional)</label>
+                <input type="text" className="settings-input" />
               </div>
               <div className="form-group">
-                <label>Employer's PF Contribution (in %)</label>
-                <input type="text" className="settings-input" defaultValue="3.67" />
+                <label>Signature 3 Header (Optional)</label>
+                <input type="text" className="settings-input" />
               </div>
-            </div>
-            <div className="settings-row row-3-cols">
-              <div className="form-group">
-                <label>Employer's Pension Contribution (in %)</label>
-                <input type="text" className="settings-input" defaultValue="8.33" />
-              </div>
-              <div className="form-group">
-                <label>Pension Age Limit</label>
-                <input type="text" className="settings-input" defaultValue="58.00" />
-              </div>
-              <div className="form-group">
-                <label style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  Age of Retirement
-                  <span className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}>
-                    <input type="checkbox" /> Use Ceiling
-                  </span>
-                </label>
-                <input type="text" className="settings-input" defaultValue="50" />
-              </div>
-            </div>
-          </div>
-
-          <div className="settings-section">
-            <div className="section-header">Admin's Total PF Contribution towards PF A/C</div>
-            <div className="settings-row row-3-cols">
-              <div className="form-group">
-                <label>A/C No 2 (Admin Charges) (in %)</label>
-                <input type="text" className="settings-input" defaultValue="0.50" />
-              </div>
-              <div className="form-group">
-                <label>A/C No 22 (Inspection Charges) (in %)</label>
-                <input type="text" className="settings-input" defaultValue="0.02" />
-              </div>
-              <div className="form-group">
-                <label>A/C No 21 (Death Insurance) (in %)</label>
-                <input type="text" className="settings-input" defaultValue="0.50" />
-              </div>
-            </div>
-          </div>
-
-          <div className="settings-section">
-            <div className="section-header">Inspection's Total PF Contribution towards PF A/C</div>
-            <div className="settings-row row-3-cols">
-              <div className="form-group">
-                <label>Inspection ACC22 (in %)</label>
-                <input type="text" className="settings-input" defaultValue="0.005" />
-              </div>
-              <div className="form-group">
-                <label>Inspection ACC02 (in %)</label>
-                <input type="text" className="settings-input" defaultValue="0.180" />
-              </div>
-            </div>
-          </div>
-
-          <div className="settings-section">
-            <div className="section-header">Employee State Insurance Contribution</div>
-            <div className="settings-row row-3-cols">
-              <div className="form-group">
-                <label>Employee's Contribution (in %)</label>
-                <input type="text" className="settings-input" defaultValue="1.75" />
-              </div>
-              <div className="form-group">
-                <label>Employer's Contribution (in %)</label>
-                <input type="text" className="settings-input" defaultValue="4.75" />
-              </div>
-              <div className="form-group">
-                <label style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  Gross Salary Limit
-                  <span className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}>
-                    <input type="checkbox" /> Use Ceiling
-                  </span>
-                </label>
-                <input type="text" className="settings-input" defaultValue="21000" />
-              </div>
-            </div>
-          </div>
-
-          <div className="settings-section">
-            <div className="section-header">Change Sorting Order</div>
-            <div className="settings-row row-3-cols">
-              <div className="form-group">
-                <label>Sort Staff Details by</label>
-                <select className="settings-input" defaultValue="Pref No.">
-                  <option value="Pref No.">Pref No.</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Sorting Type</label>
-                <select className="settings-input" defaultValue="Asc.">
-                  <option value="Asc.">Asc.</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="settings-section">
-            <div className="section-header">Salary Sheet Settings</div>
-            <div className="settings-row row-3-cols">
-              <div className="form-group">
-                <label>Total Row One Page</label>
-                <input type="text" className="settings-input" defaultValue="15" />
-              </div>
-              <div className="form-group">
-                <label>Column Index For Total</label>
-                <input type="text" className="settings-input" defaultValue="7" />
-              </div>
-              <div className="form-group">
-                <label>Last Working Month</label>
-                <select className="settings-input" defaultValue="Select Month">
-                  <option value="Select Month">Select Month</option>
-                </select>
-              </div>
-            </div>
-            <div className="settings-row row-3-cols">
-              <div className="form-group">
-                <label>Increment Applicable to Emp of</label>
-                <input type="text" className="settings-input" defaultValue="12" />
-              </div>
-            </div>
-          </div>
-
-          <div className="settings-section">
-            <div className="section-header">Gratuity</div>
-            <div className="settings-row row-3-cols">
-              <div className="form-group">
-                <label>Max Limit of Amount</label>
-                <input type="text" className="settings-input" defaultValue="100000.00" />
-              </div>
-              <div className="form-group">
-                <label>Total Service</label>
-                <input type="text" className="settings-input" defaultValue="5.00" />
-              </div>
-              <div className="form-group" style={{ justifyContent: 'flex-end', paddingBottom: '10px' }}>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}>
-                  <input type="checkbox" /> Date of Confirmation
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div className="settings-section">
-            <div className="section-header">Bonus</div>
-            <div className="settings-row row-3-cols">
-              <div className="form-group">
-                <label>Bonus Amount</label>
-                <input type="text" className="settings-input" defaultValue="25000.00" />
-              </div>
-              <div className="form-group">
-                <label>Operand 1 (*)</label>
-                <input type="text" className="settings-input" defaultValue="30.00" />
-              </div>
-              <div className="form-group">
-                <label>Operand 2 (/)</label>
-                <input type="text" className="settings-input" defaultValue="30.40" />
-              </div>
-            </div>
-            <div className="settings-row row-3-cols">
-              <div className="form-group" style={{ flexDirection: 'row', alignItems: 'flex-end', gap: '10px' }}>
-                <div style={{ flex: 1 }}>
-                  <label>Bonus Applicable to Emp of</label>
-                  <input type="text" className="settings-input" defaultValue="12" style={{ width: '100%' }} />
-                </div>
-                <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', marginBottom: '8px', whiteSpace: 'nowrap' }}>Month(s) old or more</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="settings-section">
-            <div className="section-header">Format For Emp Code</div>
-            <div className="settings-row">
-              <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}>
-                <input type="checkbox" /> Automatic Generation
-              </label>
-            </div>
-          </div>
-
-          <div className="settings-section">
-            <div className="section-header">Library Book Defaulter</div>
-            <div className="settings-row">
-              <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}>
-                <input type="checkbox" /> Check Library Book Defaulter for Inactive Staff
-              </label>
             </div>
           </div>
         </>
       )}
 
       {activeTab === 'salary' && (
-        <>
-          <div className="settings-section">
-            <div className="section-header">Head(s) in Salary Generation Form</div>
-            <div className="settings-row row-4-cols">
-              
-              <div className="form-group" style={{ gap: '12px' }}>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" defaultChecked /> Dearness Allowance</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> City expenses</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> House Rent Allowance Arrear</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" defaultChecked /> Income Tax</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> Staff Welfare</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> Telephone</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> Fully Furnished</label>
-              </div>
-
-              <div className="form-group" style={{ gap: '12px' }}>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" defaultChecked /> House Rent Allowance</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" defaultChecked /> Other Allowances</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> Transport Allowance Arrear</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" defaultChecked /> Advance</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> Petrol</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> Electricity</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> Mobile Allowance</label>
-              </div>
-
-              <div className="form-group" style={{ gap: '12px' }}>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" defaultChecked /> Transport Allowance</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> Basic Arrear</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" defaultChecked /> Provident Fund</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" defaultChecked /> Other Deduction</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" defaultChecked /> Vol Provident Fund</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> Fee Exempted</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" defaultChecked /> Insurance</label>
-              </div>
-
-              <div className="form-group" style={{ gap: '12px' }}>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" defaultChecked /> Medical Allowance</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> Dearness Allowance Arrear</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" defaultChecked /> Employee State Insurance</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> Provident Fund Arrear</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> Over Time</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> Accomidation</label>
-              </div>
-
-            </div>
-          </div>
-
-          <div className="settings-section">
-            <div className="section-header">Naming Conventions</div>
-            <div className="settings-row row-3-cols" style={{ padding: '0 20px' }}>
-              <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}>
-                <input type="radio" name="naming_conv" defaultChecked /> Upper-Case Letters
-              </label>
-              <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}>
-                <input type="radio" name="naming_conv" /> Lower-Case Letters
-              </label>
-              <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}>
-                <input type="radio" name="naming_conv" /> Capitalized Letters
-              </label>
-            </div>
-          </div>
-
-          <div className="settings-section">
-            <div className="section-header">Salary Lock</div>
-            <div className="settings-row row-4-cols" style={{ padding: '0 20px' }}>
-              
-              <div className="form-group" style={{ gap: '12px', justifyContent: 'center' }}>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> Allow Salary to lock</label>
-                <label className="checkbox-label" style={{ fontWeight: 'normal', color: '#333' }}><input type="checkbox" /> Allow Basic Salary to lock</label>
-              </div>
-
-              <div className="form-group">
-                <label>Mobile No.</label>
-                <input type="text" className="settings-input" />
-              </div>
-
-              <div className="form-group">
-                <label>Template ID (OTP)</label>
-                <input type="text" className="settings-input" />
-              </div>
-
-              <div className="form-group">
-                <label>Template (OTP)</label>
-                <input type="text" className="settings-input" />
-              </div>
-
-            </div>
-          </div>
-        </>
+        <div className="settings-section">
+           <div className="section-header">Salary Generate Settings</div>
+           <div style={{ padding: '20px', color: '#666' }}>
+              Advanced salary generation settings can be configured here.
+           </div>
+        </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px' }}>
-        <button className="blue-btn" style={{ padding: '8px 25px' }}>
-          ↻ Update
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+        <button 
+          className="blue-btn" 
+          style={{ padding: '8px 25px', opacity: saving ? 0.7 : 1 }}
+          onClick={handleSave}
+          disabled={saving}
+        >
+          {saving ? 'Saving...' : 'Save Settings'}
         </button>
       </div>
 

@@ -4,6 +4,8 @@ import {
   FaEye, FaEdit, FaTrash, FaImages, FaTimes, FaMapMarkerAlt, FaClock
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminEvents() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +31,7 @@ export default function WebAdminEvents() {
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/events');
+      const res = await fetch(`${API_BASE}/api/web-admin/events`);
       const data = await res.json();
       if (data.success && data.data) {
         setEvents(data.data);
@@ -90,7 +92,7 @@ export default function WebAdminEvents() {
 
     setSaving(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/events', {
+      const res = await fetch(`${API_BASE}/api/web-admin/events`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -124,7 +126,7 @@ export default function WebAdminEvents() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this Event?')) return;
     try {
-      const res = await fetch(`http://localhost:5005/api/web-admin/events/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/events/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

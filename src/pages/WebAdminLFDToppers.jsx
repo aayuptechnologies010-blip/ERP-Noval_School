@@ -3,6 +3,8 @@ import {
   FaMedal, FaListUl, FaInfoCircle, FaUserGraduate, FaUser, FaArrowsAltV, FaRibbon, FaTrash, FaCheckCircle, FaCloudUploadAlt
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminLFDToppers() {
   const [status, setStatus] = useState(true);
   const [toppers, setToppers] = useState([]);
@@ -29,7 +31,7 @@ export default function WebAdminLFDToppers() {
   const fetchToppers = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/lfd/toppers');
+      const res = await fetch(`${API_BASE}/api/web-admin/lfd/toppers`);
       const data = await res.json();
       if (data.success) {
         setToppers(data.data);
@@ -74,7 +76,7 @@ export default function WebAdminLFDToppers() {
         status: status ? 'Active' : 'Inactive'
       };
       
-      const res = await fetch('/api/web-admin/lfd/toppers', {
+      const res = await fetch(`${API_BASE}/api/web-admin/lfd/toppers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -100,7 +102,7 @@ export default function WebAdminLFDToppers() {
     if (!window.confirm('Are you sure you want to delete this topper?')) return;
     
     try {
-      const res = await fetch(`/api/web-admin/lfd/toppers/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/lfd/toppers/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

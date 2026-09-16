@@ -1,32 +1,516 @@
-import React from 'react';
-import { Eye } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import {
+  Eye, Download, Printer, Search, RefreshCw, CheckCircle,
+  AlertCircle, Sparkles, Calendar, Users, ShieldCheck,
+  ChevronLeft, ChevronRight, Award, FileText, IndianRupee,
+  Briefcase, Landmark
+} from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function RetirementReport() {
+  const [data, setData] = useState({ summary: {}, records: [] });
+  const [loading, setLoading] = useState(false);
+  const [statusMsg, setStatusMsg] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const [filterOptions, setFilterOptions] = useState({
+    schools: ['Ayup Tech', 'Ayup Technologies'],
+    departments: [],
+    staffTypes: []
+  });
+
+  const [schoolName, setSchoolName] = useState('Ayup Tech');
+  const [department, setDepartment] = useState('All');
+  const [staffType, setStaffType] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const token = localStorage.getItem('token');
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  };
+
+  const showNotif = (type, text) => {
+    setStatusMsg({ type, text });
+    setTimeout(() => setStatusMsg(null), 4000);
+  };
+
+  const fetchFilterOptions = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/salary-structure/monthly-reports-filter-options`, { headers });
+      if (res.ok) {
+        const json = await res.json();
+        setFilterOptions(prev => ({
+          ...prev,
+          ...json,
+          schools: json.schools?.length ? json.schools : ['Ayup Tech']
+        }));
+      }
+    } catch (e) {
+      console.error('Failed to load filter options', e);
+    }
+  };
+
+  const fetchReport = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (department && !department.includes('All')) params.append('department', department);
+      if (staffType && !staffType.includes('All')) params.append('staffType', staffType);
+      if (searchTerm) params.append('search', searchTerm);
+
+      const res = await fetch(`${API_BASE}/api/salary-structure/retirement-report?${params.toString()}`, { headers });
+      if (res.ok) {
+        const json = await res.json();
+        setData(json);
+      } else {
+        showNotif('error', 'Failed to fetch Retirement report');
+      }
+    } catch (err) {
+      console.error(err);
+      showNotif('error', 'Error connecting to server');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFilterOptions();
+    fetchReport();
+  }, []);
+
+  const summary = data.summary || {};
+  const records = data.records || [];
+
+  const filteredRecords = records.filter(r => {
+    if (!searchTerm) return true;
+    const s = searchTerm.toLowerCase();
+    return (
+      (r.staffName && r.staffName.toLowerCase().includes(s)) ||
+      (r.employeeId && r.employeeId.toLowerCase().includes(s)) ||
+      (r.settlementRef && r.settlementRef.toLowerCase().includes(s)) ||
+      (r.department && r.department.toLowerCase().includes(s))
+    );
+  });
+
+  const exportCSV = () => {
+    if (!filteredRecords.length) return;
+    const headers = [
+      'Sr No', 'Emp ID', 'Staff Name', 'Department', 'Designation',
+      'Date of Joining', 'Retirement Date', 'Service Tenure (Yrs)',
+      'Last Emoluments', 'Sanctioned Gratuity', 'Sanctioned Pension',
+      'Leave Encashment', 'Settlement Ref', 'Clearance Status'
+    ];
+    const rows = filteredRecords.map(r => [
+      r.srNo,
+      `"${r.employeeId || ''}"`,
+      `"${r.staffName || ''}"`,
+      `"${r.department || ''}"`,
+      `"${r.designation || ''}"`,
+      r.doj,
+      r.dateOfRetire,
+      r.totalServiceYears,
+      r.lastDrawnEmoluments,
+      r.sanctionedGratuity,
+      r.sanctionedMonthlyPension,
+      r.leaveEncashmentSanctioned,
+      `"${r.settlementRef || ''}"`,
+      `"${r.clearanceStatus || ''}"`
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Ayup_Tech_Retirement_Audit_Report.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
-    <div style={{ display: 'flex', height: '100%', backgroundColor: '#f0f2f5' }}>
-      <div style={{ width: '300px', backgroundColor: 'white', padding: '20px', borderRight: '1px solid #ddd', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto' }}>
-        
-        <div className="form-group">
-          <label style={{ fontWeight: 'bold' }}>School Name</label>
-          <select className="settings-input"><option>NAVALS NATIONAL ACADEMY</option></select>
+    <div style={{ display: 'flex', height: 'calc(100vh - 60px)', backgroundColor: '#f1f5f9', overflow: 'hidden', fontFamily: "'Outfit', 'Segoe UI', sans-serif" }}>
+      {/* Toast Notification */}
+      {statusMsg && (
+        <div style={{
+          position: 'fixed',
+          top: '24px',
+          right: '24px',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          padding: '12px 20px',
+          borderRadius: '10px',
+          background: statusMsg.type === 'success' ? '#059669' : '#dc2626',
+          color: '#fff',
+          boxShadow: '0 10px 25px -5px rgba(0,0,0,0.2)',
+          fontWeight: 500,
+          animation: 'slideIn 0.3s ease-out'
+        }}>
+          {statusMsg.type === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
+          {statusMsg.text}
+        </div>
+      )}
+
+      {/* Collapsible Sidebar */}
+      <div style={{
+        width: isSidebarOpen ? '290px' : '0px',
+        minWidth: isSidebarOpen ? '290px' : '0px',
+        backgroundColor: '#ffffff',
+        borderRight: isSidebarOpen ? '1px solid #e2e8f0' : 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        overflow: 'hidden',
+        position: 'relative',
+        zIndex: 20,
+        boxShadow: isSidebarOpen ? '2px 0 10px rgba(0,0,0,0.03)' : 'none'
+      }}>
+        <div style={{ padding: '20px', borderBottom: '1px solid #e2e8f0', background: 'linear-gradient(135deg, #0f172a, #1e293b)', color: 'white' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Award size={20} color="#38bdf8" />
+            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, letterSpacing: '0.3px' }}>Retirement Audit</h3>
+          </div>
+          <p style={{ margin: '6px 0 0 0', fontSize: '11px', color: '#94a3b8' }}>Ayup Tech Terminal Settlement Filter</p>
         </div>
 
-        <div className="form-group">
-          <label style={{ fontWeight: 'bold' }}>Salary Month</label>
-          <select className="settings-input"><option>All</option></select>
-        </div>
+        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto', flex: 1 }}>
+          <div>
+            <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '6px', display: 'block' }}>School / Institution</label>
+            <select
+              value={schoolName}
+              onChange={e => setSchoolName(e.target.value)}
+              style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#f8fafc', color: '#1e293b', fontWeight: 500 }}
+            >
+              <option value="Ayup Tech">Ayup Tech</option>
+              {filterOptions.schools.filter(s => s !== 'Ayup Tech').map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
 
-        <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'center' }}>
-          <button style={{ backgroundColor: '#159BD7', color: 'white', border: 'none', padding: '8px 25px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
-            <Eye size={16} /> Show
-          </button>
-        </div>
+          <div>
+            <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '6px', display: 'block' }}>Department</label>
+            <select
+              value={department}
+              onChange={e => setDepartment(e.target.value)}
+              style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#f8fafc', color: '#1e293b' }}
+            >
+              <option value="All">All Departments</option>
+              {filterOptions.departments?.map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+          </div>
 
+          <div>
+            <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '6px', display: 'block' }}>Staff Type</label>
+            <select
+              value={staffType}
+              onChange={e => setStaffType(e.target.value)}
+              style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#f8fafc', color: '#1e293b' }}
+            >
+              <option value="All">All Staff Types</option>
+              {filterOptions.staffTypes?.map(st => (
+                <option key={st} value={st}>{st}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ marginTop: '10px' }}>
+            <button
+              onClick={fetchReport}
+              disabled={loading}
+              style={{
+                width: '100%',
+                padding: '11px',
+                borderRadius: '8px',
+                border: 'none',
+                background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: '13px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(2,132,199,0.3)',
+                transition: 'all 0.2s'
+              }}
+            >
+              {loading ? <RefreshCw size={16} className="animate-spin" /> : <Eye size={16} />}
+              Show Audit Report
+            </button>
+          </div>
+        </div>
       </div>
-      
-      <div style={{ flex: 1, backgroundColor: '#e0e0e0', margin: '20px', borderRadius: '4px', position: 'relative' }}>
-        <div style={{ position: 'absolute', top: '50%', left: '-10px', width: '20px', height: '40px', backgroundColor: 'white', border: '1px solid #ddd', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}>
-          <span style={{ fontSize: '12px' }}>◀</span>
+
+      {/* Main Container */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+        {/* Toggle Sidebar Button */}
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          title={isSidebarOpen ? "Hide Filter Panel" : "Show Filter Panel"}
+          style={{
+            position: 'absolute',
+            top: '18px',
+            left: '12px',
+            zIndex: 30,
+            width: '28px',
+            height: '28px',
+            borderRadius: '50%',
+            backgroundColor: '#ffffff',
+            border: '1px solid #cbd5e1',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            color: '#0f172a'
+          }}
+        >
+          {isSidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+        </button>
+
+        {/* Top Header */}
+        <div style={{
+          padding: '16px 24px 16px 52px',
+          backgroundColor: '#ffffff',
+          borderBottom: '1px solid #e2e8f0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '16px',
+          flexWrap: 'wrap'
+        }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#0284c7', background: '#e0f2fe', padding: '2px 8px', borderRadius: '4px' }}>
+                Terminal Benefits
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#16a34a', fontWeight: 600, background: '#dcfce7', padding: '2px 8px', borderRadius: '4px' }}>
+                <Sparkles size={12} /> Ayup Tech Compliant
+              </span>
+            </div>
+            <h1 style={{ margin: '4px 0 0 0', fontSize: '20px', fontWeight: 700, color: '#0f172a' }}>
+              Retirement Audit & Final Settlement Report
+            </h1>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              onClick={exportCSV}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                borderRadius: '8px',
+                border: '1px solid #cbd5e1',
+                backgroundColor: '#ffffff',
+                color: '#334155',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Download size={15} /> CSV Export
+            </button>
+            <button
+              onClick={handlePrint}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: '#0f172a',
+                color: '#ffffff',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                boxShadow: '0 4px 10px rgba(15,23,42,0.2)'
+              }}
+            >
+              <Printer size={15} /> Print Audit
+            </button>
+          </div>
+        </div>
+
+        {/* Stat Summary Cards */}
+        <div style={{ padding: '16px 24px 0 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', padding: '14px 18px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Retirees In Audit</span>
+              <div style={{ padding: '6px', borderRadius: '8px', backgroundColor: '#e0f2fe', color: '#0284c7' }}><Users size={16} /></div>
+            </div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#0f172a', marginTop: '6px' }}>
+              {summary.totalRetirees ?? records.length}
+            </div>
+            <div style={{ fontSize: '11px', color: '#0284c7', marginTop: '2px', fontWeight: 500 }}>
+              Ayup Tech Verified Staff
+            </div>
+          </div>
+
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', padding: '14px 18px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Total Gratuity Outflow</span>
+              <div style={{ padding: '6px', borderRadius: '8px', backgroundColor: '#fef3c7', color: '#d97706' }}><IndianRupee size={16} /></div>
+            </div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#d97706', marginTop: '6px' }}>
+              ₹{(summary.totalGratuityOutflow || 0).toLocaleString('en-IN')}
+            </div>
+            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+              Gratuity Act 1972 Sanctioned
+            </div>
+          </div>
+
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', padding: '14px 18px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Monthly Pension Sanction</span>
+              <div style={{ padding: '6px', borderRadius: '8px', backgroundColor: '#dcfce7', color: '#16a34a' }}><Landmark size={16} /></div>
+            </div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#16a34a', marginTop: '6px' }}>
+              ₹{(summary.totalPensionCommitment || 0).toLocaleString('en-IN')}
+            </div>
+            <div style={{ fontSize: '11px', color: '#16a34a', marginTop: '2px', fontWeight: 500 }}>
+              50% of Emoluments Commitment
+            </div>
+          </div>
+
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', padding: '14px 18px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Settlement Clearance</span>
+              <div style={{ padding: '6px', borderRadius: '8px', backgroundColor: '#f1f5f9', color: '#475569' }}><ShieldCheck size={16} /></div>
+            </div>
+            <div style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', marginTop: '6px' }}>
+              {summary.clearanceRatio || '100% Cleared'}
+            </div>
+            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+              {summary.auditStatus || 'CCS Pension Rules Validated'}
+            </div>
+          </div>
+        </div>
+
+        {/* Search & Filter Bar */}
+        <div style={{ padding: '14px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+          <div style={{ position: 'relative', width: '320px' }}>
+            <Search size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+            <input
+              type="text"
+              placeholder="Search staff, emp ID, settlement ref..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 12px 8px 36px',
+                borderRadius: '8px',
+                border: '1px solid #cbd5e1',
+                fontSize: '12px',
+                backgroundColor: '#ffffff',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+          <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>
+            Showing <b>{filteredRecords.length}</b> audit records
+          </div>
+        </div>
+
+        {/* Data Table */}
+        <div style={{ flex: 1, padding: '0 24px 20px 24px', overflowY: 'auto' }}>
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.02)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontWeight: 600 }}>
+                  <th style={{ padding: '12px 14px' }}>#</th>
+                  <th style={{ padding: '12px 14px' }}>Emp ID</th>
+                  <th style={{ padding: '12px 14px' }}>Staff Name</th>
+                  <th style={{ padding: '12px 14px' }}>Department</th>
+                  <th style={{ padding: '12px 14px' }}>Designation</th>
+                  <th style={{ padding: '12px 14px' }}>DOJ</th>
+                  <th style={{ padding: '12px 14px' }}>Retirement Date</th>
+                  <th style={{ padding: '12px 14px' }}>Tenure</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'right' }}>Last Emoluments</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'right' }}>Gratuity Sanctioned</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'right' }}>Pension Sanctioned</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'right' }}>Leave Encashment</th>
+                  <th style={{ padding: '12px 14px' }}>Settlement Ref</th>
+                  <th style={{ padding: '12px 14px' }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRecords.length > 0 ? (
+                  filteredRecords.map((r, idx) => (
+                    <tr
+                      key={r.employeeId || idx}
+                      style={{
+                        borderBottom: '1px solid #f1f5f9',
+                        transition: 'background-color 0.15s',
+                        backgroundColor: idx % 2 === 0 ? '#ffffff' : '#fafafa'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f0f9ff'}
+                      onMouseLeave={e => e.currentTarget.style.backgroundColor = idx % 2 === 0 ? '#ffffff' : '#fafafa'}
+                    >
+                      <td style={{ padding: '11px 14px', color: '#94a3b8' }}>{r.srNo || idx + 1}</td>
+                      <td style={{ padding: '11px 14px', fontWeight: 600, color: '#0284c7' }}>{r.employeeId}</td>
+                      <td style={{ padding: '11px 14px', fontWeight: 600, color: '#0f172a' }}>{r.staffName}</td>
+                      <td style={{ padding: '11px 14px', color: '#475569' }}>{r.department}</td>
+                      <td style={{ padding: '11px 14px', color: '#64748b' }}>{r.designation}</td>
+                      <td style={{ padding: '11px 14px', color: '#64748b' }}>{r.doj}</td>
+                      <td style={{ padding: '11px 14px', fontWeight: 600, color: '#b45309' }}>{r.dateOfRetire}</td>
+                      <td style={{ padding: '11px 14px', color: '#475569' }}>{r.totalServiceYears} Yrs</td>
+                      <td style={{ padding: '11px 14px', textAlign: 'right', fontWeight: 600, color: '#0f172a' }}>
+                        ₹{(r.lastDrawnEmoluments || 0).toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ padding: '11px 14px', textAlign: 'right', fontWeight: 600, color: '#d97706' }}>
+                        ₹{(r.sanctionedGratuity || 0).toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ padding: '11px 14px', textAlign: 'right', fontWeight: 600, color: '#16a34a' }}>
+                        ₹{(r.sanctionedMonthlyPension || 0).toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ padding: '11px 14px', textAlign: 'right', color: '#475569' }}>
+                        ₹{(r.leaveEncashmentSanctioned || 0).toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ padding: '11px 14px', fontFamily: 'monospace', fontSize: '11px', color: '#64748b' }}>
+                        {r.settlementRef}
+                      </td>
+                      <td style={{ padding: '11px 14px' }}>
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '3px 8px',
+                          borderRadius: '12px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          backgroundColor: '#dcfce7',
+                          color: '#15803d'
+                        }}>
+                          <CheckCircle size={11} /> {r.clearanceStatus || 'No Dues Cleared'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={14} style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
+                      {loading ? 'Loading retirement audit records...' : 'No retirement audit records found.'}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

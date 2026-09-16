@@ -6,6 +6,8 @@ import {
   FaSyncAlt, FaFilePdf, FaImage, FaTimes
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminNotices() {
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ export default function WebAdminNotices() {
   const fetchNotices = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/notices');
+      const res = await fetch(`${API_BASE}/api/web-admin/notices`);
       const data = await res.json();
       if (data.success && data.data) {
         setNotices(data.data);
@@ -108,7 +110,7 @@ export default function WebAdminNotices() {
 
     setSaving(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/notices', {
+      const res = await fetch(`${API_BASE}/api/web-admin/notices`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -144,7 +146,7 @@ export default function WebAdminNotices() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this notice?')) return;
     try {
-      const res = await fetch(`http://localhost:5005/api/web-admin/notices/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/notices/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

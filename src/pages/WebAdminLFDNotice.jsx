@@ -3,6 +3,8 @@ import {
   FaDesktop, FaCalendarAlt, FaHeading, FaAlignLeft, FaEye, FaListUl, FaInfoCircle, FaTrash
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminLFDNotice() {
   const [status, setStatus] = useState(true);
   const [showOnFooter, setShowOnFooter] = useState(false);
@@ -25,7 +27,7 @@ export default function WebAdminLFDNotice() {
   const fetchNotices = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/lfd/notices');
+      const res = await fetch(`${API_BASE}/api/web-admin/lfd/notices`);
       const data = await res.json();
       if (data.success) {
         setNotices(data.data);
@@ -60,7 +62,7 @@ export default function WebAdminLFDNotice() {
         showOnFooter
       };
       
-      const res = await fetch('/api/web-admin/lfd/notices', {
+      const res = await fetch(`${API_BASE}/api/web-admin/lfd/notices`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -86,7 +88,7 @@ export default function WebAdminLFDNotice() {
     if (!window.confirm('Are you sure you want to delete this notice?')) return;
     
     try {
-      const res = await fetch(`/api/web-admin/lfd/notices/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/lfd/notices/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

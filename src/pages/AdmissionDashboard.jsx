@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaMale, FaFemale, FaRegBuilding, FaGlobe, FaChevronLeft, FaChevronRight, FaSpinner } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function AdmissionDashboard() {
   // Active Tab for "NEW ADMISSION IN"
   const [admissionDaysTab, setAdmissionDaysTab] = useState('7'); // '7', '15', '30'
@@ -25,7 +27,7 @@ export default function AdmissionDashboard() {
   // Fetch real statistics from Express backend
   const fetchDashboardStats = async () => {
     try {
-      const res = await fetch(`http://localhost:5005/api/dashboard/admission-stats?days=${admissionDaysTab}&standard=${currentClass}`);
+      const res = await fetch(`${API_BASE}/api/dashboard/admission-stats?days=${admissionDaysTab}&standard=${currentClass}`);
       if (res.ok) {
         const data = await res.json();
         setDashboardData(data);

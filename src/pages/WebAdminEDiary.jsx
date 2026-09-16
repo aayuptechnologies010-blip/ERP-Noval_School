@@ -3,6 +3,8 @@ import {
   FaMinusSquare, FaCloudUploadAlt, FaListUl, FaSearch, FaFolderOpen, FaTrash, FaEye, FaDownload, FaCheckCircle, FaTimesCircle
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminEDiary() {
   const [diaries, setDiaries] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -27,7 +29,7 @@ export default function WebAdminEDiary() {
   const fetchEDiaries = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/e-diaries');
+      const res = await fetch(`${API_BASE}/api/web-admin/e-diaries`);
       const data = await res.json();
       if (data.success) {
         setDiaries(data.data || []);
@@ -70,7 +72,7 @@ export default function WebAdminEDiary() {
     setSuccess('');
 
     try {
-      const res = await fetch('/api/web-admin/e-diaries', {
+      const res = await fetch(`${API_BASE}/api/web-admin/e-diaries`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -99,7 +101,7 @@ export default function WebAdminEDiary() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this e-Diary?')) return;
     try {
-      const res = await fetch(`/api/web-admin/e-diaries/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/e-diaries/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

@@ -1,8 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, CreditCard, BadgeDollarSign, GraduationCap } from 'lucide-react';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function SessionTransfer() {
   const [activeModule, setActiveModule] = useState(null);
+  const [academicYears, setAcademicYears] = useState([]);
+  const [financialYears, setFinancialYears] = useState([]);
+  const [currentSession, setCurrentSession] = useState('');
+  const [currentFinancial, setCurrentFinancial] = useState('');
+  const [nextSession, setNextSession] = useState('');
+  const [nextFinancial, setNextFinancial] = useState('');
+
+  const token = localStorage.getItem('token');
+
+  useEffect(() => {
+    const fetchYears = async () => {
+      try {
+        const headers = { 'Authorization': `Bearer ${token}` };
+
+        const [acRes, fyRes] = await Promise.all([
+          fetch(`${API_BASE}/api/academic-years`, { headers }),
+          fetch(`${API_BASE}/api/financial-years`, { headers })
+        ]);
+
+        if (acRes.ok) {
+          const acData = await acRes.json();
+          const years = Array.isArray(acData) ? acData : (acData.data || acData.academicYears || []);
+          setAcademicYears(years);
+          // Set current session to the active one or the first one
+          const active = years.find(y => y.isActive || y.isCurrent);
+          if (active) setCurrentSession(active.year || active.name || active.yearRange || '');
+          else if (years.length > 0) setCurrentSession(years[0].year || years[0].name || years[0].yearRange || '');
+        }
+
+        if (fyRes.ok) {
+          const fyData = await fyRes.json();
+          const years = Array.isArray(fyData) ? fyData : (fyData.data || fyData.financialYears || []);
+          setFinancialYears(years);
+          const active = years.find(y => y.isActive || y.isCurrent);
+          if (active) setCurrentFinancial(active.year || active.name || active.yearRange || '');
+          else if (years.length > 0) setCurrentFinancial(years[0].year || years[0].name || years[0].yearRange || '');
+        }
+      } catch (err) {
+        console.error('Failed to fetch years:', err);
+      }
+    };
+    fetchYears();
+  }, []);
+
+  const getYearLabel = (y) => y.year || y.name || y.yearRange || y.title || `${y.startYear}-${y.endYear}` || 'Unknown';
 
   if (activeModule === 'error') {
     return (
@@ -40,34 +87,44 @@ export default function SessionTransfer() {
         <div className="transfer-filters">
           <div className="filter-group">
             <label>Current Session</label>
-            <select className="transfer-select" defaultValue="2026-2027">
-              <option value="2026-2027">2026-2027</option>
+            <select className="transfer-select" value={currentSession} onChange={(e) => setCurrentSession(e.target.value)}>
+              <option value="">Select</option>
+              {academicYears.map((y, i) => (
+                <option key={i} value={getYearLabel(y)}>{getYearLabel(y)}</option>
+              ))}
             </select>
           </div>
           <div className="filter-group">
             <label>Current Financial Year</label>
-            <select className="transfer-select" defaultValue="2026-2027">
-              <option value="2026-2027">2026-2027</option>
+            <select className="transfer-select" value={currentFinancial} onChange={(e) => setCurrentFinancial(e.target.value)}>
+              <option value="">Select</option>
+              {financialYears.map((y, i) => (
+                <option key={i} value={getYearLabel(y)}>{getYearLabel(y)}</option>
+              ))}
             </select>
           </div>
           <div className="filter-group">
             <label>Next Session</label>
-            <select className="transfer-select" defaultValue="Select">
-              <option value="Select">Select</option>
-              <option value="2027-2028">2027-2028</option>
+            <select className="transfer-select" value={nextSession} onChange={(e) => setNextSession(e.target.value)}>
+              <option value="">Select</option>
+              {academicYears.map((y, i) => (
+                <option key={i} value={getYearLabel(y)}>{getYearLabel(y)}</option>
+              ))}
             </select>
           </div>
           <div className="filter-group">
             <label>Next Financial Year</label>
-            <select className="transfer-select" defaultValue="Select">
-              <option value="Select">Select</option>
-              <option value="2027-2028">2027-2028</option>
+            <select className="transfer-select" value={nextFinancial} onChange={(e) => setNextFinancial(e.target.value)}>
+              <option value="">Select</option>
+              {financialYears.map((y, i) => (
+                <option key={i} value={getYearLabel(y)}>{getYearLabel(y)}</option>
+              ))}
             </select>
           </div>
         </div>
 
         <h3 className="transfer-table-title">Payroll Transfer Table</h3>
-        
+
         <table className="transfer-table">
           <thead>
             <tr>
@@ -78,17 +135,33 @@ export default function SessionTransfer() {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>1</td>
-              <td>Account Advance Relation</td>
-              <td style={{ color: '#d9534f' }}>Record Transferred</td>
-              <td><div className="empty-checkbox-box"></div></td>
-            </tr>
+            {[
+              'Account Advance Relation',
+              'Staff Salary Structure',
+              'Salary Head Assignment',
+              'Salary Group Assignment',
+              'Income Tax Slab Relations',
+              'Pay Scale Assignment',
+              'Insurance Policy Relations'
+            ].map((tableName, idx) => (
+              <tr key={idx}>
+                <td>{idx + 1}</td>
+                <td>{tableName}</td>
+                <td style={{ color: nextSession ? '#5cb85c' : '#d9534f' }}>
+                  {nextSession ? 'Ready to Transfer' : 'Select Next Session'}
+                </td>
+                <td>
+                  <input type="checkbox" disabled={!nextSession} />
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
 
         <div className="transfer-actions">
-          <button className="transfer-next-btn">Next</button>
+          <button className="transfer-next-btn" disabled={!nextSession || !nextFinancial}>
+            Next
+          </button>
         </div>
       </div>
     );
@@ -97,7 +170,7 @@ export default function SessionTransfer() {
   return (
     <div className="session-transfer-container">
       <div className="module-cards-wrapper">
-        
+
         <div className="module-card" onClick={() => setActiveModule('error')}>
           <div className="module-icon">
             <FileText size={48} strokeWidth={1} color="#333" />

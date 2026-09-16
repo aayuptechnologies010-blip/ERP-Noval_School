@@ -20,7 +20,7 @@ function Login() {
     
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/login`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/admin/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,9 +28,19 @@ function Login() {
         body: JSON.stringify({ userId, password }),
       });
 
-      const data = await response.json();
-      console.log('Login Response:', response);
-      console.log('Login Data:', data);
+      const responseText = await response.text();
+      console.log('Login Response Status:', response.status);
+      console.log('Login Response Text:', responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse JSON:', parseError);
+        toast.error(`Server returned invalid response. Status: ${response.status}`);
+        setLoading(false);
+        return;
+      }
 
       if (response.ok) {
         if (data.token) {

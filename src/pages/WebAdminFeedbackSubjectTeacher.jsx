@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaFilter, FaInfoCircle, FaPlus, FaTrash, FaChalkboardTeacher, FaEdit } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminFeedbackSubjectTeacher() {
   const [selectedClass, setSelectedClass] = useState('Class 10');
   const [mappings, setMappings] = useState([]);
@@ -31,7 +33,7 @@ export default function WebAdminFeedbackSubjectTeacher() {
   const fetchMappings = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/web-admin/feedback/subject-teacher?className=${encodeURIComponent(selectedClass)}`);
+      const res = await fetch(`${API_BASE}/api/web-admin/feedback/subject-teacher?className=${encodeURIComponent(selectedClass)}`);
       const data = await res.json();
       if (data.success) {
         const list = (data.data || []).filter(item => !selectedClass || item.className === selectedClass);
@@ -52,7 +54,7 @@ export default function WebAdminFeedbackSubjectTeacher() {
     }
 
     try {
-      const res = await fetch('/api/web-admin/feedback/subject-teacher', {
+      const res = await fetch(`${API_BASE}/api/web-admin/feedback/subject-teacher`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -82,7 +84,7 @@ export default function WebAdminFeedbackSubjectTeacher() {
   const handleDelete = async (id) => {
     if (!window.confirm('Remove this subject-teacher relation?')) return;
     try {
-      const res = await fetch(`/api/web-admin/feedback/subject-teacher/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/feedback/subject-teacher/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

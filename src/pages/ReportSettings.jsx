@@ -1,68 +1,90 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaSave, FaSearch, FaTimes } from "react-icons/fa";
-
-const reportNames = [
-  "Attendance Report Monthly Wise",
-  "Late In Early Out Report",
-  "Attendance Consolidated Report",
-  "LWP Year Wise Report",
-  "Monthly Performance Report",
-  "Staff Wise Daily Attendance Report",
-  "Absent / Missing Attendance Report",
-  "Biometrics Attendance Detail Department Wise",
-  "Monthly Consolidated Biometric Report",
-  "Weekly Attendance Report",
-  "Daily Performance Report",
-  "Attendance Report",
-];
+import { FaSave, FaSearch, FaTimes, FaPlusCircle } from "react-icons/fa";
 
 function ReportSettings() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [formats, setFormats] = useState({});
-  const filteredReports = reportNames.filter((name) =>
-    name.toLowerCase().includes(search.toLowerCase()),
-  );
+
+  // Fetch reports from API
+  const fetchReports = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/report-layout-settings`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setReports(data);
+        
+        // Initialize formats state from backend data
+        const initialFormats = {};
+        data.forEach(r => {
+          if(r.format) initialFormats[r._id] = r.format;
+        });
+        setFormats(initialFormats);
+      }
+    } catch (error) {
+      console.error("Error fetching report settings:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReports();
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const updatePromises = reports.map(report => {
+        const selectedFormat = formats[report._id];
+        if (selectedFormat && selectedFormat !== report.format) {
+          return fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/report-layout-settings/${report._id}`, {
+            method: "PUT",
+            headers: { 
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ format: selectedFormat })
+          });
+        }
+        return Promise.resolve();
+      });
+
+      await Promise.all(updatePromises);
+      alert("Report Settings saved successfully!");
+      fetchReports();
+    } catch (error) {
+      console.error("Error saving report settings:", error);
+      alert("Error saving settings");
+    }
+  };
+
+  const filteredReports = reports.filter(r => r.reportName?.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <section className="holiday-page report-settings-page">
       <div className="holiday-tabs">
-        <div className="holiday-tab previous-tab">
+        <div className="holiday-tab previous-tab" onClick={() => navigate("/attendance/define-holiday")}>
           <span>Define Holiday</span>
-          <button
-            onClick={() => navigate("/attendance/define-holiday")}
-            aria-label="Open Define Holiday"
-          >
-            <FaTimes />
-          </button>
+          <button onClick={(e) => { e.stopPropagation(); navigate("/attendance/define-holiday"); }} aria-label="Open Define Holiday"><FaTimes /></button>
         </div>
-        <div className="holiday-tab previous-tab">
+        <div className="holiday-tab previous-tab" onClick={() => navigate("/attendance/define-leave")}>
           <span>Define Leave</span>
-          <button
-            onClick={() => navigate("/attendance/define-leave")}
-            aria-label="Open Define Leave"
-          >
-            <FaTimes />
-          </button>
+          <button onClick={(e) => { e.stopPropagation(); navigate("/attendance/define-leave"); }} aria-label="Open Define Leave"><FaTimes /></button>
         </div>
-        <div className="holiday-tab previous-tab">
+        <div className="holiday-tab previous-tab" onClick={() => navigate("/attendance/define-shift-master")}>
           <span>Define Shift Master</span>
-          <button
-            onClick={() => navigate("/attendance/define-shift-master")}
-            aria-label="Open Define Shift Master"
-          >
-            <FaTimes />
-          </button>
+          <button onClick={(e) => { e.stopPropagation(); navigate("/attendance/define-shift-master"); }} aria-label="Open Define Shift Master"><FaTimes /></button>
         </div>
         <div className="holiday-tab current-tab">
           <span>Report Settings</span>
-          <button
-            onClick={() => navigate("/attendance")}
-            aria-label="Close Report Settings"
-          >
-            <FaTimes />
-          </button>
+          <button onClick={() => navigate("/attendance")} aria-label="Close Report Settings"><FaTimes /></button>
         </div>
       </div>
 
@@ -72,55 +94,46 @@ function ReportSettings() {
           <strong>Search:</strong>
           <span>
             <FaSearch />
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              aria-label="Search reports"
-            />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search reports" />
           </span>
         </label>
         <table className="report-settings-table">
           <thead>
             <tr>
-              <th>
-                SN. <span>▲</span>
-              </th>
-              <th>
-                Report Name <span>◆</span>
-              </th>
-              <th>
-                Format <span>◆</span>
-              </th>
+              <th>SN. <span>▲</span></th>
+              <th>Report Name <span>◆</span></th>
+              <th>Format <span>◆</span></th>
             </tr>
           </thead>
           <tbody>
-            {filteredReports.map((report, index) => (
-              <tr key={report}>
-                <td>{index + 1}</td>
-                <td>{report}</td>
-                <td>
-                  <select
-                    value={formats[report] || ""}
-                    onChange={(event) =>
-                      setFormats({ ...formats, [report]: event.target.value })
-                    }
-                    aria-label={`${report} format`}
-                  >
-                    <option value="">Select</option>
-                    <option value="Format 1">Format 1</option>
-                    <option value="Format 2">Format 2</option>
-                  </select>
-                </td>
-              </tr>
-            ))}
+            {loading ? (
+              <tr><td colSpan="3">Loading...</td></tr>
+            ) : filteredReports.length === 0 ? (
+              <tr><td colSpan="3">No data available</td></tr>
+            ) : (
+              filteredReports.map((report, index) => (
+                <tr key={report._id}>
+                  <td>{index + 1}</td>
+                  <td>{report.reportName}</td>
+                  <td>
+                    <select
+                      value={formats[report._id] || ""}
+                      onChange={(e) => setFormats({ ...formats, [report._id]: e.target.value })}
+                      aria-label={`${report.reportName} format`}
+                    >
+                      <option value="">Select</option>
+                      <option value="Format 1">Format 1</option>
+                      <option value="Format 2">Format 2</option>
+                    </select>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
         <div className="report-settings-footer">
-          <span>
-            Showing 1 to {filteredReports.length} of {filteredReports.length}{" "}
-            entries
-          </span>
-          <button type="button" aria-label="Save report settings">
+          <span>Showing {filteredReports.length > 0 ? 1 : 0} to {filteredReports.length} of {filteredReports.length} entries</span>
+          <button type="button" onClick={handleSave} aria-label="Save report settings">
             <FaSave /> Save
           </button>
         </div>

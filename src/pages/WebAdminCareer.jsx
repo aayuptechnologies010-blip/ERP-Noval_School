@@ -6,6 +6,8 @@ import {
   FaLink, FaImage, FaCaretDown, FaTrash
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminCareer() {
   const [status, setStatus] = useState(true);
   const [careers, setCareers] = useState([]);
@@ -36,7 +38,7 @@ export default function WebAdminCareer() {
   const fetchCareers = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/career');
+      const res = await fetch(`${API_BASE}/api/web-admin/career`);
       const data = await res.json();
       if (data.success) {
         setCareers(data.data);
@@ -79,7 +81,7 @@ export default function WebAdminCareer() {
         status: status ? 'Active' : 'Inactive'
       };
       
-      const res = await fetch('/api/web-admin/career', {
+      const res = await fetch(`${API_BASE}/api/web-admin/career`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -105,7 +107,7 @@ export default function WebAdminCareer() {
     if (!window.confirm('Are you sure you want to delete this career?')) return;
     
     try {
-      const res = await fetch(`/api/web-admin/career/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/career/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

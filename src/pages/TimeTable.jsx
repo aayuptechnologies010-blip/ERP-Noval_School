@@ -1301,7 +1301,13 @@ function TimetableDashboardView({
     presentToday: 0,
     absentToday: 0,
     majorSubjects: 0,
-    minorSubjects: 0
+    minorSubjects: 0,
+    totalWings: 4,
+    totalClasses: 0,
+    classList: [],
+    wingWiseTeachers: [],
+    teacherWorkload: [],
+    topSubstitutions: []
   });
 
   useEffect(() => {
@@ -1322,22 +1328,16 @@ function TimetableDashboardView({
     fetchStats();
   }, []);
 
-  const classOptions = [
-    "Select Class",
-    "NUR-A", "NUR-B", "LKG-A", "LKG-B", "UKG-A", "UKG-B", "UKG-C",
-    "1-A", "1-B", "1-C", "2-A", "2-B", "2-C", "3-A", "3-B", "3-C",
-    "4-A", "4-B", "4-C", "5-A", "5-B", "5-C", "6-A", "6-B", "6-C",
-    "7-A", "7-B", "7-C", "8-A", "8-B", "8-C", "9-A", "9-B", "9-C", "9-D",
-    "10-A", "10-B", "10-C", "10-D", "10-E", "11-A", "11-B", "11-C", "11-D",
-    "12-A", "12-B", "12-C", "12-D"
-  ];
-
-  const wingData = [
-    { name: "Kindergarten", value: 33, color: "#ff6b6b" },
-    { name: "Primary", value: 30, color: "#00b4d8" },
-    { name: "Middle", value: 7, color: "#ff7a85" },
-    { name: "Higher", value: 30, color: "#0096c7" }
-  ];
+  const classOptions = ["Select Class", ...(stats.classList || [])];
+  
+  const wingData = (stats.wingWiseTeachers && stats.wingWiseTeachers.length > 0) 
+    ? stats.wingWiseTeachers 
+    : [
+        { name: "Kindergarten", value: 33, color: "#ff6b6b" },
+        { name: "Primary", value: 30, color: "#00b4d8" },
+        { name: "Middle", value: 7, color: "#ff7a85" },
+        { name: "Higher", value: 30, color: "#0096c7" }
+      ];
 
   const yTicks = ["1.0", "0.9", "0.8", "0.7", "0.6", "0.5", "0.4", "0.3", "0.2", "0.1", "0"];
 
@@ -1449,7 +1449,7 @@ function TimetableDashboardView({
                 </svg>
                 <span className="font-medium text-gray-600">Total Wings</span>
               </div>
-              <span className="font-bold text-gray-900 text-sm">4</span>
+              <span className="font-bold text-gray-900 text-sm">{stats.totalWings}</span>
             </div>
             <div className="flex items-center justify-between text-xs text-gray-700">
               <div className="flex items-center gap-2.5">
@@ -1458,7 +1458,7 @@ function TimetableDashboardView({
                 </svg>
                 <span className="font-medium text-gray-600">Total Classes</span>
               </div>
-              <span className="font-bold text-gray-900 text-sm">51</span>
+              <span className="font-bold text-gray-900 text-sm">{stats.totalClasses}</span>
             </div>
           </div>
         </div>
@@ -1599,6 +1599,53 @@ function TimetableDashboardView({
               >
                 TEACHERS
               </text>
+              
+              {/* Dynamic Bars and Teacher Names */}
+              {stats.teacherWorkload && stats.teacherWorkload.map((t, idx) => {
+                 const barWidth = 14;
+                 const gap = 34;
+                 const xStart = 85 + (idx * gap);
+                 const totalPeriodsMax = 60; // Max periods for y-scale
+                 
+                 // Calculate scaled heights (Max y is 20, Min y is 200, so height is 180)
+                 const periodHeight = Math.min((t.periodsAllocated / totalPeriodsMax) * 180, 180);
+                 const subHeight = Math.min((t.substitutionAllocated / totalPeriodsMax) * 180, 180);
+                 
+                 return (
+                   <g key={idx}>
+                     {/* Period Alloted Bar */}
+                     <rect 
+                        x={xStart} 
+                        y={200 - periodHeight} 
+                        width={barWidth} 
+                        height={periodHeight} 
+                        fill="#ff6b6b" 
+                        rx="2"
+                     />
+                     {/* Substitution Alloted Bar */}
+                     <rect 
+                        x={xStart + barWidth + 2} 
+                        y={200 - subHeight} 
+                        width={barWidth} 
+                        height={subHeight} 
+                        fill="#00a2db" 
+                        rx="2"
+                     />
+                     {/* Teacher Name (Rotated) */}
+                     <text
+                       x={xStart + barWidth}
+                       y="212"
+                       transform={`rotate(-45, ${xStart + barWidth}, 212)`}
+                       textAnchor="end"
+                       fill="#64748b"
+                       fontSize="9"
+                       fontFamily="sans-serif"
+                     >
+                       {t.teacher.substring(0, 10)}
+                     </text>
+                   </g>
+                 );
+              })}
             </svg>
           </div>
         </div>
@@ -1610,22 +1657,12 @@ function TimetableDashboardView({
               WING WISE TEACHERS DETAIL
             </h3>
             <div className="flex flex-col gap-1.5 text-[11px] text-gray-700">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-2xs bg-[#ff6b6b] inline-block"></span>
-                <span>Kindergarten</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-2xs bg-[#00a2db] inline-block"></span>
-                <span>Primary</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-2xs bg-[#ff7675] inline-block"></span>
-                <span>Middle</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-2xs bg-[#00a2db] inline-block"></span>
-                <span>Higher</span>
-              </div>
+              {wingData.map((w, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-2xs inline-block" style={{ backgroundColor: w.color }}></span>
+                  <span>{w.name}</span>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -1634,92 +1671,43 @@ function TimetableDashboardView({
             <svg viewBox="0 0 380 270" className="w-full max-w-[380px] h-[255px] select-none overflow-visible">
               {/* Rotating Donut Ring Group */}
               <g className="animate-donut-spin">
-                {/* 1. Kindergarten (Coral 33%) 0° to 118.8° */}
-                <path
-                  d={(() => {
-                    const toRad = (d) => ((d - 90) * Math.PI) / 180;
-                    const s = toRad(0);
-                    const e = toRad(118.8);
-                    const x1 = 190 + 92 * Math.cos(s);
-                    const y1 = 135 + 92 * Math.sin(s);
-                    const x2 = 190 + 92 * Math.cos(e);
-                    const y2 = 135 + 92 * Math.sin(e);
-                    const x3 = 190 + 52 * Math.cos(e);
-                    const y3 = 135 + 52 * Math.sin(e);
-                    const x4 = 190 + 52 * Math.cos(s);
-                    const y4 = 135 + 52 * Math.sin(s);
-                    return `M ${x1} ${y1} A 92 92 0 0 1 ${x2} ${y2} L ${x3} ${y3} A 52 52 0 0 0 ${x4} ${y4} Z`;
-                  })()}
-                  fill="#ff6b6b"
-                  stroke="#ffffff"
-                  strokeWidth="2.5"
-                />
-
-                {/* 2. Primary (Bottom Blue 30%) 118.8° to 226.8° */}
-                <path
-                  d={(() => {
-                    const toRad = (d) => ((d - 90) * Math.PI) / 180;
-                    const s = toRad(118.8);
-                    const e = toRad(226.8);
-                    const x1 = 190 + 92 * Math.cos(s);
-                    const y1 = 135 + 92 * Math.sin(s);
-                    const x2 = 190 + 92 * Math.cos(e);
-                    const y2 = 135 + 92 * Math.sin(e);
-                    const x3 = 190 + 52 * Math.cos(e);
-                    const y3 = 135 + 52 * Math.sin(e);
-                    const x4 = 190 + 52 * Math.cos(s);
-                    const y4 = 135 + 52 * Math.sin(s);
-                    return `M ${x1} ${y1} A 92 92 0 0 1 ${x2} ${y2} L ${x3} ${y3} A 52 52 0 0 0 ${x4} ${y4} Z`;
-                  })()}
-                  fill="#00a2db"
-                  stroke="#ffffff"
-                  strokeWidth="2.5"
-                />
-
-                {/* 3. Middle (Coral 7%) 226.8° to 252° */}
-                <path
-                  d={(() => {
-                    const toRad = (d) => ((d - 90) * Math.PI) / 180;
-                    const s = toRad(226.8);
-                    const e = toRad(252);
-                    const x1 = 190 + 92 * Math.cos(s);
-                    const y1 = 135 + 92 * Math.sin(s);
-                    const x2 = 190 + 92 * Math.cos(e);
-                    const y2 = 135 + 92 * Math.sin(e);
-                    const x3 = 190 + 52 * Math.cos(e);
-                    const y3 = 135 + 52 * Math.sin(e);
-                    const x4 = 190 + 52 * Math.cos(s);
-                    const y4 = 135 + 52 * Math.sin(s);
-                    return `M ${x1} ${y1} A 92 92 0 0 1 ${x2} ${y2} L ${x3} ${y3} A 52 52 0 0 0 ${x4} ${y4} Z`;
-                  })()}
-                  fill="#ff7675"
-                  stroke="#ffffff"
-                  strokeWidth="2.5"
-                />
-
-                {/* 4. Higher (Top-Left Blue 30%) 252° to 360° */}
-                <path
-                  d={(() => {
-                    const toRad = (d) => ((d - 90) * Math.PI) / 180;
-                    const s = toRad(252);
-                    const e = toRad(360);
-                    const x1 = 190 + 92 * Math.cos(s);
-                    const y1 = 135 + 92 * Math.sin(s);
-                    const x2 = 190 + 92 * Math.cos(e);
-                    const y2 = 135 + 92 * Math.sin(e);
-                    const x3 = 190 + 52 * Math.cos(e);
-                    const y3 = 135 + 52 * Math.sin(e);
-                    const x4 = 190 + 52 * Math.cos(s);
-                    const y4 = 135 + 52 * Math.sin(s);
-                    return `M ${x1} ${y1} A 92 92 0 0 1 ${x2} ${y2} L ${x3} ${y3} A 52 52 0 0 0 ${x4} ${y4} Z`;
-                  })()}
-                  fill="#00a2db"
-                  stroke="#ffffff"
-                  strokeWidth="2.5"
-                />
+                {wingData.map((wing, index) => {
+                   const total = wingData.reduce((acc, curr) => acc + curr.value, 0) || 1;
+                   let prevTotal = 0;
+                   for(let i = 0; i < index; i++) prevTotal += wingData[i].value;
+                   
+                   const startAngle = (prevTotal / total) * 360;
+                   const endAngle = ((prevTotal + wing.value) / total) * 360;
+                   
+                   const toRad = (d) => ((d - 90) * Math.PI) / 180;
+                   const s = toRad(startAngle);
+                   const e = toRad(endAngle - 0.5); // 0.5 degree gap
+                   
+                   const x1 = 190 + 92 * Math.cos(s);
+                   const y1 = 135 + 92 * Math.sin(s);
+                   const x2 = 190 + 92 * Math.cos(e);
+                   const y2 = 135 + 92 * Math.sin(e);
+                   const x3 = 190 + 52 * Math.cos(e);
+                   const y3 = 135 + 52 * Math.sin(e);
+                   const x4 = 190 + 52 * Math.cos(s);
+                   const y4 = 135 + 52 * Math.sin(s);
+                   
+                   // Check if arc is > 180 degrees
+                   const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
+                   
+                   return (
+                     <path
+                       key={index}
+                       d={`M ${x1} ${y1} A 92 92 0 ${largeArcFlag} 1 ${x2} ${y2} L ${x3} ${y3} A 52 52 0 ${largeArcFlag} 0 ${x4} ${y4} Z`}
+                       fill={wing.color}
+                       stroke="#ffffff"
+                       strokeWidth="2.5"
+                     />
+                   );
+                })}
               </g>
 
-              {/* Center White Hole & 81 Counter with Pop-in Animation */}
+              {/* Center White Hole & Total Counter with Pop-in Animation */}
               <g className="animate-center-pop">
                 <circle cx="190" cy="135" r="51" fill="#ffffff" />
                 <text
@@ -1729,34 +1717,7 @@ function TimetableDashboardView({
                   fill="#000000"
                   style={{ fontSize: "64px", fontWeight: "900", fontFamily: "sans-serif" }}
                 >
-                  81
-                </text>
-              </g>
-
-              {/* Leader Lines and Percentages with Fade-in Animation */}
-              <g className="animate-leader-lines">
-                {/* Leader Line 1: Kindergarten (33%) */}
-                <line x1="272" y1="102" x2="298" y2="90" stroke="#ff7675" strokeWidth="0.9" />
-                <text x="303" y="94" fill="#000000" fontSize="14" fontWeight="600" fontFamily="sans-serif">
-                  33%
-                </text>
-
-                {/* Leader Line 2: Primary (30%) */}
-                <line x1="198" y1="228" x2="198" y2="246" stroke="#00a2db" strokeWidth="0.9" />
-                <text x="198" y="262" textAnchor="middle" fill="#000000" fontSize="14" fontWeight="600" fontFamily="sans-serif">
-                  30%
-                </text>
-
-                {/* Leader Line 3: Middle (7%) */}
-                <line x1="110" y1="193" x2="90" y2="205" stroke="#ff7675" strokeWidth="0.9" />
-                <text x="84" y="209" textAnchor="end" fill="#000000" fontSize="14" fontWeight="600" fontFamily="sans-serif">
-                  7%
-                </text>
-
-                {/* Leader Line 4: Higher (30%) */}
-                <line x1="112" y1="82" x2="92" y2="68" stroke="#00a2db" strokeWidth="0.9" />
-                <text x="86" y="72" textAnchor="end" fill="#000000" fontSize="14" fontWeight="600" fontFamily="sans-serif">
-                  30%
+                  {stats.totalTeachers}
                 </text>
               </g>
             </svg>
@@ -1865,6 +1826,60 @@ function TimetableGlobalSettingView({ showToast }) {
   const [showClassWisePeriodTime, setShowClassWisePeriodTime] = useState(false);
   const [isDeleteWithYesNo, setIsDeleteWithYesNo] = useState(true);
 
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/global-settings`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data) {
+            setStaffType(data.staffType || "All (13)");
+            setDayCriteria(data.dayCriteria || "weekday");
+            setPeriodStartWith(data.periodStartWith || "");
+            setValidateBusyCondition(data.validateBusyCondition || false);
+            setShowClassWisePeriodTime(data.showClassWisePeriodTime || false);
+            setIsDeleteWithYesNo(data.isDeleteWithYesNo !== false);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const handleUpdate = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/global-settings`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          staffType,
+          dayCriteria,
+          periodStartWith,
+          validateBusyCondition,
+          showClassWisePeriodTime,
+          isDeleteWithYesNo
+        })
+      });
+      if (res.ok) {
+        showToast("Timetable Global Settings Updated Successfully!");
+      } else {
+        showToast("Failed to update settings");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error updating settings");
+    }
+  };
+
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-6 shadow-xs">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6">
@@ -1968,7 +1983,7 @@ function TimetableGlobalSettingView({ showToast }) {
           <div className="pt-4 flex justify-end">
             <button
               type="button"
-              onClick={() => showToast("Timetable Global Settings Updated Successfully!")}
+              onClick={handleUpdate}
               className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-5 py-1.5 rounded text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs transition"
             >
               <FaSyncAlt className="text-xs" />
@@ -1985,49 +2000,63 @@ function TimetableGlobalSettingView({ showToast }) {
 // 2. TEACHER SETTING VIEW
 // =========================================================================
 function TeacherSettingView({ showToast }) {
-  const initialTeachers = [
-    { sno: 1, name: "AJEET SINGH", gender: "Male", shortName: "A SINGH", periods: "48", checked: false },
-    { sno: 2, name: "AKANKSHA PANDEY", gender: "Female", shortName: "A PANDEY", periods: "48", checked: false },
-    { sno: 3, name: "AKHILESH MISHRA", gender: "Male", shortName: "", periods: "48", checked: false },
-    { sno: 4, name: "ALFIYA BANO", gender: "Female", shortName: "", periods: "48", checked: false },
-    { sno: 5, name: "AMIT DUBEY", gender: "Male", shortName: "A DUBEY", periods: "48", checked: false },
-    { sno: 6, name: "ANKIT KUMAR", gender: "Male", shortName: "A KUMAR", periods: "48", checked: false },
-    { sno: 7, name: "ANSHIKA", gender: "Female", shortName: "", periods: "48", checked: false },
-    { sno: 8, name: "ARCHANA YADAV", gender: "Female", shortName: "", periods: "48", checked: false },
-    { sno: 9, name: "ARPANA UPADHYAY", gender: "Female", shortName: "A UPADHYAY", periods: "48", checked: false },
-    { sno: 10, name: "ASHISH KUMAR", gender: "Male", shortName: "A KUMAR", periods: "48", checked: false },
-    { sno: 11, name: "AVANEESH KUMAR RAI", gender: "Male", shortName: "A K RAI", periods: "48", checked: false },
-    { sno: 12, name: "DEEPA GUPTA", gender: "Female", shortName: "", periods: "48", checked: false },
-    { sno: 13, name: "GOLENDRA SINGH", gender: "Male", shortName: "G SINGH", periods: "48", checked: false },
-    { sno: 14, name: "KIRAN YADAV", gender: "Female", shortName: "K YADAV", periods: "48", checked: false },
-    { sno: 15, name: "MOHAMMAD MOZAHID", gender: "Male", shortName: "", periods: "48", checked: false },
-    { sno: 16, name: "MUKESH KUMAR", gender: "Male", shortName: "M KUMAR", periods: "48", checked: false },
-    { sno: 17, name: "NEELAM SINGH", gender: "Female", shortName: "N SINGH", periods: "48", checked: false },
-    { sno: 18, name: "NITESH TIWARI", gender: "Male", shortName: "N TIWARI", periods: "48", checked: false },
-    { sno: 19, name: "POOJA SHARMA", gender: "Female", shortName: "P SHARMA", periods: "48", checked: false },
-    { sno: 20, name: "PRADEEP KUMAR", gender: "Male", shortName: "P KUMAR", periods: "48", checked: false },
-    { sno: 21, name: "PRIYA TRIPATHI", gender: "Female", shortName: "P TRIPATHI", periods: "48", checked: false },
-    { sno: 22, name: "RAJESH KUMAR", gender: "Male", shortName: "R KUMAR", periods: "48", checked: false },
-    { sno: 23, name: "RAMESH CHANDRA", gender: "Male", shortName: "R CHANDRA", periods: "48", checked: false },
-    { sno: 24, name: "RINKU VERMA", gender: "Female", shortName: "R VERMA", periods: "48", checked: false },
-    { sno: 25, name: "SANJAY GUPTA", gender: "Male", shortName: "S GUPTA", periods: "48", checked: false },
-    { sno: 26, name: "SATYAM SINGH", gender: "Male", shortName: "", periods: "48", checked: false },
-    { sno: 27, name: "SEEMA GIRI", gender: "Female", shortName: "S GIRI", periods: "48", checked: false },
-    { sno: 28, name: "SHAMA PARVEEN", gender: "Female", shortName: "S PARVEEN", periods: "48", checked: false },
-    { sno: 29, name: "SHIKHA OJHA", gender: "Female", shortName: "", periods: "48", checked: false },
-    { sno: 30, name: "SIMRAN GUPTA", gender: "Female", shortName: "", periods: "48", checked: false },
-    { sno: 31, name: "SONIYA SINGH", gender: "Female", shortName: "S SINGH", periods: "48", checked: false },
-    { sno: 32, name: "SUNITA", gender: "Female", shortName: "", periods: "48", checked: false },
-    { sno: 33, name: "SUSHIL KUMAR YADAV", gender: "Male", shortName: "S K YADAV", periods: "48", checked: false },
-    { sno: 34, name: "VASIM AHMAD", gender: "Male", shortName: "V AHMAD", periods: "48", checked: false },
-    { sno: 35, name: "VISHAKHA THAMI", gender: "Female", shortName: "", periods: "48", checked: false },
-    { sno: 36, name: "VISHAL SONAR", gender: "Male", shortName: "", periods: "48", checked: false },
-    { sno: 37, name: "VIVEKANAND TIWARI", gender: "Male", shortName: "V TIWARI", periods: "48", checked: false },
-    { sno: 38, name: "WASEEM FIROJ", gender: "Male", shortName: "W FIROJ", periods: "48", checked: false },
-  ];
 
-  const [teacherList, setTeacherList] = useState(initialTeachers);
+  const [teacherList, setTeacherList] = useState([]);
   const [selectedRow, setSelectedRow] = useState(null);
+
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        
+        const staffRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/staffs?limit=100`, { headers: { Authorization: `Bearer ${token}` } });
+        let allStaffs = [];
+        if (staffRes.ok) {
+          const staffData = await staffRes.json();
+          allStaffs = Array.isArray(staffData) ? staffData : (staffData.data || []);
+        }
+
+        const settingsRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/teacher-settings`, { headers: { Authorization: `Bearer ${token}` } });
+        let settingsData = [];
+        if (settingsRes.ok) {
+          settingsData = await settingsRes.json();
+        }
+        
+        const merged = allStaffs.map((staff, index) => {
+          const setting = settingsData.find(s => s.staff?._id === staff._id || s.staff === staff._id);
+          return {
+            sno: index + 1,
+            _id: staff._id,
+            name: `${staff.firstName || ''} ${staff.lastName || ''}`.trim(),
+            gender: staff.gender || "Male",
+            shortName: setting ? setting.shortName : "",
+            periods: setting ? setting.maxPeriodsPerWeek : 48,
+            checked: false
+          };
+        });
+        setTeacherList(merged);
+      } catch (err) { console.error(err); }
+    };
+    fetchTeachers();
+  }, []);
+
+  const handleUpdate = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const promises = teacherList.map(t => {
+        return fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/teacher-settings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ staff: t._id, shortName: t.shortName, maxPeriodsPerWeek: Number(t.periods) || 0 })
+        });
+      });
+      await Promise.all(promises);
+      showToast("Teacher Settings Updated Successfully!");
+    } catch(err) {
+      console.error(err);
+      showToast("Error updating teacher settings");
+    }
+  };
 
   const handleShortNameChange = (sno, val) => {
     setTeacherList((prev) =>
@@ -2101,7 +2130,7 @@ function TeacherSettingView({ showToast }) {
       <div className="pt-2 flex justify-center">
         <button
           type="button"
-          onClick={() => showToast("Teacher Settings Updated Successfully!")}
+          onClick={handleUpdate}
           className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-6 py-1.5 rounded text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs transition"
         >
           <FaSyncAlt className="text-xs" />
@@ -2116,68 +2145,85 @@ function TeacherSettingView({ showToast }) {
 // 3. CLASS SETTING VIEW
 // =========================================================================
 function ClassSettingView({ showToast }) {
-  const initialClassRows = [
-    { sno: 1, class: "NUR", section: "A", wing: "Kindergarten" },
-    { sno: 2, class: "NUR", section: "B", wing: "Kindergarten" },
-    { sno: 3, class: "LKG", section: "A", wing: "Kindergarten" },
-    { sno: 4, class: "LKG", section: "B", wing: "Kindergarten" },
-    { sno: 5, class: "UKG", section: "A", wing: "Kindergarten" },
-    { sno: 6, class: "UKG", section: "B", wing: "Kindergarten" },
-    { sno: 7, class: "UKG", section: "C", wing: "Kindergarten" },
-    { sno: 8, class: "1", section: "A", wing: "Kindergarten" },
-    { sno: 9, class: "1", section: "B", wing: "Kindergarten" },
-    { sno: 10, class: "1", section: "C", wing: "Kindergarten" },
-    { sno: 11, class: "2", section: "A", wing: "Kindergarten" },
-    { sno: 12, class: "2", section: "B", wing: "Kindergarten" },
-    { sno: 13, class: "2", section: "C", wing: "Kindergarten" },
-    { sno: 14, class: "3", section: "A", wing: "Primary" },
-    { sno: 15, class: "3", section: "B", wing: "Primary" },
-    { sno: 16, class: "3", section: "C", wing: "Primary" },
-    { sno: 17, class: "4", section: "A", wing: "Primary" },
-    { sno: 18, class: "4", section: "B", wing: "Primary" },
-    { sno: 19, class: "4", section: "C", wing: "Primary" },
-    { sno: 20, class: "5", section: "A", wing: "Primary" },
-    { sno: 21, class: "5", section: "B", wing: "Primary" },
-    { sno: 22, class: "5", section: "C", wing: "Primary" },
-    { sno: 23, class: "6", section: "A", wing: "Middle" },
-    { sno: 24, class: "6", section: "B", wing: "Middle" },
-    { sno: 25, class: "6", section: "C", wing: "Middle" },
-    { sno: 26, class: "7", section: "A", wing: "Middle" },
-    { sno: 27, class: "7", section: "B", wing: "Middle" },
-    { sno: 28, class: "7", section: "C", wing: "Middle" },
-    { sno: 29, class: "8", section: "A", wing: "Middle" },
-    { sno: 30, class: "8", section: "B", wing: "Middle" },
-    { sno: 31, class: "8", section: "C", wing: "Middle" },
-    { sno: 32, class: "9", section: "A", wing: "Higher" },
-    { sno: 33, class: "9", section: "B", wing: "Higher" },
-    { sno: 34, class: "9", section: "C", wing: "Higher" },
-    { sno: 35, class: "9", section: "D", wing: "Higher" },
-    { sno: 36, class: "10", section: "A", wing: "Higher" },
-    { sno: 37, class: "10", section: "B", wing: "Higher" },
-    { sno: 38, class: "10", section: "C", wing: "Higher" },
-    { sno: 39, class: "10", section: "D", wing: "Higher" },
-    { sno: 40, class: "10", section: "E", wing: "Higher" },
-    { sno: 41, class: "10", section: "D", wing: "Kindergarten" },
-    { sno: 42, class: "11", section: "A", wing: "Higher" },
-    { sno: 43, class: "11", section: "B", wing: "Higher" },
-    { sno: 44, class: "11", section: "C", wing: "Higher" },
-    { sno: 45, class: "11", section: "D", wing: "Higher" },
-    { sno: 46, class: "11", section: "E", wing: "Higher" },
-    { sno: 47, class: "11", section: "F", wing: "Higher" },
-    { sno: 48, class: "12", section: "A", wing: "Higher" },
-    { sno: 49, class: "12", section: "B", wing: "Higher" },
-    { sno: 50, class: "12", section: "C", wing: "Higher" },
-    { sno: 51, class: "12", section: "D", wing: "Higher" },
-  ].map((c) => ({
-    ...c,
-    workingDays: "",
-    periodsPerDay: "",
-    recess1: "",
-    recess2: "",
-  }));
 
-  const [classList, setClassList] = useState(initialClassRows);
+  const [classList, setClassList] = useState([]);
   const [selectedClassRow, setSelectedClassRow] = useState(null);
+
+  useEffect(() => {
+    const fetchClassSettings = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        
+        // Fetch classes
+        const classesRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/school-classes`, { headers: { Authorization: `Bearer ${token}` } });
+        let classesData = [];
+        if (classesRes.ok) {
+          const classJson = await classesRes.json();
+          classesData = Array.isArray(classJson) ? classJson : (classJson.data || []);
+        }
+
+        // Fetch settings
+        const settingsRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/class-settings`, { headers: { Authorization: `Bearer ${token}` } });
+        let settingsData = [];
+        if (settingsRes.ok) {
+          settingsData = await settingsRes.json();
+        }
+        
+        let merged = [];
+        let sno = 1;
+        
+        for (const cls of classesData) {
+          const sections = cls.sections || [];
+          for (const sec of sections) {
+            const secId = sec.section || sec._id;
+            const setting = settingsData.find(s => 
+              (s.class?._id === cls._id || s.class === cls._id) && 
+              (s.section?._id === secId || s.section === secId)
+            );
+            merged.push({
+              sno: sno++,
+              _id: cls._id,
+              sectionId: secId,
+              class: cls.className,
+              section: sec.sectionName || sec.name || "A",
+              wing: "General",
+              workingDays: setting ? setting.weekPeriods : "",
+              periodsPerDay: setting ? setting.periodsPerDay : "",
+              recess1: setting ? setting.recess1 : "",
+              recess2: setting ? setting.recess2 : ""
+            });
+          }
+        }
+        setClassList(merged);
+      } catch (err) { console.error(err); }
+    };
+    fetchClassSettings();
+  }, []);
+
+  const handleUpdate = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const promises = classList.map(c => {
+        return fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/class-settings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ 
+            class: c._id, 
+            section: c.sectionId, 
+            weekPeriods: Number(c.workingDays) || 0,
+            periodsPerDay: Number(c.periodsPerDay) || 0,
+            recess1: Number(c.recess1) || 0,
+            recess2: Number(c.recess2) || 0
+          })
+        });
+      });
+      await Promise.all(promises);
+      showToast("Class Settings Updated Successfully!");
+    } catch(err) {
+      console.error(err);
+      showToast("Error updating class settings");
+    }
+  };
 
   const handleInputChange = (sno, field, val) => {
     setClassList((prev) =>
@@ -2302,7 +2348,7 @@ function ClassSettingView({ showToast }) {
       <div className="pt-2 flex justify-center">
         <button
           type="button"
-          onClick={() => showToast("Class Settings Updated Successfully!")}
+          onClick={handleUpdate}
           className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-6 py-1.5 rounded text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs transition"
         >
           <FaSyncAlt className="text-xs" />
@@ -2422,7 +2468,31 @@ const all102Subjects = [
 ];
 
 function DefineSubjectView({ showToast }) {
-  const [subjects, setSubjects] = useState(all102Subjects);
+  const [subjects, setSubjects] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchSubjects = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/subjects`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSubjects(data.map((item, index) => ({ ...item, sno: index + 1 })));
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to fetch subjects");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubjects();
+  }, []);
   const [searchQuery, setSearchQuery] = useState("");
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -2463,7 +2533,6 @@ function DefineSubjectView({ showToast }) {
   // Open Add Modal
   const handleOpenAdd = () => {
     setEditingSubject({
-      sno: subjects.length + 1,
       name: "",
       abbrev: "",
       type: "Major",
@@ -2477,34 +2546,84 @@ function DefineSubjectView({ showToast }) {
   };
 
   // Save Modal
-  const handleSaveSubject = () => {
+  const handleSaveSubject = async () => {
     if (!editingSubject.name.trim()) {
       showToast("Subject Name is required");
       return;
     }
-    setSubjects((prev) => {
-      const exists = prev.find((s) => s.sno === editingSubject.sno);
-      if (exists) {
-        return prev.map((s) => (s.sno === editingSubject.sno ? editingSubject : s));
+    
+    try {
+      const token = localStorage.getItem("token");
+      const isUpdate = !!editingSubject._id;
+      const url = `${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/subjects${isUpdate ? `/${editingSubject._id}` : ''}`;
+      const method = isUpdate ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(editingSubject)
+      });
+
+      if (res.ok) {
+        showToast(`Subject ${isUpdate ? 'Updated' : 'Created'} Successfully!`);
+        setIsEditModalOpen(false);
+        fetchSubjects();
+      } else {
+        const errorData = await res.json();
+        showToast(errorData.message || "Failed to save subject");
       }
-      return [...prev, editingSubject];
-    });
-    setIsEditModalOpen(false);
-    showToast("Subject Saved Successfully!");
+    } catch (err) {
+      console.error(err);
+      showToast("An error occurred while saving");
+    }
   };
 
   // Delete Action
-  const handleDeleteSubject = (sno) => {
-    setSubjects((prev) => prev.filter((s) => s.sno !== sno));
-    showToast("Subject Removed Successfully");
+  const handleDeleteSubject = async (subject) => {
+    if (!subject._id) return;
+    if (!window.confirm(`Are you sure you want to delete ${subject.name}?`)) return;
+    
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/subjects/${subject._id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        showToast("Subject Deleted Successfully");
+        fetchSubjects();
+      } else {
+        showToast("Failed to delete subject");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error deleting subject");
+    }
   };
 
   // Toggle Library Period
-  const handleToggleLibrary = (sno) => {
-    setSubjects((prev) =>
-      prev.map((s) => (s.sno === sno ? { ...s, library: !s.library } : s))
-    );
-    showToast("Library Period setting updated");
+  const handleToggleLibrary = async (subject) => {
+    if (!subject._id) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/subjects/${subject._id}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ library: !subject.library })
+      });
+      if (res.ok) {
+        showToast("Library setting updated");
+        fetchSubjects();
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -2600,7 +2719,7 @@ function DefineSubjectView({ showToast }) {
                   {/* Library Period Add Button */}
                   <td className="py-2.5 px-3 text-center">
                     <button
-                      onClick={() => handleToggleLibrary(sub.sno)}
+                      onClick={() => handleToggleLibrary(sub)}
                       className={`border px-3 py-0.5 rounded text-[11px] font-bold cursor-pointer transition shadow-2xs ${
                         sub.library
                           ? "bg-blue-600 text-white border-blue-600"
@@ -2622,7 +2741,7 @@ function DefineSubjectView({ showToast }) {
                         <FaEdit className="text-sm" />
                       </button>
                       <button
-                        onClick={() => handleDeleteSubject(sub.sno)}
+                        onClick={() => handleDeleteSubject(sub)}
                         className="text-red-500 hover:text-red-700 p-1 cursor-pointer transition"
                         title="Delete Subject"
                       >
@@ -2963,30 +3082,96 @@ function DefineSubjectView({ showToast }) {
 // 5. ASSIGN SUBJECT TO CLASS VIEW (MATCHING SCREENSHOT 1)
 // =========================================================================
 function AssignSubjectToClassView({ showToast }) {
+  const [classes, setClasses] = useState([]);     // [{className: "1", _id: ...}] from school-classes
+  const [classSectionsMap, setClassSectionsMap] = useState({}); // {className: ["A","B","C"]}
+  const [sections, setSections] = useState([]);
+  const [allSubjects, setAllSubjects] = useState([]);
+  
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSection, setSelectedSection] = useState("");
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
 
-  const mockSubjectList = [
-    { sno: 1, name: "ENGLISH CORE", periods: "6", order: "1", selected: false },
-    { sno: 2, name: "HINDI CORE", periods: "6", order: "2", selected: false },
-    { sno: 3, name: "MATHEMATICS", periods: "8", order: "3", selected: false },
-    { sno: 4, name: "PHYSICS", periods: "7", order: "4", selected: false },
-    { sno: 5, name: "CHEMISTRY", periods: "7", order: "5", selected: false },
-    { sno: 6, name: "BIOLOGY / CS", periods: "7", order: "6", selected: false },
-    { sno: 7, name: "PHYSICAL EDUCATION", periods: "4", order: "7", selected: false },
-    { sno: 8, name: "GENERAL KNOWLEDGE", periods: "2", order: "8", selected: false },
-    { sno: 9, name: "ART / CRAFT", periods: "1", order: "9", selected: false },
-  ];
+  useEffect(() => {
+    const initData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const [clsRes, clsSectRes, subRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/school-classes`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/class-sections`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/subjects`, { headers: { Authorization: `Bearer ${token}` } })
+        ]);
+        if (clsRes.ok) {
+          const cJson = await clsRes.json();
+          setClasses(Array.isArray(cJson) ? cJson : (cJson.data || []));
+        }
+        if (clsSectRes.ok) {
+          const csData = await clsSectRes.json();
+          const map = {};
+          csData.forEach(entry => { map[entry.className] = entry.sections || []; });
+          setClassSectionsMap(map);
+        }
+        if (subRes.ok) {
+          const sJson = await subRes.json();
+          setAllSubjects(Array.isArray(sJson) ? sJson : (sJson.data || []));
+        }
+      } catch (err) { console.error(err); }
+    };
+    initData();
+  }, []);
 
-  const handleGo = () => {
+  const handleClassChange = (e) => {
+    const val = e.target.value; // This is the _id
+    setSelectedClass(val);
+    const cls = classes.find(c => c._id === val);
+    const className = cls?.className || "";
+    setSections(classSectionsMap[className] || []);
+    setSelectedSection("");
+    setAssignedSubjects([]);
+  };
+
+  const handleGo = async () => {
     if (!selectedClass) {
       showToast("Please select a Class first");
       return;
     }
-    setAssignedSubjects(mockSubjectList);
-    showToast(`Loaded subjects for ${selectedClass} - ${selectedSection || "All Sections"}`);
+    
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/class-subjects`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      let dbAssigned = [];
+      if (res.ok) {
+        const data = await res.json();
+        // find record for this class and section
+        const record = data.find(r => 
+          (r.class?._id === selectedClass || r.class === selectedClass) &&
+          (r.section?._id === selectedSection || r.section === selectedSection || (!selectedSection && !r.section))
+        );
+        if (record && record.subjects) {
+          dbAssigned = record.subjects;
+        }
+      }
+      
+      // Build the grid merging allSubjects and dbAssigned
+      const grid = allSubjects.map((sub, idx) => {
+        const found = dbAssigned.find(d => (d.subject?._id === sub._id || d.subject === sub._id));
+        return {
+          sno: idx + 1,
+          subjectId: sub._id,
+          name: sub.name,
+          selected: !!found,
+          periods: found ? found.periods : "0",
+          order: found ? found.order : "0"
+        };
+      });
+      setAssignedSubjects(grid);
+      showToast(`Loaded subjects for class`);
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to load class subjects");
+    }
   };
 
   const handleToggleSelectAll = () => {
@@ -3013,6 +3198,41 @@ function AssignSubjectToClassView({ showToast }) {
     );
   };
 
+  const handleSave = async () => {
+    if (!selectedClass) {
+      showToast("Please select a Class first");
+      return;
+    }
+    const selectedSubs = assignedSubjects.filter(s => s.selected).map(s => ({
+      subject: s.subjectId,
+      periods: Number(s.periods) || 0,
+      order: Number(s.order) || 0
+    }));
+    
+    try {
+      const token = localStorage.getItem("token");
+      const payload = {
+        class: selectedClass,
+        subjects: selectedSubs
+      };
+      if (selectedSection) payload.section = selectedSection;
+      
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/class-subjects`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        showToast("Assigned Subjects Saved Successfully!");
+      } else {
+        showToast("Failed to save assigned subjects");
+      }
+    } catch(err) {
+      console.error(err);
+      showToast("Error saving subjects");
+    }
+  };
+
   const totalAssignedPeriods = assignedSubjects
     .filter((s) => s.selected)
     .reduce((acc, s) => acc + (parseInt(s.periods) || 0), 0);
@@ -3026,12 +3246,12 @@ function AssignSubjectToClassView({ showToast }) {
         <div className="relative w-56">
           <select
             value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
+            onChange={handleClassChange}
             className="w-full text-xs border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
           >
             <option value="">Select Class</option>
-            {["NUR", "LKG", "UKG", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"].map((c) => (
-              <option key={c} value={c}>Class {c}</option>
+            {classes.map((c) => (
+              <option key={c._id} value={c._id}>{c.className}</option>
             ))}
           </select>
           <FaAngleDown className="absolute right-3 top-3 text-[10px] pointer-events-none text-gray-400" />
@@ -3045,8 +3265,8 @@ function AssignSubjectToClassView({ showToast }) {
             className="w-full text-xs border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
           >
             <option value="">Select Section</option>
-            {["A", "B", "C", "D", "E", "F"].map((s) => (
-              <option key={s} value={s}>Section {s}</option>
+            {sections.map((s) => (
+              <option key={s} value={s}>{s}</option>
             ))}
           </select>
           <FaAngleDown className="absolute right-3 top-3 text-[10px] pointer-events-none text-gray-400" />
@@ -3143,7 +3363,7 @@ function AssignSubjectToClassView({ showToast }) {
       {/* Bottom Action Buttons */}
       <div className="flex items-center justify-center gap-3 pt-2">
         <button
-          onClick={() => showToast("Assigned Subjects Saved Successfully!")}
+          onClick={handleSave}
           className="border border-emerald-500 text-emerald-600 hover:bg-emerald-50 px-5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
         >
           <FaSave className="text-xs" />
@@ -3171,47 +3391,189 @@ function AssignSubjectToClassView({ showToast }) {
 // 6. PERIOD ALLOTMENT VIEW (MATCHING SCREENSHOT 2 & 3 FOR UNASSIGN TEACHERS MODAL)
 // =========================================================================
 function PeriodAllotmentView({ showToast }) {
+  const [teachers, setTeachers] = useState([]);
+  const [classesList, setClassesList] = useState([]);
+  
   const [selectedTeacher, setSelectedTeacher] = useState("");
   const [isUnassignModalOpen, setIsUnassignModalOpen] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState("timetable"); // 'timetable' or 'marks'
   const [selectedClasses, setSelectedClasses] = useState({});
   const [allotmentRows, setAllotmentRows] = useState([]);
+  const [modalRecords, setModalRecords] = useState([]);
 
-  const classList = [
-    "NUR-A", "NUR-B", "LKG-A", "LKG-B", "UKG-A", "UKG-B", "UKG-C",
-    "1-A", "1-B", "1-C", "2-A", "2-B", "2-C", "3-A", "3-B", "3-C",
-    "4-A", "4-B", "4-C", "5-A", "5-B", "5-C", "6-A", "6-B", "6-C",
-    "7-A", "7-B", "7-C", "8-A", "8-B", "8-C", "9-A", "9-B", "9-C", "9-D",
-    "10-A", "10-B", "10-C", "10-D", "10-E", "11-A", "11-B", "11-C", "11-D",
-    "12-A", "12-B", "12-C", "12-D"
-  ];
+  useEffect(() => {
+    const initData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const [staffRes, clsSectRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/staffs`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/class-sections`, { headers: { Authorization: `Bearer ${token}` } })
+        ]);
+        if (staffRes.ok) {
+          const sJson = await staffRes.json();
+          setTeachers(Array.isArray(sJson) ? sJson : (sJson.data || []));
+        }
+        if (clsSectRes.ok) {
+          const clsSectData = await clsSectRes.json();
+          const formattedClasses = [];
+          clsSectData.forEach(entry => {
+            const className = entry.className;
+            if (entry.sections && entry.sections.length > 0) {
+              entry.sections.forEach(sec => {
+                formattedClasses.push({
+                  id: `${className}_${sec}`,
+                  classId: className,
+                  sectionId: sec,
+                  name: `${className}-${sec}`
+                });
+              });
+            } else {
+              formattedClasses.push({ id: `${className}_`, classId: className, sectionId: null, name: className });
+            }
+          });
+          setClassesList(formattedClasses);
+        }
+      } catch(e) { console.error(e); }
+    };
+    initData();
+  }, []);
 
-  const handleClassCheck = (cls) => {
-    setSelectedClasses((prev) => ({ ...prev, [cls]: !prev[cls] }));
+  const handleClassCheck = (id) => {
+    setSelectedClasses((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleShowSubjects = () => {
-    const checked = Object.keys(selectedClasses).filter((k) => selectedClasses[k]);
-    if (checked.length === 0) {
+  const handleShowSubjects = async () => {
+    const checkedIds = Object.keys(selectedClasses).filter((k) => selectedClasses[k]);
+    if (checkedIds.length === 0) {
       showToast("Please select at least one Class");
       return;
     }
-    const sampleAllotments = checked.flatMap((cls) => [
-      { id: `${cls}-ENG`, className: cls, subject: "ENGLISH CORE", periods: "6", teacher: selectedTeacher || "ANKIT KUMAR", selected: false },
-      { id: `${cls}-MATH`, className: cls, subject: "MATHEMATICS", periods: "8", teacher: selectedTeacher || "AKHILESH MISHRA", selected: false },
-      { id: `${cls}-SCI`, className: cls, subject: "SCIENCE (INTEGRATED)", periods: "7", teacher: selectedTeacher || "AMIT DUBEY", selected: false },
-    ]);
-    setAllotmentRows(sampleAllotments);
-    showToast(`Loaded ${sampleAllotments.length} subject entries`);
+    
+    try {
+      const token = localStorage.getItem("token");
+      const [csRes, paRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/class-subjects`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/period-allotment`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      
+      let classSubjects = [];
+      let allotments = [];
+      if (csRes.ok) classSubjects = await csRes.json();
+      if (paRes.ok) allotments = await paRes.json();
+
+      let rows = [];
+      checkedIds.forEach(cid => {
+        const cObj = classesList.find(c => c.id === cid);
+        if (!cObj) return;
+        
+        const clsSubs = classSubjects.find(cs => 
+          (cs.class?._id === cObj.classId || cs.class === cObj.classId) &&
+          (cs.section?._id === cObj.sectionId || cs.section === cObj.sectionId || (!cs.section && !cObj.sectionId))
+        );
+        
+        if (clsSubs && clsSubs.subjects) {
+          clsSubs.subjects.forEach(sub => {
+            const subjectId = sub.subject?._id || sub.subject;
+            const subjectName = sub.subject?.name || "Unknown";
+            
+            const existingAllot = allotments.find(a => 
+              (a.class?._id === cObj.classId || a.class === cObj.classId) &&
+              (a.section?._id === cObj.sectionId || a.section === cObj.sectionId || (!a.section && !cObj.sectionId)) &&
+              (a.subject?._id === subjectId || a.subject === subjectId)
+            );
+            
+            let assignedTeacherName = "";
+            let assignedTeacherId = null;
+            if (existingAllot && existingAllot.teacher) {
+               assignedTeacherName = existingAllot.teacher?.name || existingAllot.teacher?.firstName || "Assigned";
+               assignedTeacherId = existingAllot.teacher?._id || existingAllot.teacher;
+            }
+            
+            rows.push({
+              id: `${cid}_${subjectId}`,
+              classId: cObj.classId,
+              sectionId: cObj.sectionId,
+              className: cObj.name,
+              subjectId: subjectId,
+              subject: subjectName,
+              periods: sub.periods || "0",
+              teacher: assignedTeacherName || (selectedTeacher ? teachers.find(t=>t._id===selectedTeacher)?.firstName : ""),
+              teacherId: assignedTeacherId || selectedTeacher,
+              selected: false
+            });
+          });
+        }
+      });
+      
+      setAllotmentRows(rows);
+      showToast(`Loaded ${rows.length} subject entries`);
+    } catch(e) {
+      console.error(e);
+      showToast("Error loading subjects");
+    }
   };
 
-  const [modalRecords, setModalRecords] = useState([
-    { id: 1, className: "10-A", subject: "MATHEMATICS", periods: "8", teacher: "AKHILESH MISHRA", selected: false },
-    { id: 2, className: "10-B", subject: "MATHEMATICS", periods: "8", teacher: "AKHILESH MISHRA", selected: false },
-    { id: 3, className: "9-A", subject: "SCIENCE (INTEGRATED)", periods: "7", teacher: "AMIT DUBEY", selected: false },
-    { id: 4, className: "12-A", subject: "PHYSICS", periods: "7", teacher: "ANKIT KUMAR", selected: false },
-    { id: 5, className: "12-B", subject: "CHEMISTRY", periods: "7", teacher: "ASHISH KUMAR", selected: false },
-  ]);
+  const handleAssign = async () => {
+    const selectedRows = allotmentRows.filter(r => r.selected);
+    if (selectedRows.length === 0) {
+      showToast("Please select at least one row");
+      return;
+    }
+    if (selectedRows.some(r => !r.teacherId)) {
+      showToast("Ensure a teacher is selected for allotment");
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem("token");
+      const promises = selectedRows.map(row => {
+        const payload = {
+          class: row.classId,
+          subject: row.subjectId,
+          teacher: row.teacherId,
+          periods: Number(row.periods)
+        };
+        if (row.sectionId) payload.section = row.sectionId;
+        
+        return fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/period-allotment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+      });
+      
+      await Promise.all(promises);
+      showToast("Period & Teacher Allotment Saved Successfully!");
+    } catch(err) {
+      console.error(err);
+      showToast("Error saving allotments");
+    }
+  };
+
+  const loadUnassignedModal = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/period-allotment`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const records = data.map(d => ({
+          id: d._id,
+          className: `${d.class?.className || "Unknown"} ${d.section ? `-${d.section.sectionName || d.section.name}` : ''}`,
+          subject: d.subject?.name || "Unknown",
+          periods: d.periods,
+          teacher: d.teacher?.name || d.teacher?.firstName || "Unknown",
+          selected: false
+        }));
+        setModalRecords(records);
+        setIsUnassignModalOpen(true);
+      }
+    } catch (e) {
+      console.error(e);
+      showToast("Error loading allotments");
+    }
+  };
 
   const handleDeleteAssignedRecords = () => {
     const remaining = modalRecords.filter((r) => !r.selected);
@@ -3221,7 +3583,7 @@ function PeriodAllotmentView({ showToast }) {
       return;
     }
     setModalRecords(remaining);
-    showToast(`${count} Teacher assignment(s) removed successfully!`);
+    showToast(`${count} Teacher assignment(s) removed successfully (UI Only)!`);
   };
 
   return (
@@ -3241,12 +3603,9 @@ function PeriodAllotmentView({ showToast }) {
                 className="w-full text-xs border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
               >
                 <option value="">Select Teacher</option>
-                <option value="AKHILESH MISHRA">AKHILESH MISHRA</option>
-                <option value="AMIT DUBEY">AMIT DUBEY</option>
-                <option value="ANKIT KUMAR">ANKIT KUMAR</option>
-                <option value="ASHISH KUMAR">ASHISH KUMAR</option>
-                <option value="AVANEESH KUMAR RAI">AVANEESH KUMAR RAI</option>
-                <option value="DEEPA GUPTA">DEEPA GUPTA</option>
+                {teachers.map(t => (
+                  <option key={t._id} value={t._id}>{t.firstName} {t.lastName}</option>
+                ))}
               </select>
               <FaAngleDown className="absolute right-3 top-3 text-[10px] pointer-events-none text-gray-400" />
             </div>
@@ -3266,17 +3625,17 @@ function PeriodAllotmentView({ showToast }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {classList.map((cls) => (
-                    <tr key={cls} className="hover:bg-gray-50/80 transition-colors">
+                  {classesList.map((cls) => (
+                    <tr key={cls.id} className="hover:bg-gray-50/80 transition-colors">
                       <td className="py-2 px-3 text-center">
                         <input
                           type="checkbox"
-                          checked={!!selectedClasses[cls]}
-                          onChange={() => handleClassCheck(cls)}
+                          checked={!!selectedClasses[cls.id]}
+                          onChange={() => handleClassCheck(cls.id)}
                           className="w-3.5 h-3.5 border-gray-300 rounded text-blue-600 focus:ring-0 cursor-pointer"
                         />
                       </td>
-                      <td className="py-2 px-3 font-semibold text-gray-800">{cls}</td>
+                      <td className="py-2 px-3 font-semibold text-gray-800">{cls.name}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -3300,7 +3659,7 @@ function PeriodAllotmentView({ showToast }) {
           {/* Top Right Action Buttons (Unassign Teachers & Filter Subjects) */}
           <div className="flex items-center justify-end gap-3">
             <button
-              onClick={() => setIsUnassignModalOpen(true)}
+              onClick={loadUnassignedModal}
               className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
             >
               <FaEdit className="text-[11px]" />
@@ -3390,7 +3749,7 @@ function PeriodAllotmentView({ showToast }) {
             {/* Bottom Assign Button */}
             <div className="p-3 bg-white border-t border-gray-200 flex justify-center">
               <button
-                onClick={() => showToast("Period & Teacher Allotment Saved Successfully!")}
+                onClick={handleAssign}
                 className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-6 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
               >
                 <FaCheck className="text-xs" />
@@ -3531,7 +3890,31 @@ function PeriodAllotmentView({ showToast }) {
 // 7. DEFINE RESOURCE VIEW (MATCHING SCREENSHOT 4 & 5 - EMPTY BY DEFAULT)
 // =========================================================================
 function DefineResourceView({ showToast }) {
-  const [resources, setResources] = useState([]); // Blank by default matching screenshot!
+  const [resources, setResources] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchResources = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/resources`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setResources(data.map((item, index) => ({ ...item, sno: index + 1 })));
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to fetch resources");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchResources();
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [pageSize, setPageSize] = useState(10);
@@ -3560,29 +3943,59 @@ function DefineResourceView({ showToast }) {
     setIsAddModalOpen(true);
   };
 
-  const handleSaveResource = () => {
+  const handleSaveResource = async () => {
     if (!editingResource.name.trim()) {
       showToast("Resource Name cannot be blank");
       return;
     }
-    if (editingResource.sno) {
-      setResources((prev) =>
-        prev.map((r) => (r.sno === editingResource.sno ? editingResource : r))
-      );
-      showToast("Resource Updated Successfully!");
-    } else {
-      setResources((prev) => [
-        ...prev,
-        { sno: prev.length + 1, name: editingResource.name.trim() }
-      ]);
-      showToast("New Resource Added Successfully!");
+    try {
+      const token = localStorage.getItem("token");
+      const isUpdate = !!editingResource._id;
+      const url = `${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/resources${isUpdate ? `/${editingResource._id}` : ''}`;
+      const method = isUpdate ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(editingResource)
+      });
+
+      if (res.ok) {
+        showToast(`Resource ${isUpdate ? 'Updated' : 'Created'} Successfully!`);
+        setIsAddModalOpen(false);
+        fetchResources();
+      } else {
+        const errorData = await res.json();
+        showToast(errorData.message || "Failed to save resource");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("An error occurred while saving resource");
     }
-    setIsAddModalOpen(false);
   };
 
-  const handleDeleteResource = (sno) => {
-    setResources((prev) => prev.filter((r) => r.sno !== sno));
-    showToast("Resource Deleted Successfully!");
+  const handleDeleteResource = async (resource) => {
+    if (!resource._id) return;
+    if (!window.confirm(`Are you sure you want to delete ${resource.name}?`)) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/resources/${resource._id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        showToast("Resource Deleted Successfully!");
+        fetchResources();
+      } else {
+        showToast("Failed to delete resource");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error deleting resource");
+    }
   };
 
   return (
@@ -3653,8 +4066,8 @@ function DefineResourceView({ showToast }) {
                         <FaEdit className="text-sm" />
                       </button>
                       <button
-                        onClick={() => handleDeleteResource(res.sno)}
-                        className="text-red-500 hover:text-red-700 p-1 cursor-pointer transition"
+                        onClick={() => handleDeleteResource(res)}
+                        className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded transition"
                         title="Delete Resource"
                       >
                         <FaTrashAlt className="text-xs" />
@@ -3759,17 +4172,153 @@ function DefineResourceView({ showToast }) {
 // 8. RELATE RESOURCE TO SUBJECT VIEW (MATCHING SCREENSHOT 1)
 // =========================================================================
 function RelateResourceToSubjectView({ showToast }) {
+  const [resources, setResources] = useState([]);
+  const [classesList, setClassesList] = useState([]);
+  
   const [selectedResource, setSelectedResource] = useState("");
   const [selectedClass, setSelectedClass] = useState("None selected");
-  const [subjectRows, setSubjectRows] = useState([]); // Default empty matching screenshot 1!
+  const [subjectRows, setSubjectRows] = useState([]); 
 
-  const handleShowSubjects = () => {
+  useEffect(() => {
+    const initData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const [resRes, clsSectRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/resources`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/class-sections`, { headers: { Authorization: `Bearer ${token}` } })
+        ]);
+        if (resRes.ok) setResources(await resRes.json());
+        if (clsSectRes.ok) {
+          const clsSectData = await clsSectRes.json();
+          const formattedClasses = [];
+          clsSectData.forEach(entry => {
+            const className = entry.className;
+            if (entry.sections && entry.sections.length > 0) {
+              entry.sections.forEach(sec => {
+                formattedClasses.push({
+                  id: `${className}_${sec}`,
+                  classId: className,
+                  sectionId: sec,
+                  name: `${className}-${sec}`
+                });
+              });
+            } else {
+              formattedClasses.push({ id: `${className}_`, classId: className, sectionId: null, name: className });
+            }
+          });
+          setClassesList(formattedClasses);
+        }
+      } catch(e) { console.error(e); }
+    };
+    initData();
+  }, []);
+
+  const handleShowSubjects = async () => {
     if (!selectedResource) {
       showToast("Please select a resource");
       return;
     }
-    showToast("Loaded subjects for selected resource");
+    
+    try {
+      const token = localStorage.getItem("token");
+      const [csRes, rsRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/class-subjects`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/resource-subjects`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      
+      let classSubjects = [];
+      let resourceSubjects = [];
+      if (csRes.ok) classSubjects = await csRes.json();
+      if (rsRes.ok) resourceSubjects = await rsRes.json();
+
+      let rows = [];
+      
+      const targetClasses = selectedClass === "None selected" ? classesList : classesList.filter(c => c.classId === selectedClass);
+      
+      targetClasses.forEach(cObj => {
+        const clsSubs = classSubjects.find(cs => 
+          (cs.class?._id === cObj.classId || cs.class === cObj.classId) &&
+          (cs.section?._id === cObj.sectionId || cs.section === cObj.sectionId || (!cs.section && !cObj.sectionId))
+        );
+        
+        if (clsSubs && clsSubs.subjects) {
+          clsSubs.subjects.forEach(sub => {
+            const subjectId = sub.subject?._id || sub.subject;
+            const subjectName = sub.subject?.name || "Unknown";
+            
+            const existingRelate = resourceSubjects.find(r => 
+              (r.class?._id === cObj.classId || r.class === cObj.classId) &&
+              (r.section?._id === cObj.sectionId || r.section === cObj.sectionId || (!r.section && !cObj.sectionId)) &&
+              (r.subject?._id === subjectId || r.subject === subjectId) &&
+              (r.resource?._id === selectedResource || r.resource === selectedResource)
+            );
+            
+            rows.push({
+              id: `${cObj.id}_${subjectId}`,
+              classId: cObj.classId,
+              sectionId: cObj.sectionId,
+              className: cObj.name,
+              subjectId: subjectId,
+              subject: subjectName,
+              periods: sub.periods || "0",
+              selected: !!existingRelate
+            });
+          });
+        }
+      });
+      
+      setSubjectRows(rows);
+      showToast(`Loaded ${rows.length} subjects for selected resource`);
+    } catch(e) {
+      console.error(e);
+      showToast("Error loading subjects");
+    }
   };
+
+  const handleSave = async () => {
+    const selectedRows = subjectRows.filter(r => r.selected);
+    if (selectedRows.length === 0) {
+      showToast("Please select at least one row");
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem("token");
+      const promises = selectedRows.map(row => {
+        const payload = {
+          resource: selectedResource,
+          class: row.classId,
+          subject: row.subjectId
+        };
+        if (row.sectionId) payload.section = row.sectionId;
+        
+        return fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/resource-subjects`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+      });
+      
+      await Promise.all(promises);
+      showToast("Resource Relate Settings Saved!");
+    } catch(err) {
+      console.error(err);
+      showToast("Error saving resource settings");
+    }
+  };
+
+  const handleToggleRow = (id) => {
+    setSubjectRows((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, selected: !s.selected } : s))
+    );
+  };
+
+  const uniqueClasses = [];
+  classesList.forEach(c => {
+    if(!uniqueClasses.find(x => x.classId === c.classId)) {
+      uniqueClasses.push({ classId: c.classId, className: c.name.split('-')[0] });
+    }
+  });
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-6 md:p-8 shadow-xs space-y-6">
@@ -3785,10 +4334,9 @@ function RelateResourceToSubjectView({ showToast }) {
             className="w-full text-xs border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs text-center"
           >
             <option value="">Select Resource</option>
-            <option value="Physics Lab">Physics Lab</option>
-            <option value="Chemistry Lab">Chemistry Lab</option>
-            <option value="Computer Lab">Computer Lab</option>
-            <option value="Library">Library</option>
+            {resources.map(r => (
+              <option key={r._id} value={r._id}>{r.name}</option>
+            ))}
           </select>
           <FaAngleDown className="absolute right-3 top-3 text-[10px] pointer-events-none text-gray-400" />
         </div>
@@ -3803,21 +4351,9 @@ function RelateResourceToSubjectView({ showToast }) {
               className="w-full text-xs border border-gray-300 rounded px-3 py-2 text-gray-700 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
             >
               <option value="None selected">None selected</option>
-              <option value="NUR">NUR</option>
-              <option value="LKG">LKG</option>
-              <option value="UKG">UKG</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-              <option value="11">11</option>
-              <option value="12">12</option>
+              {uniqueClasses.map(c => (
+                <option key={c.classId} value={c.classId}>{c.className}</option>
+              ))}
             </select>
             <FaAngleDown className="absolute right-3 top-3 text-[10px] pointer-events-none text-gray-400" />
           </div>
@@ -3841,7 +4377,7 @@ function RelateResourceToSubjectView({ showToast }) {
 
       </div>
 
-      {/* Table (Blank / No data available in table) */}
+      {/* Table */}
       <div className="border border-gray-200 rounded overflow-hidden">
         <table className="w-full text-left text-xs border-collapse">
           <thead className="bg-white border-b border-gray-200 select-none shadow-2xs">
@@ -3860,10 +4396,15 @@ function RelateResourceToSubjectView({ showToast }) {
                 </td>
               </tr>
             ) : (
-              subjectRows.map((row, idx) => (
-                <tr key={idx} className="hover:bg-gray-50/80">
+              subjectRows.map((row) => (
+                <tr key={row.id} className="hover:bg-gray-50/80">
                   <td className="py-2.5 px-3 text-center">
-                    <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded" />
+                    <input 
+                      type="checkbox" 
+                      checked={row.selected}
+                      onChange={() => handleToggleRow(row.id)}
+                      className="w-3.5 h-3.5 text-blue-600 rounded" 
+                    />
                   </td>
                   <td className="py-2.5 px-4 font-bold">{row.className}</td>
                   <td className="py-2.5 px-4 font-semibold">{row.subject}</td>
@@ -3878,7 +4419,7 @@ function RelateResourceToSubjectView({ showToast }) {
       {/* Bottom Action Buttons: Save, View, Print, Reset */}
       <div className="flex items-center justify-center gap-3 pt-2">
         <button
-          onClick={() => showToast("Resource Relate Settings Saved!")}
+          onClick={handleSave}
           className="border border-emerald-500 text-emerald-600 hover:bg-emerald-50 px-4 py-1 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
         >
           <FaSave className="text-xs" />
@@ -3920,73 +4461,87 @@ function RelateResourceToSubjectView({ showToast }) {
 // =========================================================================
 function DefineClassTeacherView({ showToast }) {
   const [selectedWing, setSelectedWing] = useState("All Wing");
+  const [classTeachers, setClassTeachers] = useState([]);
+  const [teachers, setTeachers] = useState([]);
 
-  const full51Classes = [
-    { sno: 1, class: "NUR-A", wing: "Kindergarten", classTeacher: "", assistantTeacher: "" },
-    { sno: 2, class: "NUR-B", wing: "Kindergarten", classTeacher: "", assistantTeacher: "" },
-    { sno: 3, class: "LKG-A", wing: "Kindergarten", classTeacher: "", assistantTeacher: "" },
-    { sno: 4, class: "LKG-B", wing: "Kindergarten", classTeacher: "", assistantTeacher: "" },
-    { sno: 5, class: "UKG-A", wing: "Kindergarten", classTeacher: "", assistantTeacher: "" },
-    { sno: 6, class: "UKG-B", wing: "Kindergarten", classTeacher: "", assistantTeacher: "" },
-    { sno: 7, class: "UKG-C", wing: "Kindergarten", classTeacher: "", assistantTeacher: "" },
-    { sno: 8, class: "1-A", wing: "Kindergarten", classTeacher: "", assistantTeacher: "" },
-    { sno: 9, class: "1-B", wing: "Kindergarten", classTeacher: "", assistantTeacher: "" },
-    { sno: 10, class: "1-C", wing: "Kindergarten", classTeacher: "", assistantTeacher: "" },
-    { sno: 11, class: "2-A", wing: "Kindergarten", classTeacher: "", assistantTeacher: "" },
-    { sno: 12, class: "2-B", wing: "Kindergarten", classTeacher: "", assistantTeacher: "" },
-    { sno: 13, class: "2-C", wing: "Kindergarten", classTeacher: "", assistantTeacher: "" },
-    { sno: 14, class: "3-A", wing: "Primary", classTeacher: "", assistantTeacher: "" },
-    { sno: 15, class: "3-B", wing: "Primary", classTeacher: "", assistantTeacher: "" },
-    { sno: 16, class: "3-C", wing: "Primary", classTeacher: "", assistantTeacher: "" },
-    { sno: 17, class: "4-A", wing: "Primary", classTeacher: "", assistantTeacher: "" },
-    { sno: 18, class: "4-B", wing: "Primary", classTeacher: "", assistantTeacher: "" },
-    { sno: 19, class: "4-C", wing: "Primary", classTeacher: "", assistantTeacher: "" },
-    { sno: 20, class: "5-A", wing: "Primary", classTeacher: "", assistantTeacher: "" },
-    { sno: 21, class: "5-B", wing: "Primary", classTeacher: "", assistantTeacher: "" },
-    { sno: 22, class: "5-C", wing: "Primary", classTeacher: "", assistantTeacher: "" },
-    { sno: 23, class: "6-A", wing: "Middle", classTeacher: "", assistantTeacher: "" },
-    { sno: 24, class: "6-B", wing: "Middle", classTeacher: "", assistantTeacher: "" },
-    { sno: 25, class: "6-C", wing: "Middle", classTeacher: "", assistantTeacher: "" },
-    { sno: 26, class: "7-A", wing: "Middle", classTeacher: "", assistantTeacher: "" },
-    { sno: 27, class: "7-B", wing: "Middle", classTeacher: "", assistantTeacher: "" },
-    { sno: 28, class: "7-C", wing: "Middle", classTeacher: "", assistantTeacher: "" },
-    { sno: 29, class: "8-A", wing: "Middle", classTeacher: "", assistantTeacher: "" },
-    { sno: 30, class: "8-B", wing: "Middle", classTeacher: "", assistantTeacher: "" },
-    { sno: 31, class: "8-C", wing: "Middle", classTeacher: "", assistantTeacher: "" },
-    { sno: 32, class: "9-A", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 33, class: "9-B", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 34, class: "9-C", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 35, class: "9-D", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 36, class: "10-A", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 37, class: "10-B", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 38, class: "10-C", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 39, class: "10-D", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 40, class: "10-E", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 41, class: "10-D", wing: "Kindergarten", classTeacher: "", assistantTeacher: "" },
-    { sno: 42, class: "11-A", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 43, class: "11-B", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 44, class: "11-C", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 45, class: "11-D", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 46, class: "11-E", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 47, class: "11-F", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 48, class: "12-A", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 49, class: "12-B", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 50, class: "12-C", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-    { sno: 51, class: "12-D", wing: "Higher", classTeacher: "", assistantTeacher: "" },
-  ];
+  useEffect(() => {
+    const initData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const [clsSectRes, clsRes, tcRes, staffRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/class-sections`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/school-classes`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/class-teachers`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/staffs`, { headers: { Authorization: `Bearer ${token}` } })
+        ]);
 
-  const [classTeachers, setClassTeachers] = useState(full51Classes);
+        let allStaffs = [];
+        if (staffRes.ok) {
+          const sJson = await staffRes.json();
+          allStaffs = Array.isArray(sJson) ? sJson : (sJson.data || []);
+          setTeachers(allStaffs);
+        }
 
-  const teacherNames = [
-    "Select Teacher", "AJEET SINGH", "AKANKSHA PANDEY", "AKHILESH MISHRA", "ALFIYA BANO",
-    "AMIT DUBEY", "ANKIT KUMAR", "ANSHIKA", "ARCHANA YADAV", "ARPANA UPADHYAY",
-    "ASHISH KUMAR", "AVANEESH KUMAR RAI", "DEEPA GUPTA", "GOLENDRA SINGH", "KIRAN YADAV",
-    "MOHAMMAD MOZAHID", "MUKESH KUMAR", "NEELAM SINGH", "NITESH TIWARI", "POOJA SHARMA",
-    "PRADEEP KUMAR", "PRIYA TRIPATHI", "RAJESH KUMAR", "RAMESH CHANDRA", "RINKU VERMA",
-    "SANJAY GUPTA", "SATYAM SINGH", "SEEMA GIRI", "SHAMA PARVEEN", "SHIKHA OJHA",
-    "SIMRAN GUPTA", "SONIYA SINGH", "SUNITA", "SUSHIL KUMAR YADAV", "VASIM AHMAD",
-    "VISHAKHA THAMI", "VISHAL SONAR", "VIVEKANAND TIWARI", "WASEEM FIROJ"
-  ];
+        let assignedData = [];
+        if (tcRes.ok) { assignedData = await tcRes.json(); }
+
+        // Build wing map from school-classes
+        let wingMap = {};
+        if (clsRes.ok) {
+          const cJson = await clsRes.json();
+          const clsData = Array.isArray(cJson) ? cJson : (cJson.data || []);
+          clsData.forEach(c => { wingMap[c.className] = c.wingName || "Primary"; });
+        }
+
+        if (clsSectRes.ok) {
+          const clsSectData = await clsSectRes.json();
+          
+          let rows = [];
+          let sno = 1;
+          clsSectData.forEach(entry => {
+            const className = entry.className;
+            const wing = wingMap[className] || "Primary";
+            
+            if (entry.sections && entry.sections.length > 0) {
+              entry.sections.forEach(sec => {
+                const classSection = `${className}-${sec}`;
+                const existing = assignedData.find(a => 
+                  (a.class?.className === className) && 
+                  (a.section === sec || a.section?.name === sec)
+                );
+                
+                rows.push({
+                  sno: sno++,
+                  classId: className,   // Using className as identifier since classTeacher model might use ID
+                  sectionId: sec,
+                  class: classSection,
+                  wing: wing,
+                  classTeacher: existing?.classTeacher?._id || existing?.classTeacher || "",
+                  assistantTeacher: existing?.assistantTeacher?._id || existing?.assistantTeacher || ""
+                });
+              });
+            } else {
+              const existing = assignedData.find(a => 
+                a.class?.className === className && !a.section
+              );
+              rows.push({
+                sno: sno++,
+                classId: className,
+                sectionId: null,
+                class: className,
+                wing: wing,
+                classTeacher: existing?.classTeacher?._id || existing?.classTeacher || "",
+                assistantTeacher: existing?.assistantTeacher?._id || existing?.assistantTeacher || ""
+              });
+            }
+          });
+          setClassTeachers(rows);
+        }
+
+      } catch(e) { console.error(e); }
+    };
+    initData();
+  }, []);
 
   const filteredList = classTeachers.filter((c) => {
     if (selectedWing === "All Wing") return true;
@@ -3999,13 +4554,42 @@ function DefineClassTeacherView({ showToast }) {
     );
   };
 
+  const handleUpdate = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      const promises = classTeachers.map(row => {
+        if (!row.classTeacher && !row.assistantTeacher) return Promise.resolve();
+        
+        const payload = {
+          class: row.classId,
+          classTeacher: row.classTeacher || null,
+          assistantTeacher: row.assistantTeacher || null
+        };
+        if (row.sectionId) payload.section = row.sectionId;
+        
+        return fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/class-teachers`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+      });
+      
+      await Promise.all(promises);
+      showToast("Class Teacher Allotment Updated Successfully!");
+    } catch(err) {
+      console.error(err);
+      showToast("Error updating class teachers");
+    }
+  };
+
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-4 md:p-6 shadow-xs space-y-4">
       
       {/* Top Update Button */}
       <div className="flex justify-center">
         <button
-          onClick={() => showToast("Class Teacher Allotment Updated Successfully!")}
+          onClick={handleUpdate}
           className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer transition"
         >
           <FaSyncAlt className="text-xs" />
@@ -4054,12 +4638,13 @@ function DefineClassTeacherView({ showToast }) {
                   <td className="py-2 px-4">
                     <div className="relative">
                       <select
-                        value={row.classTeacher || "Select Teacher"}
+                        value={row.classTeacher || ""}
                         onChange={(e) => handleTeacherChange(row.sno, "classTeacher", e.target.value)}
                         className="w-full text-xs border border-gray-300 rounded px-2.5 py-1 text-gray-800 bg-white outline-none cursor-pointer hover:border-blue-400 appearance-none pr-6 shadow-2xs"
                       >
-                        {teacherNames.map((t) => (
-                          <option key={t} value={t}>{t}</option>
+                        <option value="">Select Teacher</option>
+                        {teachers.map((t) => (
+                          <option key={t._id} value={t._id}>{t.firstName} {t.lastName}</option>
                         ))}
                       </select>
                       <FaAngleDown className="absolute right-2 top-2 text-[9px] text-gray-400 pointer-events-none" />
@@ -4070,12 +4655,13 @@ function DefineClassTeacherView({ showToast }) {
                   <td className="py-2 px-4">
                     <div className="relative">
                       <select
-                        value={row.assistantTeacher || "Select Teacher"}
+                        value={row.assistantTeacher || ""}
                         onChange={(e) => handleTeacherChange(row.sno, "assistantTeacher", e.target.value)}
                         className="w-full text-xs border border-gray-300 rounded px-2.5 py-1 text-gray-800 bg-white outline-none cursor-pointer hover:border-blue-400 appearance-none pr-6 shadow-2xs"
                       >
-                        {teacherNames.map((t) => (
-                          <option key={t} value={t}>{t}</option>
+                        <option value="">Select Teacher</option>
+                        {teachers.map((t) => (
+                          <option key={t._id} value={t._id}>{t.firstName} {t.lastName}</option>
                         ))}
                       </select>
                       <FaAngleDown className="absolute right-2 top-2 text-[9px] text-gray-400 pointer-events-none" />
@@ -4096,7 +4682,29 @@ function DefineClassTeacherView({ showToast }) {
 // 10. CLASS TEACHER SUBJECT VIEW (MATCHING SCREENSHOT 4 - BLANK BY DEFAULT)
 // =========================================================================
 function ClassTeacherSubjectView({ showToast }) {
-  const [records, setRecords] = useState([]); // Blank by default matching screenshot 4!
+  const [records, setRecords] = useState([]); 
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/class-teacher-subjects`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const mapped = data.map(r => ({
+          class: `${r.class?.className || "Unknown"}${r.section ? `-${r.section.sectionName || r.section.name || ""}` : ""}`,
+          teacher: r.classTeacher ? `${r.classTeacher.firstName || ""} ${r.classTeacher.lastName || ""}` : "Unknown",
+          subject: r.subject?.name || "Unknown"
+        }));
+        setRecords(mapped);
+      }
+    } catch(err) { console.error(err); }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-4 md:p-6 shadow-xs space-y-4">
@@ -4104,15 +4712,8 @@ function ClassTeacherSubjectView({ showToast }) {
       {/* Top Update & Refresh Buttons */}
       <div className="flex items-center justify-center gap-3">
         <button
-          onClick={() => showToast("Class Teacher Subject Mapping Updated!")}
-          className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-4 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer transition"
-        >
-          <FaSyncAlt className="text-xs" />
-          <span>Update</span>
-        </button>
-        <button
           onClick={() => {
-            setRecords([]);
+            fetchData();
             showToast("Refreshed Class Teacher Subject Table");
           }}
           className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-4 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer transition"
@@ -4162,23 +4763,73 @@ function ClassTeacherSubjectView({ showToast }) {
 // 11. PERIOD TIME SETTING VIEW (MATCHING SCREENSHOT 5 - 13 PERIODS EXACT PRE-FILLED)
 // =========================================================================
 function PeriodTimeSettingView({ showToast }) {
-  const initialPeriods = [
-    { sno: 1, period: 1, time: "7:30 AM-8:10 AM" },
-    { sno: 2, period: 2, time: "8:10 AM-8:50 AM" },
-    { sno: 3, period: 3, time: "8:50 AM-9:30 AM" },
-    { sno: 4, period: 4, time: "9:30 AM-10:10 AM" },
-    { sno: 5, period: 5, time: "10:10 AM-10:50 AM" },
-    { sno: 6, period: 6, time: "10:50 AM-11:30 AM" },
-    { sno: 7, period: 7, time: "11:30 AM-12:10 PM" },
-    { sno: 8, period: 8, time: "12:10 PM - 12:50 PM" },
-    { sno: 9, period: 9, time: "12:50 PM - 1:30 PM" },
-    { sno: 10, period: 10, time: "1:30 PM - 2:10 PM" },
-    { sno: 11, period: 11, time: "2:10 PM-2:50 PM" },
-    { sno: 12, period: 12, time: "2:50 PM - 3:30 PM" },
-    { sno: 13, period: 13, time: "3:30 PM - 4:10 PM" },
-  ];
+  const [periodList, setPeriodList] = useState([]);
 
-  const [periodList, setPeriodList] = useState(initialPeriods);
+  useEffect(() => {
+    const fetchPeriods = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/period-settings`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // If empty, generate 13 default periods
+          if (!data || data.length === 0) {
+            const defaultPeriods = Array.from({ length: 13 }).map((_, i) => ({
+              sno: i + 1,
+              period: i + 1,
+              time: ""
+            }));
+            setPeriodList(defaultPeriods);
+          } else {
+            const mapped = data.map((p, index) => ({
+              sno: index + 1,
+              period: p.periodNumber,
+              time: `${p.startTime}-${p.endTime}`
+            }));
+            // Pad up to 13 if there are fewer
+            while (mapped.length < 13) {
+              const nextP = mapped.length + 1;
+              mapped.push({ sno: nextP, period: nextP, time: "" });
+            }
+            setPeriodList(mapped);
+          }
+        }
+      } catch (err) { console.error(err); }
+    };
+    fetchPeriods();
+  }, []);
+
+  const handleUpdate = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const promises = periodList.map(p => {
+        let startTime = "";
+        let endTime = "";
+        if (p.time && p.time.includes("-")) {
+          const parts = p.time.split("-");
+          startTime = parts[0].trim();
+          endTime = parts[1].trim();
+        }
+        return fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/period-settings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ 
+            periodNumber: p.period,
+            startTime,
+            endTime,
+            isBreak: false
+          })
+        });
+      });
+      await Promise.all(promises);
+      showToast("Period Timings Updated Successfully!");
+    } catch (err) {
+      console.error(err);
+      showToast("Error updating period timings");
+    }
+  };
 
   const handleTimeChange = (sno, val) => {
     setPeriodList((prev) =>
@@ -4224,7 +4875,7 @@ function PeriodTimeSettingView({ showToast }) {
       <div className="pt-2 flex justify-center">
         <button
           type="button"
-          onClick={() => showToast("Period Timings Updated Successfully!")}
+          onClick={handleUpdate}
           className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-6 py-1.5 rounded text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs transition"
         >
           <FaSyncAlt className="text-xs" />
@@ -4240,88 +4891,201 @@ function PeriodTimeSettingView({ showToast }) {
 // 12. PERIOD ALLOTMENT NEW (MATCHING SCREENSHOT 1 & 2 & 3)
 // =========================================================================
 function PeriodAllotmentNewView({ showToast }) {
+  const [teachers, setTeachers] = useState([]);
+  const [classesList, setClassesList] = useState([]);
   const [selectedTeacher, setSelectedTeacher] = useState("");
   const [selectedClasses, setSelectedClasses] = useState({});
   const [subjectRows, setSubjectRows] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const teacherList38 = [
-    "Select Teacher",
-    "AARADHYA VERMA",
-    "AKASH RAI",
-    "AKHILESH MISHRA",
-    "ALFIYA BANO",
-    "AMIT DUBEY",
-    "ANKIT KUMAR",
-    "ANSHIKA",
-    "ARCHANA YADAV",
-    "ARPANA UPADHYAY",
-    "ASHISH KUMAR",
-    "AVANEESH KUMAR RAI",
-    "DEEPA GUPTA",
-    "GOLENDRA SINGH",
-    "KIRAN YADAV",
-    "MOHAMMAD MOZAHID",
-    "NISHA GUPTA",
-    "NITESH TIWARI",
-    "PREM SHANKAR PATHAK",
-    "PRINCE RAI",
-    "PRIYANKA RAI",
-    "RACHNA RAI",
-    "RAM SAKAL SAHANI",
-    "REKHA GUPTA",
-    "SAHABUDDIN ALI",
-    "SANJU CHAUDHARY",
-    "SATYAM SINGH",
-    "SEEMA GIRI",
-    "SHAMA PARVEEN",
-    "SHIKHA OJHA",
-    "SIMRAN GUPTA",
-    "SONIYA SINGH",
-    "SUNITA",
-    "SUSHIL KUMAR YADAV",
-    "VASIM AHMAD",
-    "VISHAKHA THAMI",
-    "VISHAL SONAR",
-    "VIVEKANAND TIWARI",
-    "WASEEM FIROJ"
-  ];
+  useEffect(() => {
+    const initData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const [staffRes, clsSectRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/staffs`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/class-sections`, { headers: { Authorization: `Bearer ${token}` } })
+        ]);
+        if (staffRes.ok) {
+          const sJson = await staffRes.json();
+          setTeachers(Array.isArray(sJson) ? sJson : (sJson.data || []));
+        }
+        if (clsSectRes.ok) {
+          const clsSectData = await clsSectRes.json();
+          const formattedClasses = [];
+          clsSectData.forEach(entry => {
+            const className = entry.className;
+            if (entry.sections && entry.sections.length > 0) {
+              entry.sections.forEach(sec => {
+                formattedClasses.push({
+                  id: `${className}_${sec}`,
+                  classId: className,
+                  sectionId: sec,
+                  name: `${className}-${sec}`
+                });
+              });
+            } else {
+              formattedClasses.push({ id: `${className}_`, classId: className, sectionId: null, name: className });
+            }
+          });
+          setClassesList(formattedClasses);
+        }
+      } catch(e) { console.error(e); }
+    };
+    initData();
+  }, []);
 
-  const classList = [
-    "NUR-A", "NUR-B", "LKG-A", "LKG-B", "UKG-A", "UKG-B", "UKG-C",
-    "1-A", "1-B", "1-C", "2-A", "2-B", "2-C", "3-A", "3-B", "3-C",
-    "4-A", "4-B", "4-C", "5-A", "5-B", "5-C", "6-A", "6-B", "6-C",
-    "7-A", "7-B", "7-C", "8-A", "8-B", "8-C", "9-A", "9-B", "9-C", "9-D",
-    "10-A", "10-B", "10-C", "10-D", "10-E", "11-A", "11-B", "11-C", "11-D",
-    "12-A", "12-B", "12-C", "12-D"
-  ];
-
-  const handleClassCheck = (cls) => {
-    setSelectedClasses((prev) => ({ ...prev, [cls]: !prev[cls] }));
+  const handleClassCheck = (id) => {
+    setSelectedClasses((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleShowSubjects = () => {
-    const checked = Object.keys(selectedClasses).filter((k) => selectedClasses[k]);
-    if (checked.length === 0) {
+  const handleShowSubjects = async () => {
+    const checkedIds = Object.keys(selectedClasses).filter((k) => selectedClasses[k]);
+    if (checkedIds.length === 0) {
       showToast("Please select at least one Class");
       return;
     }
-    const sample = checked.flatMap((cls) => [
-      { id: `${cls}-1`, className: cls, subject: "MATHEMATICS", periods: "8", teacher: selectedTeacher || "AKHILESH MISHRA", selected: false },
-      { id: `${cls}-2`, className: cls, subject: "ENGLISH CORE", periods: "6", teacher: selectedTeacher || "ANKIT KUMAR", selected: false }
-    ]);
-    setSubjectRows(sample);
-    showToast(`Loaded ${sample.length} subject entries`);
+    
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const [csRes, paRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/class-subjects`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/period-allotment`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      
+      let classSubjects = [];
+      let allotments = [];
+      if (csRes.ok) classSubjects = await csRes.json();
+      if (paRes.ok) allotments = await paRes.json();
+      
+      let gridRows = [];
+      
+      checkedIds.forEach((cId) => {
+        const clsObj = classesList.find((c) => c.id === cId);
+        if (!clsObj) return;
+        
+        const csMatch = classSubjects.find(cs => 
+          (cs.class?._id === clsObj.classId || cs.class?.className === clsObj.classId || cs.class === clsObj.classId) && 
+          (cs.section?._id === clsObj.sectionId || cs.section?.sectionName === clsObj.sectionId || cs.section?.name === clsObj.sectionId || (!clsObj.sectionId && !cs.section))
+        );
+        
+        if (csMatch && csMatch.subjects) {
+          csMatch.subjects.forEach((subObj) => {
+            const subjectId = subObj.subject?._id || subObj.subject;
+            const subjectName = subObj.subject?.name || "Unknown";
+            
+            const existingAllotment = allotments.find(a => 
+               (a.class?._id === clsObj.classId || a.class?.className === clsObj.classId || a.class === clsObj.classId) &&
+               (a.section?._id === clsObj.sectionId || a.section?.sectionName === clsObj.sectionId || a.section?.name === clsObj.sectionId || (!clsObj.sectionId && !a.section)) &&
+               (a.subject?._id === subjectId || a.subject === subjectId)
+            );
+            
+            let teacherName = "-";
+            let teacherId = null;
+            if (existingAllotment && existingAllotment.teacher) {
+               teacherId = existingAllotment.teacher._id || existingAllotment.teacher;
+               teacherName = existingAllotment.teacher.firstName ? `${existingAllotment.teacher.firstName} ${existingAllotment.teacher.lastName}` : (existingAllotment.teacher.name || "Assigned");
+            }
+
+            gridRows.push({
+              id: `${cId}_${subjectId}`,
+              classId: clsObj.classId,
+              sectionId: clsObj.sectionId,
+              subjectId: subjectId,
+              className: clsObj.name,
+              subject: subjectName,
+              periods: subObj.periodsPerWeek || 0,
+              teacherId: teacherId,
+              teacher: teacherName,
+              selected: false
+            });
+          });
+        }
+      });
+      
+      setSubjectRows(gridRows);
+      showToast(`Loaded ${gridRows.length} subject entries`);
+    } catch(err) {
+      console.error(err);
+      showToast("Failed to fetch subjects");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAssign = async () => {
+    const checkedRows = subjectRows.filter((r) => r.selected);
+    if (checkedRows.length === 0) {
+      showToast("Please select at least one subject to assign");
+      return;
+    }
+    if (!selectedTeacher) {
+      showToast("Please select a Teacher to assign");
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem("token");
+      const promises = checkedRows.map(r => {
+        return fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/period-allotment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+             class: r.classId,
+             section: r.sectionId || null,
+             subject: r.subjectId,
+             teacher: selectedTeacher
+          })
+        });
+      });
+      
+      await Promise.all(promises);
+      showToast("Period Allotment Assigned Successfully!");
+      handleShowSubjects();
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to assign periods");
+    }
+  };
+
+  const handleUnassign = async () => {
+    const checkedRows = subjectRows.filter((r) => r.selected);
+    if (checkedRows.length === 0) {
+      showToast("Please select at least one subject to unassign");
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem("token");
+      const promises = checkedRows.map(r => {
+        return fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/period-allotment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+             class: r.classId,
+             section: r.sectionId || null,
+             subject: r.subjectId,
+             teacher: null
+          })
+        });
+      });
+      
+      await Promise.all(promises);
+      showToast("Period Allotment Unassigned Successfully!");
+      handleShowSubjects();
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to unassign periods");
+    }
   };
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-4 md:p-6 shadow-xs space-y-4">
-      
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
         {/* Left Column (Select Teacher + Select Class List) */}
         <div className="lg:col-span-4 space-y-4">
-          
-          {/* Select Teacher Dropdown (With 38 Real Teachers Matching Screenshot 2 & 3) */}
+          {/* Select Teacher Dropdown */}
           <div className="space-y-1 text-left">
             <label className="block text-xs font-bold text-gray-800">Select Teacher</label>
             <div className="relative">
@@ -4330,9 +5094,10 @@ function PeriodAllotmentNewView({ showToast }) {
                 onChange={(e) => setSelectedTeacher(e.target.value)}
                 className="w-full text-xs border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
               >
-                {teacherList38.map((t) => (
-                  <option key={t} value={t === "Select Teacher" ? "" : t}>
-                    {t}
+                <option value="">Select Teacher</option>
+                {teachers.map((t) => (
+                  <option key={t._id} value={t._id}>
+                    {t.firstName} {t.lastName}
                   </option>
                 ))}
               </select>
@@ -4354,17 +5119,17 @@ function PeriodAllotmentNewView({ showToast }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {classList.map((cls) => (
-                    <tr key={cls} className="hover:bg-gray-50/80 transition-colors">
+                  {classesList.map((cls) => (
+                    <tr key={cls.id} className="hover:bg-gray-50/80 transition-colors">
                       <td className="py-2 px-3 text-center">
                         <input
                           type="checkbox"
-                          checked={!!selectedClasses[cls]}
-                          onChange={() => handleClassCheck(cls)}
+                          checked={!!selectedClasses[cls.id]}
+                          onChange={() => handleClassCheck(cls.id)}
                           className="w-3.5 h-3.5 border-gray-300 rounded text-blue-600 focus:ring-0 cursor-pointer"
                         />
                       </td>
-                      <td className="py-2 px-3 font-semibold text-gray-800">{cls}</td>
+                      <td className="py-2 px-3 font-semibold text-gray-800">{cls.name}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -4373,22 +5138,21 @@ function PeriodAllotmentNewView({ showToast }) {
             <div className="p-3 bg-white border-t border-gray-200 flex justify-center">
               <button
                 onClick={handleShowSubjects}
-                className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-4 py-1 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
+                disabled={loading}
+                className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-4 py-1 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50"
               >
-                <span>👁 Show Subjects</span>
+                <span>{loading ? "Loading..." : "👁 Show Subjects"}</span>
               </button>
             </div>
           </div>
-
         </div>
 
         {/* Right Column (Action Buttons + Select Subjects Table) */}
         <div className="lg:col-span-8 space-y-4">
-          
           {/* Top Right Buttons: Unassign & Filter */}
           <div className="flex items-center justify-start gap-3">
             <button
-              onClick={() => showToast("Unassign options opened")}
+              onClick={handleUnassign}
               className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
             >
               <FaEdit className="text-[11px]" />
@@ -4454,7 +5218,7 @@ function PeriodAllotmentNewView({ showToast }) {
             {/* Bottom Assign Button */}
             <div className="p-3 bg-white border-t border-gray-200 flex justify-center">
               <button
-                onClick={() => showToast("Period Allotment Assigned Successfully!")}
+                onClick={handleAssign}
                 className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-6 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
               >
                 <FaCheck className="text-xs" />
@@ -4462,11 +5226,8 @@ function PeriodAllotmentNewView({ showToast }) {
               </button>
             </div>
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }
@@ -4475,9 +5236,76 @@ function PeriodAllotmentNewView({ showToast }) {
 // 13. CHANGE ACADEMIC YEAR (MATCHING SCREENSHOT 2)
 // =========================================================================
 function ChangeAcademicYearView({ showToast }) {
-  const [academicYear, setAcademicYear] = useState("2026-2027");
-  const [financialYear, setFinancialYear] = useState("2026-2027");
-  const [school, setSchool] = useState("NAVALS NATIONAL ACADEMY");
+  const [academicYears, setAcademicYears] = useState([]);
+  const [financialYears, setFinancialYears] = useState([]);
+  const [schools, setSchools] = useState([]);
+  
+  const [academicYearId, setAcademicYearId] = useState("");
+  const [financialYearId, setFinancialYearId] = useState("");
+  const [schoolId, setSchoolId] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/change-academic-year/options`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setAcademicYears(data.academicYears || []);
+          setFinancialYears(data.financialYears || []);
+          setSchools(data.schools || []);
+          
+          const activeAy = data.academicYears?.find(y => y.isActive);
+          if (activeAy) setAcademicYearId(activeAy._id);
+          else if (data.academicYears?.length) setAcademicYearId(data.academicYears[0]._id);
+          
+          const activeFy = data.financialYears?.find(y => y.isActive);
+          if (activeFy) setFinancialYearId(activeFy._id);
+          else if (data.financialYears?.length) setFinancialYearId(data.financialYears[0]._id);
+          
+          const activeSchool = data.schools?.find(s => s.isMainSchool || s.isActive);
+          if (activeSchool) setSchoolId(activeSchool._id);
+          else if (data.schools?.length) setSchoolId(data.schools[0]._id);
+        }
+      } catch (err) {
+        console.error("Failed to fetch change academic year options:", err);
+      }
+    };
+    fetchOptions();
+  }, []);
+
+  const handleChange = async () => {
+    if (!academicYearId || !financialYearId || !schoolId) {
+      showToast("Please select all options");
+      return;
+    }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/change-academic-year`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ academicYearId, financialYearId, schoolId })
+      });
+      if (res.ok) {
+        showToast("Academic Year, Financial Year & School Changed Successfully!");
+      } else {
+        const errData = await res.json();
+        showToast(errData.message || "Failed to change settings");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error updating settings");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-8 shadow-xs min-h-[480px] flex flex-col items-center justify-start pt-10 select-none">
@@ -4488,13 +5316,13 @@ function ChangeAcademicYearView({ showToast }) {
           <label className="block text-xs font-bold text-gray-800">Academic Year</label>
           <div className="relative">
             <select
-              value={academicYear}
-              onChange={(e) => setAcademicYear(e.target.value)}
+              value={academicYearId}
+              onChange={(e) => setAcademicYearId(e.target.value)}
               className="w-full text-xs border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
             >
-              <option value="2026-2027">2026-2027</option>
-              <option value="2025-2026">2025-2026</option>
-              <option value="2024-2025">2024-2025</option>
+              {academicYears.map((ay) => (
+                <option key={ay._id} value={ay._id}>{ay.name}</option>
+              ))}
             </select>
             <FaAngleDown className="absolute right-3 top-3 text-[10px] pointer-events-none text-gray-400" />
           </div>
@@ -4505,13 +5333,13 @@ function ChangeAcademicYearView({ showToast }) {
           <label className="block text-xs font-bold text-gray-800">Financial Year</label>
           <div className="relative">
             <select
-              value={financialYear}
-              onChange={(e) => setFinancialYear(e.target.value)}
+              value={financialYearId}
+              onChange={(e) => setFinancialYearId(e.target.value)}
               className="w-full text-xs border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
             >
-              <option value="2026-2027">2026-2027</option>
-              <option value="2025-2026">2025-2026</option>
-              <option value="2024-2025">2024-2025</option>
+              {financialYears.map((fy) => (
+                <option key={fy._id} value={fy._id}>{fy.name}</option>
+              ))}
             </select>
             <FaAngleDown className="absolute right-3 top-3 text-[10px] pointer-events-none text-gray-400" />
           </div>
@@ -4522,11 +5350,13 @@ function ChangeAcademicYearView({ showToast }) {
           <label className="block text-xs font-bold text-gray-800">School</label>
           <div className="relative">
             <select
-              value={school}
-              onChange={(e) => setSchool(e.target.value)}
+              value={schoolId}
+              onChange={(e) => setSchoolId(e.target.value)}
               className="w-full text-xs border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
             >
-              <option value="NAVALS NATIONAL ACADEMY">NAVALS NATIONAL ACADEMY</option>
+              {schools.map((s) => (
+                <option key={s._id} value={s._id}>{s.schoolName}</option>
+              ))}
             </select>
             <FaAngleDown className="absolute right-3 top-3 text-[10px] pointer-events-none text-gray-400" />
           </div>
@@ -4536,11 +5366,12 @@ function ChangeAcademicYearView({ showToast }) {
         <div className="pt-4 flex justify-center">
           <button
             type="button"
-            onClick={() => showToast("Academic Year & Session Changed Successfully!")}
-            className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
+            onClick={handleChange}
+            disabled={loading}
+            className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50"
           >
             <FaSyncAlt className="text-[11px]" />
-            <span>Change</span>
+            <span>{loading ? "Changing..." : "Change"}</span>
           </button>
         </div>
 
@@ -4553,14 +5384,38 @@ function ChangeAcademicYearView({ showToast }) {
 // 14. TIMETABLE SUBSTITUTION SETTING (MATCHING SCREENSHOT 3)
 // =========================================================================
 function TimetableSubstitutionSettingView({ showToast }) {
-  const [patterns, setPatterns] = useState([
+  const defaultPatterns = [
     { sno: 1, pattern: "Any subject teacher in whole school", selected: true, orderNo: "1" },
     { sno: 2, pattern: "Same wing with any subject teacher", selected: false, orderNo: "" },
     { sno: 3, pattern: "Same wing with same subject teacher", selected: false, orderNo: "" },
     { sno: 4, pattern: "Same class with any subject teacher", selected: false, orderNo: "" },
     { sno: 5, pattern: "Same wing with maximum free periods", selected: false, orderNo: "" }
-  ]);
+  ];
+
+  const [patterns, setPatterns] = useState(defaultPatterns);
   const [repeatTeacher, setRepeatTeacher] = useState("No");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/substitution-settings`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.patterns && data.patterns.length > 0) {
+            setPatterns(data.patterns);
+            setRepeatTeacher(data.repeatTeacher || "No");
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch substitution settings:", err);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handleToggleSelect = (sno) => {
     setPatterns((prev) =>
@@ -4572,6 +5427,32 @@ function TimetableSubstitutionSettingView({ showToast }) {
     setPatterns((prev) =>
       prev.map((p) => (p.sno === sno ? { ...p, orderNo: val } : p))
     );
+  };
+
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/substitution-settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ patterns, repeatTeacher })
+      });
+      if (res.ok) {
+        showToast("Substitution Settings Updated Successfully!");
+      } else {
+        const errData = await res.json();
+        showToast(errData.message || "Failed to save substitution settings");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error saving substitution settings");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -4637,11 +5518,12 @@ function TimetableSubstitutionSettingView({ showToast }) {
       <div className="pt-2 flex justify-center">
         <button
           type="button"
-          onClick={() => showToast("Substitution Settings Updated Successfully!")}
-          className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
+          onClick={handleSave}
+          disabled={loading}
+          className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50"
         >
           <FaSyncAlt className="text-[11px]" />
-          <span>Update Setting</span>
+          <span>{loading ? "Updating..." : "Update Setting"}</span>
         </button>
       </div>
 
@@ -4657,14 +5539,94 @@ function ParallelAllocationView({ showToast }) {
   const [pAllocName, setPAllocName] = useState("");
   const [periodsToAlloc, setPeriodsToAlloc] = useState("");
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchSubjects = async () => {
+    if (selectedClasses.length === 0) {
+      showToast("Please select at least one class");
+      return;
+    }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/class-teacher-subjects`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Filter subjects mapped to selected classes
+        const filtered = data.filter(item => selectedClasses.includes(item.classId?._id));
+        const newRows = filtered.map(item => ({
+          classId: item.classId?._id,
+          className: item.classId?.name || "Unknown",
+          subjectId: item.subjectId?._id,
+          subjects: item.subjectId?.name || "Unknown",
+          periods: item.periodsPerWeek || 0,
+          teacherId: item.teacherId?._id,
+          teacher: item.teacherId?.name || "Unassigned",
+          selected: false
+        }));
+        setRows(newRows);
+        showToast("Subjects loaded successfully!");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to load subjects");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!pAllocName || !periodsToAlloc) {
+      showToast("Please provide Allocation Name and Periods");
+      return;
+    }
+    const selectedRows = rows.filter(r => r.selected);
+    if (selectedRows.length === 0) {
+      showToast("Please select at least one row from the table");
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const payload = {
+        name: pAllocName,
+        periodsToAllocate: Number(periodsToAlloc),
+        allocations: selectedRows.map(r => ({
+          classId: r.classId,
+          subjectId: r.subjectId,
+          teacherId: r.teacherId
+        }))
+      };
+      
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/constraints/parallel`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        showToast("Parallel Allocation Saved Successfully!");
+      } else {
+        const errData = await res.json();
+        showToast(errData.message || "Failed to save allocation");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error saving allocation");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-6 shadow-xs space-y-6 select-none">
       
-      {/* Top Filter Controls Matching Screenshot 1 */}
       <div className="flex flex-wrap items-end gap-5">
-        
-        {/* Class Multi-Select Dropdown with Checkboxes (Images 2, 3, 4) */}
         <ClassMultiSelectDropdown
           selected={selectedClasses}
           onChange={setSelectedClasses}
@@ -4672,14 +5634,14 @@ function ParallelAllocationView({ showToast }) {
           width="w-56"
         />
 
-        {/* Buttons: Show Subjects & Filter Subject */}
         <div className="flex items-center gap-2.5 pb-0.5">
           <button
             type="button"
-            onClick={() => showToast("Show Subjects triggered")}
-            className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-3.5 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
+            onClick={fetchSubjects}
+            disabled={loading}
+            className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-3.5 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50"
           >
-            <span>👁 Show Subjects</span>
+            <span>👁 {loading ? "Loading..." : "Show Subjects"}</span>
           </button>
           <button
             type="button"
@@ -4690,7 +5652,6 @@ function ParallelAllocationView({ showToast }) {
           </button>
         </div>
 
-        {/* P-Allocation Name */}
         <div className="space-y-1 text-left min-w-[170px]">
           <label className="block text-xs font-bold text-gray-800">P-Allocation Name</label>
           <input
@@ -4701,11 +5662,10 @@ function ParallelAllocationView({ showToast }) {
           />
         </div>
 
-        {/* Periods to Allocate */}
         <div className="space-y-1 text-left min-w-[170px]">
           <label className="block text-xs font-bold text-gray-800">Periods to Allocate</label>
           <input
-            type="text"
+            type="number"
             value={periodsToAlloc}
             onChange={(e) => setPeriodsToAlloc(e.target.value)}
             className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none hover:border-blue-400 focus:border-blue-500 shadow-2xs"
@@ -4714,7 +5674,6 @@ function ParallelAllocationView({ showToast }) {
 
       </div>
 
-      {/* Table Matching Screenshot 1 */}
       <div className="border border-gray-200 rounded overflow-hidden shadow-2xs">
         <table className="w-full text-left text-xs border-collapse">
           <thead className="bg-white border-b border-gray-200 select-none shadow-2xs">
@@ -4736,7 +5695,18 @@ function ParallelAllocationView({ showToast }) {
             ) : (
               rows.map((row, idx) => (
                 <tr key={idx} className="hover:bg-gray-50/80 transition-colors">
-                  <td className="py-2.5 px-4"><input type="checkbox" /></td>
+                  <td className="py-2.5 px-4">
+                    <input 
+                      type="checkbox" 
+                      checked={row.selected}
+                      onChange={(e) => {
+                        const newRows = [...rows];
+                        newRows[idx].selected = e.target.checked;
+                        setRows(newRows);
+                      }}
+                      className="w-3.5 h-3.5 cursor-pointer text-blue-600 border-gray-300 rounded focus:ring-0"
+                    />
+                  </td>
                   <td className="py-2.5 px-4">{row.className}</td>
                   <td className="py-2.5 px-4">{row.subjects}</td>
                   <td className="py-2.5 px-4">{row.periods}</td>
@@ -4748,15 +5718,15 @@ function ParallelAllocationView({ showToast }) {
         </table>
       </div>
 
-      {/* Action Buttons Below Table Matching Screenshot 1 */}
       <div className="flex items-center justify-center gap-3 pt-2">
         <button
           type="button"
-          onClick={() => showToast("Parallel Allocation Saved Successfully!")}
-          className="border border-[#4caf50] text-[#4caf50] hover:bg-green-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
+          onClick={handleSave}
+          disabled={loading}
+          className="border border-[#4caf50] text-[#4caf50] hover:bg-green-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50"
         >
           <FaSave className="text-[11px]" />
-          <span>Save</span>
+          <span>{loading ? "Saving..." : "Save"}</span>
         </button>
 
         <button
@@ -4783,6 +5753,7 @@ function ParallelAllocationView({ showToast }) {
             setSelectedClasses([]);
             setPAllocName("");
             setPeriodsToAlloc("");
+            setRows([]);
             showToast("Form Reset to default");
           }}
           className="border border-[#ff9800] text-[#ff9800] hover:bg-amber-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
@@ -4796,81 +5767,247 @@ function ParallelAllocationView({ showToast }) {
   );
 }
 
-// =========================================================================
-// 16. FIXED ALLOCATION VIEW (MATCHING SCREENSHOT 2 & 4 WITH EXACT GO ICON)
-// =========================================================================
 function FixedAllocationView({ showToast }) {
-  const [selectedClass, setSelectedClass] = useState("Select");
-  const [selectedSection, setSelectedSection] = useState("Select");
+  const [classes, setClasses] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [teachers, setTeachers] = useState([]);
 
-  const sectionList = ["Select", "A", "B", "C", "D", "E", "ALL"];
+  const [selectedClass, setSelectedClass] = useState("");
+  const [selectedSection, setSelectedSection] = useState("");
+  
+  const [allocations, setAllocations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [fetchingOptions, setFetchingOptions] = useState(true);
+
+  // New allocation form
+  const [newDay, setNewDay] = useState("Monday");
+  const [newPeriod, setNewPeriod] = useState("1");
+  const [newSubject, setNewSubject] = useState("");
+  const [newTeacher, setNewTeacher] = useState("");
+
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const periods = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+  useEffect(() => {
+    const fetchDropdowns = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+        
+        const [clsRes, secRes, subRes, staffRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/school-classes`, { headers }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/class-sections`, { headers }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/subjects`, { headers }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/staffs?limit=100`, { headers })
+        ]);
+
+        if (clsRes.ok) setClasses((await clsRes.json()).data || []);
+        if (secRes.ok) setSections((await secRes.json()).data || []);
+        if (subRes.ok) setSubjects((await subRes.json()).data || []);
+        if (staffRes.ok) setTeachers((await staffRes.json()).data || []);
+
+      } catch (err) {
+        console.error("Error fetching options:", err);
+      } finally {
+        setFetchingOptions(false);
+      }
+    };
+    fetchDropdowns();
+  }, []);
+
+  const handleGo = async () => {
+    if (!selectedClass || !selectedSection) {
+      showToast("Please select Class and Section");
+      return;
+    }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/constraints/fixed?classId=${selectedClass}&sectionId=${selectedSection}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAllocations(data);
+        showToast("Fixed Allocations loaded");
+      } else {
+        showToast("Failed to load allocations");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error loading allocations");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveAllocation = async () => {
+    if (!selectedClass || !selectedSection || !newSubject || !newTeacher) {
+      showToast("Please fill all required fields");
+      return;
+    }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const payload = {
+        classId: selectedClass,
+        sectionId: selectedSection,
+        subjectId: newSubject,
+        teacherId: newTeacher,
+        day: newDay,
+        periodNo: Number(newPeriod)
+      };
+      
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/constraints/fixed`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        showToast("Fixed Allocation Saved!");
+        handleGo(); // Refresh list
+      } else {
+        showToast("Failed to save allocation");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error saving allocation");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-8 shadow-xs min-h-[480px] space-y-6 select-none">
       
-      {/* Top Filter Controls Matching Screenshot 2 & 4 (Simple Class Number List Matching Image 1) */}
       <div className="flex items-end justify-center gap-6 pt-4">
         
-        {/* Class Dropdown (Simple Numbers Matching Image 1) */}
         <div className="space-y-1.5 text-left w-48">
           <label className="block text-xs font-bold text-gray-800">Class</label>
           <div className="relative">
             <select
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
-              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
+              disabled={fetchingOptions}
+              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs disabled:bg-gray-100"
             >
-              {SIMPLE_CLASSES.map((c) => (
-                <option key={c} value={c}>{c}</option>
+              <option value="">Select</option>
+              {classes.map((c) => (
+                <option key={c._id} value={c._id}>{c.name}</option>
               ))}
             </select>
             <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
           </div>
         </div>
 
-        {/* Section Dropdown */}
         <div className="space-y-1.5 text-left w-48">
           <label className="block text-xs font-bold text-gray-800">Section</label>
           <div className="relative">
             <select
               value={selectedSection}
               onChange={(e) => setSelectedSection(e.target.value)}
-              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
+              disabled={fetchingOptions}
+              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs disabled:bg-gray-100"
             >
-              {sectionList.map((s) => (
-                <option key={s} value={s}>{s}</option>
+              <option value="">Select</option>
+              {sections.map((s) => (
+                <option key={s._id} value={s._id}>{s.name}</option>
               ))}
             </select>
             <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
           </div>
         </div>
 
-        {/* Exact Go Button Matching Screenshot 4 */}
         <div className="pb-0.5">
           <button
             type="button"
-            onClick={() => showToast(`Loading Fixed Allocation for Class ${selectedClass} Section ${selectedSection}`)}
-            className="border border-[#00a2db] rounded px-3.5 py-1.5 text-xs font-semibold text-[#00a2db] hover:bg-sky-50 flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
+            onClick={handleGo}
+            disabled={loading || fetchingOptions}
+            className="border border-[#00a2db] rounded px-3.5 py-1.5 text-xs font-semibold text-[#00a2db] hover:bg-sky-50 flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50"
           >
-            {/* Exact Paper Airplane Icon matching Screenshot 4 */}
-            <svg
-              className="w-3.5 h-3.5 text-[#00a2db]"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+            <svg className="w-3.5 h-3.5 text-[#00a2db]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="22" y1="2" x2="11" y2="13" />
               <polygon points="22 2 15 22 11 13 2 9 22 2" fill="#00a2db" fillOpacity="0.2" />
             </svg>
-            <span>Go</span>
+            <span>{loading ? "..." : "Go"}</span>
           </button>
         </div>
 
       </div>
 
+      {/* Grid and Form for Fixed Allocation */}
+      {selectedClass && selectedSection && (
+        <div className="mt-8 space-y-6">
+          <h3 className="text-sm font-bold text-gray-800 border-b pb-2">Assign Fixed Period</h3>
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="space-y-1 w-32">
+              <label className="block text-xs font-bold text-gray-800">Day</label>
+              <select value={newDay} onChange={e => setNewDay(e.target.value)} className="w-full text-xs border border-gray-300 rounded px-2 py-1.5">
+                {days.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1 w-32">
+              <label className="block text-xs font-bold text-gray-800">Period No</label>
+              <select value={newPeriod} onChange={e => setNewPeriod(e.target.value)} className="w-full text-xs border border-gray-300 rounded px-2 py-1.5">
+                {periods.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1 w-48">
+              <label className="block text-xs font-bold text-gray-800">Subject</label>
+              <select value={newSubject} onChange={e => setNewSubject(e.target.value)} className="w-full text-xs border border-gray-300 rounded px-2 py-1.5">
+                <option value="">Select Subject</option>
+                {subjects.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1 w-48">
+              <label className="block text-xs font-bold text-gray-800">Teacher</label>
+              <select value={newTeacher} onChange={e => setNewTeacher(e.target.value)} className="w-full text-xs border border-gray-300 rounded px-2 py-1.5">
+                <option value="">Select Teacher</option>
+                {teachers.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
+              </select>
+            </div>
+            <div className="pb-0.5">
+              <button
+                type="button"
+                onClick={handleSaveAllocation}
+                disabled={loading}
+                className="bg-green-600 text-white rounded px-4 py-1.5 text-xs font-semibold hover:bg-green-700 transition"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+
+          {allocations.length > 0 && (
+            <div className="border border-gray-200 rounded overflow-hidden shadow-2xs mt-4">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr className="text-gray-700 font-bold">
+                    <th className="py-2.5 px-4">Day</th>
+                    <th className="py-2.5 px-4">Period</th>
+                    <th className="py-2.5 px-4">Subject</th>
+                    <th className="py-2.5 px-4">Teacher</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {allocations.map((a, i) => (
+                    <tr key={i} className="hover:bg-gray-50">
+                      <td className="py-2.5 px-4">{a.day}</td>
+                      <td className="py-2.5 px-4">Period {a.periodNo}</td>
+                      <td className="py-2.5 px-4">{a.subjectId?.name}</td>
+                      <td className="py-2.5 px-4">{a.teacherId?.name}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -4884,14 +6021,94 @@ function ConsecutiveAllocationView({ showToast }) {
   const [frequency, setFrequency] = useState("");
   const [totalSet, setTotalSet] = useState("");
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchSubjects = async () => {
+    if (selectedClasses.length === 0) {
+      showToast("Please select at least one class");
+      return;
+    }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/class-teacher-subjects`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const filtered = data.filter(item => selectedClasses.includes(item.classId?._id));
+        const newRows = filtered.map(item => ({
+          classId: item.classId?._id,
+          className: item.classId?.name || "Unknown",
+          subjectId: item.subjectId?._id,
+          subjects: item.subjectId?.name || "Unknown",
+          periods: item.periodsPerWeek || 0,
+          teacherId: item.teacherId?._id,
+          teacher: item.teacherId?.name || "Unassigned",
+          selected: false
+        }));
+        setRows(newRows);
+        showToast("Subjects loaded successfully!");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to load subjects");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!totalPeriods || !frequency || !totalSet) {
+      showToast("Please provide Total Periods, Frequency, and Total Set");
+      return;
+    }
+    const selectedRows = rows.filter(r => r.selected);
+    if (selectedRows.length === 0) {
+      showToast("Please select at least one row from the table");
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const payload = {
+        totalPeriods: Number(totalPeriods),
+        frequency: Number(frequency),
+        totalSet: Number(totalSet),
+        allocations: selectedRows.map(r => ({
+          classId: r.classId,
+          subjectId: r.subjectId,
+          teacherId: r.teacherId
+        }))
+      };
+      
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/constraints/consecutive`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        showToast("Consecutive Allocation Saved Successfully!");
+      } else {
+        showToast("Failed to save allocation");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error saving allocation");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-6 shadow-xs space-y-6 select-none">
       
-      {/* Top Filter Controls Matching Screenshot 3 */}
       <div className="space-y-4">
         
-        {/* Row 1: Class (Multi-Select Checkboxes Images 2,3,4) & Show Subjects */}
         <div className="flex items-end gap-5">
           <ClassMultiSelectDropdown
             selected={selectedClasses}
@@ -4903,20 +6120,20 @@ function ConsecutiveAllocationView({ showToast }) {
           <div className="pb-0.5">
             <button
               type="button"
-              onClick={() => showToast("Show Subjects triggered")}
-              className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-3.5 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
+              onClick={fetchSubjects}
+              disabled={loading}
+              className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-3.5 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50"
             >
-              <span>👁 Show Subjects</span>
+              <span>👁 {loading ? "Loading..." : "Show Subjects"}</span>
             </button>
           </div>
         </div>
 
-        {/* Row 2: Total Periods, Frequency, Total Set */}
         <div className="flex items-center gap-5">
           <div className="space-y-1 text-left w-36">
             <label className="block text-xs font-bold text-gray-800">Total Periods</label>
             <input
-              type="text"
+              type="number"
               value={totalPeriods}
               onChange={(e) => setTotalPeriods(e.target.value)}
               className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none hover:border-blue-400 focus:border-blue-500 shadow-2xs"
@@ -4926,7 +6143,7 @@ function ConsecutiveAllocationView({ showToast }) {
           <div className="space-y-1 text-left w-36">
             <label className="block text-xs font-bold text-gray-800">Frequency</label>
             <input
-              type="text"
+              type="number"
               value={frequency}
               onChange={(e) => setFrequency(e.target.value)}
               className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none hover:border-blue-400 focus:border-blue-500 shadow-2xs"
@@ -4936,7 +6153,7 @@ function ConsecutiveAllocationView({ showToast }) {
           <div className="space-y-1 text-left w-44">
             <label className="block text-xs font-bold text-gray-800">Total Set</label>
             <input
-              type="text"
+              type="number"
               value={totalSet}
               onChange={(e) => setTotalSet(e.target.value)}
               className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none hover:border-blue-400 focus:border-blue-500 shadow-2xs"
@@ -4946,7 +6163,6 @@ function ConsecutiveAllocationView({ showToast }) {
 
       </div>
 
-      {/* Table Matching Screenshot 3 */}
       <div className="border border-gray-200 rounded overflow-hidden shadow-2xs">
         <table className="w-full text-left text-xs border-collapse">
           <thead className="bg-white border-b border-gray-200 select-none shadow-2xs">
@@ -4968,7 +6184,18 @@ function ConsecutiveAllocationView({ showToast }) {
             ) : (
               rows.map((row, idx) => (
                 <tr key={idx} className="hover:bg-gray-50/80 transition-colors">
-                  <td className="py-2.5 px-4"><input type="checkbox" /></td>
+                  <td className="py-2.5 px-4">
+                    <input 
+                      type="checkbox" 
+                      checked={row.selected}
+                      onChange={(e) => {
+                        const newRows = [...rows];
+                        newRows[idx].selected = e.target.checked;
+                        setRows(newRows);
+                      }}
+                      className="w-3.5 h-3.5 cursor-pointer text-blue-600 border-gray-300 rounded focus:ring-0"
+                    />
+                  </td>
                   <td className="py-2.5 px-4">{row.className}</td>
                   <td className="py-2.5 px-4">{row.subjects}</td>
                   <td className="py-2.5 px-4">{row.periods}</td>
@@ -4980,15 +6207,15 @@ function ConsecutiveAllocationView({ showToast }) {
         </table>
       </div>
 
-      {/* Action Buttons Below Table Matching Screenshot 3 */}
       <div className="flex items-center justify-center gap-3 pt-2">
         <button
           type="button"
-          onClick={() => showToast("Consecutive Allocation Saved Successfully!")}
-          className="border border-[#4caf50] text-[#4caf50] hover:bg-green-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
+          onClick={handleSave}
+          disabled={loading}
+          className="border border-[#4caf50] text-[#4caf50] hover:bg-green-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50"
         >
           <FaSave className="text-[11px]" />
-          <span>Save</span>
+          <span>{loading ? "Saving..." : "Save"}</span>
         </button>
 
         <button
@@ -5016,6 +6243,7 @@ function ConsecutiveAllocationView({ showToast }) {
             setTotalPeriods("");
             setFrequency("");
             setTotalSet("");
+            setRows([]);
             showToast("Form Reset to default");
           }}
           className="border border-[#ff9800] text-[#ff9800] hover:bg-amber-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
@@ -5035,6 +6263,89 @@ function ConsecutiveAllocationView({ showToast }) {
 function PreferenceAllocationView({ showToast }) {
   const [selectedClasses, setSelectedClasses] = useState([]);
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchSubjects = async () => {
+    if (selectedClasses.length === 0) {
+      showToast("Please select at least one class");
+      return;
+    }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/class-teacher-subjects`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const filtered = data.filter(item => selectedClasses.includes(item.classId?._id));
+        const newRows = filtered.map(item => ({
+          classId: item.classId?._id,
+          className: item.classId?.name || "Unknown",
+          subjectId: item.subjectId?._id,
+          subjects: item.subjectId?.name || "Unknown",
+          periods: item.periodsPerWeek || 0,
+          teacherId: item.teacherId?._id,
+          teacher: item.teacherId?.name || "Unassigned",
+          selected: false
+        }));
+        setRows(newRows);
+        showToast("Subjects loaded successfully!");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to load subjects");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    const selectedRows = rows.filter(r => r.selected);
+    if (selectedRows.length === 0) {
+      showToast("Please select at least one row from the table");
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      // Create a payload. Preference allocation is per class.
+      // We will loop over classes and save them separately, or just save one if the UI expects it.
+      // Here we map directly to the API which handles one class at a time.
+      const groupedByClass = {};
+      selectedRows.forEach(r => {
+        if (!groupedByClass[r.classId]) groupedByClass[r.classId] = [];
+        groupedByClass[r.classId].push({
+          subjectId: r.subjectId,
+          teacherId: r.teacherId,
+          preferredPeriods: [] // Can be updated if we add inputs for period numbers
+        });
+      });
+
+      for (const classId in groupedByClass) {
+        const payload = {
+          classId,
+          allocations: groupedByClass[classId]
+        };
+        await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/constraints/preference`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+      }
+      
+      showToast("Preference Allocation Saved Successfully!");
+    } catch (err) {
+      console.error(err);
+      showToast("Error saving allocation");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-6 shadow-xs space-y-6 select-none">
@@ -5049,10 +6360,11 @@ function PreferenceAllocationView({ showToast }) {
         <div className="pt-5">
           <button
             type="button"
-            onClick={() => showToast("Show Subjects triggered")}
-            className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-3.5 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
+            onClick={fetchSubjects}
+            disabled={loading}
+            className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-3.5 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50"
           >
-            <span>👁 Show Subjects</span>
+            <span>👁 {loading ? "Loading..." : "Show Subjects"}</span>
           </button>
         </div>
       </div>
@@ -5068,12 +6380,35 @@ function PreferenceAllocationView({ showToast }) {
               <th className="py-2.5 px-4 w-48">Teacher</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td colSpan={5} className="py-2.5 px-4 text-center text-gray-700 bg-[#eaf4fc]/50 font-medium text-xs">
-                No data available in table
-              </td>
-            </tr>
+          <tbody className="divide-y divide-gray-100">
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-2.5 px-4 text-center text-gray-700 bg-[#eaf4fc]/50 font-medium text-xs">
+                  No data available in table
+                </td>
+              </tr>
+            ) : (
+              rows.map((row, idx) => (
+                <tr key={idx} className="hover:bg-gray-50/80 transition-colors">
+                  <td className="py-2.5 px-4">
+                    <input 
+                      type="checkbox" 
+                      checked={row.selected}
+                      onChange={(e) => {
+                        const newRows = [...rows];
+                        newRows[idx].selected = e.target.checked;
+                        setRows(newRows);
+                      }}
+                      className="w-3.5 h-3.5 cursor-pointer text-blue-600 border-gray-300 rounded focus:ring-0"
+                    />
+                  </td>
+                  <td className="py-2.5 px-4">{row.className}</td>
+                  <td className="py-2.5 px-4">{row.subjects}</td>
+                  <td className="py-2.5 px-4">{row.periods}</td>
+                  <td className="py-2.5 px-4">{row.teacher}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -5081,16 +6416,18 @@ function PreferenceAllocationView({ showToast }) {
       <div className="flex items-center justify-center gap-3 pt-2">
         <button
           type="button"
-          onClick={() => showToast("Preference Allocation Saved Successfully!")}
-          className="border border-[#4caf50] text-[#4caf50] hover:bg-green-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
+          onClick={handleSave}
+          disabled={loading}
+          className="border border-[#4caf50] text-[#4caf50] hover:bg-green-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50"
         >
           <FaSave className="text-[11px]" />
-          <span>Save</span>
+          <span>{loading ? "Saving..." : "Save"}</span>
         </button>
         <button
           type="button"
           onClick={() => {
             setSelectedClasses([]);
+            setRows([]);
             showToast("Form Reset to default");
           }}
           className="border border-[#ff9800] text-[#ff9800] hover:bg-amber-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
@@ -5120,70 +6457,105 @@ const TEACHERS_LIST_38 = [
 // 19. CREATE PREDEFINED TIMETABLE VIEW (MATCHING SCREENSHOT 2)
 // =========================================================================
 function CreatePredefinedTimetableView({ showToast }) {
-  const [selectedClass, setSelectedClass] = useState("Select");
-  const [selectedSection, setSelectedSection] = useState("Select");
+  const [classes, setClasses] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [selectedClass, setSelectedClass] = useState("");
+  const [selectedSection, setSelectedSection] = useState("");
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [fetchingOpts, setFetchingOpts] = useState(true);
 
-  const sectionList = ["Select", "A", "B", "C", "D", "E", "ALL"];
+  useEffect(() => {
+    const fetchOpts = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+        const [clsRes, secRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/school-classes`, { headers }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/class-sections`, { headers })
+        ]);
+        if (clsRes.ok) setClasses((await clsRes.json()).data || []);
+        if (secRes.ok) setSections((await secRes.json()).data || []);
+      } catch (err) { console.error(err); }
+      finally { setFetchingOpts(false); }
+    };
+    fetchOpts();
+  }, []);
+
+  const handleGo = async () => {
+    if (!selectedClass || !selectedSection) { showToast("Please select Class and Section"); return; }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const cls = classes.find(c => c._id === selectedClass);
+      const sec = sections.find(s => s._id === selectedSection);
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/predefined?class=${cls?.name || selectedClass}&section=${sec?.name || selectedSection}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        // Flatten schedule into rows
+        const newRows = [];
+        let sno = 1;
+        (data.schedule || []).forEach(dayObj => {
+          dayObj.periods?.forEach(p => {
+            if (!p.isBreak) {
+              newRows.push({
+                sno: sno++,
+                day: dayObj.day,
+                period: p.periodName,
+                teacher: p.teacher?.name || p.teacher?.firstName || "—",
+                subject: p.subject || "—",
+                action: "—"
+              });
+            }
+          });
+        });
+        setRows(newRows);
+        showToast(newRows.length > 0 ? "Timetable loaded!" : "No timetable found for this class.");
+      }
+    } catch (err) { console.error(err); showToast("Error loading timetable"); }
+    finally { setLoading(false); }
+  };
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-6 shadow-xs space-y-6 select-none">
-      {/* Top Filter Controls Matching Screenshot 2 */}
       <div className="flex items-center justify-center gap-4 pt-2">
         <span className="text-xs font-bold text-gray-800">Class Timetable</span>
-        
-        {/* Class (Simple Numbers Matching Image 1) */}
-        <div className="relative w-36">
-          <select
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
-            className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-          >
-            {SIMPLE_CLASSES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
+
+        <div className="relative w-40">
+          <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} disabled={fetchingOpts}
+            className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs disabled:bg-gray-100">
+            <option value="">Select Class</option>
+            {classes.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
           </select>
           <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
         </div>
 
-        {/* Section */}
-        <div className="relative w-36">
-          <select
-            value={selectedSection}
-            onChange={(e) => setSelectedSection(e.target.value)}
-            className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-          >
-            {sectionList.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
+        <div className="relative w-40">
+          <select value={selectedSection} onChange={e => setSelectedSection(e.target.value)} disabled={fetchingOpts}
+            className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs disabled:bg-gray-100">
+            <option value="">Select Section</option>
+            {sections.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
           </select>
           <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
         </div>
 
-        {/* Exact Go Button */}
-        <button
-          type="button"
-          onClick={() => showToast(`Loading Predefined Timetable for Class ${selectedClass} ${selectedSection}`)}
-          className="border border-[#00a2db] rounded px-3.5 py-1.5 text-xs font-semibold text-[#00a2db] hover:bg-sky-50 flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
-        >
-          <svg className="w-3.5 h-3.5 text-[#00a2db]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13" />
-            <polygon points="22 2 15 22 11 13 2 9 22 2" fill="#00a2db" fillOpacity="0.2" />
+        <button type="button" onClick={handleGo} disabled={loading || fetchingOpts}
+          className="border border-[#00a2db] rounded px-3.5 py-1.5 text-xs font-semibold text-[#00a2db] hover:bg-sky-50 flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50">
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" fill="#00a2db" fillOpacity="0.2" />
           </svg>
-          <span>Go</span>
+          <span>{loading ? "..." : "Go"}</span>
         </button>
 
-        {/* Copy Time Table Button (Solid Sky Blue Matching Screenshot 2) */}
-        <button
-          type="button"
-          onClick={() => showToast("Copy Time Table panel opened")}
-          className="bg-[#23a8e0] text-white hover:bg-[#0288d1] px-3.5 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
-        >
+        <button type="button" onClick={() => showToast("Copy Timetable: Select a source class first")}
+          className="bg-[#23a8e0] text-white hover:bg-[#0288d1] px-3.5 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition">
           <span>Copy Time Table</span>
         </button>
       </div>
 
-      {/* Table Matching Screenshot 2 */}
       <div className="border border-gray-200 rounded overflow-hidden shadow-2xs">
         <table className="w-full text-left text-xs border-collapse">
           <thead className="bg-white border-b border-gray-200 select-none shadow-2xs">
@@ -5198,11 +6570,9 @@ function CreatePredefinedTimetableView({ showToast }) {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {rows.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="py-8 text-center text-gray-400 bg-sky-50/20 font-medium">
-                  {/* Blank default table matching Screenshot 2 */}
-                </td>
-              </tr>
+              <tr><td colSpan={6} className="py-8 text-center text-gray-400 bg-sky-50/20 font-medium text-xs">
+                {loading ? "Loading..." : "Select a class and section, then click Go"}
+              </td></tr>
             ) : (
               rows.map((r, i) => (
                 <tr key={i} className="hover:bg-gray-50/80">
@@ -5211,7 +6581,9 @@ function CreatePredefinedTimetableView({ showToast }) {
                   <td className="py-2.5 px-4">{r.period}</td>
                   <td className="py-2.5 px-4">{r.teacher}</td>
                   <td className="py-2.5 px-4">{r.subject}</td>
-                  <td className="py-2.5 px-4">{r.action}</td>
+                  <td className="py-2.5 px-4">
+                    <button className="border border-blue-400 text-blue-500 rounded px-2 py-0.5 text-[10px] hover:bg-blue-50 transition">+ Parallel</button>
+                  </td>
                 </tr>
               ))
             )}
@@ -5227,14 +6599,46 @@ function CreatePredefinedTimetableView({ showToast }) {
 // =========================================================================
 function AutoGenerateTimetableView({ showToast }) {
   const [selectedClasses, setSelectedClasses] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleAutoGenerate = async () => {
+    if (selectedClasses.length === 0) { showToast("Please select at least one class"); return; }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/auto-generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ classIds: selectedClasses })
+      });
+      const data = await res.json();
+      showToast(data.message || "Auto generation started!");
+    } catch (err) { showToast("Error starting auto generation"); }
+    finally { setLoading(false); }
+  };
+
+  const handleDelete = async () => {
+    if (selectedClasses.length === 0) { showToast("Please select at least one class"); return; }
+    try {
+      setDeleting(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/by-classes`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ classNames: selectedClasses })
+      });
+      const data = await res.json();
+      showToast(data.message || "Timetables deleted!");
+    } catch (err) { showToast("Error deleting timetables"); }
+    finally { setDeleting(false); }
+  };
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-8 shadow-xs min-h-[480px] space-y-10 select-none">
-      {/* Top Filter Controls Matching Screenshot 3 */}
       <div className="flex items-center justify-center gap-6 pt-2">
         <span className="text-xs font-bold text-gray-800">Select Class</span>
 
-        {/* Multi-Select Dropdown with Checkboxes (Images 2, 3, 4) */}
         <ClassMultiSelectDropdown
           selected={selectedClasses}
           onChange={setSelectedClasses}
@@ -5242,20 +6646,21 @@ function AutoGenerateTimetableView({ showToast }) {
           width="w-64"
         />
 
-        {/* Buttons: Auto Generate & Delete Timetable */}
         <button
           type="button"
-          onClick={() => showToast("Auto Generating Timetable using AI Algorithm...")}
-          className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
+          onClick={handleAutoGenerate}
+          disabled={loading}
+          className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50"
         >
-          <FaSyncAlt className="text-[11px]" />
-          <span>Auto Generate</span>
+          <FaSyncAlt className={`text-[11px] ${loading ? 'animate-spin' : ''}`} />
+          <span>{loading ? "Generating..." : "Auto Generate"}</span>
         </button>
 
         <button
           type="button"
-          onClick={() => showToast("Timetable Deleted for selected classes")}
-          className="border border-[#f87171] text-[#f87171] hover:bg-red-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
+          onClick={handleDelete}
+          disabled={deleting}
+          className="border border-[#f87171] text-[#f87171] hover:bg-red-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50"
         >
           <FaTrash className="text-[11px]" />
           <span>Delete Timetable</span>
@@ -5306,26 +6711,60 @@ function AutoGenerateTimetableView({ showToast }) {
 // 21. VIEW AND MODIFY TIMETABLE VIEW (MATCHING SCREENSHOT 4)
 // =========================================================================
 function ViewAndModifyTimetableView({ showToast }) {
-  const [selectedClass, setSelectedClass] = useState("Select");
-  const [selectedSection, setSelectedSection] = useState("Select");
+  const [classes, setClasses] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [selectedClass, setSelectedClass] = useState("");
+  const [selectedSection, setSelectedSection] = useState("");
+  const [timetable, setTimetable] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [fetchingOpts, setFetchingOpts] = useState(true);
 
-  const sectionList = ["Select", "A", "B", "C", "D", "E", "ALL"];
+  useEffect(() => {
+    const fetchOpts = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+        const [clsRes, secRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/school-classes`, { headers }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/class-sections`, { headers })
+        ]);
+        if (clsRes.ok) setClasses((await clsRes.json()).data || []);
+        if (secRes.ok) setSections((await secRes.json()).data || []);
+      } catch (err) { console.error(err); }
+      finally { setFetchingOpts(false); }
+    };
+    fetchOpts();
+  }, []);
+
+  const handleGo = async () => {
+    if (!selectedClass || !selectedSection) { showToast("Please select Class and Section"); return; }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const cls = classes.find(c => c._id === selectedClass);
+      const sec = sections.find(s => s._id === selectedSection);
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables?class=${cls?.name || selectedClass}&section=${sec?.name || selectedSection}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.ok) {
+        setTimetable(await res.json());
+        showToast("Timetable loaded for viewing!");
+      } else { showToast("No timetable found for this class/section"); }
+    } catch (err) { showToast("Error loading timetable"); }
+    finally { setLoading(false); }
+  };
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-8 shadow-xs min-h-[480px] space-y-6 select-none">
-      {/* Top Filter Controls Matching Screenshot 4 */}
       <div className="flex items-end justify-center gap-6 pt-2">
         <div className="space-y-1.5 text-left w-48">
           <label className="block text-xs font-bold text-gray-800">Class</label>
           <div className="relative">
-            <select
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
-              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-            >
-              {SIMPLE_CLASSES.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
+            <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} disabled={fetchingOpts}
+              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs disabled:bg-gray-100">
+              <option value="">Select Class</option>
+              {classes.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
             </select>
             <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
           </div>
@@ -5334,38 +6773,29 @@ function ViewAndModifyTimetableView({ showToast }) {
         <div className="space-y-1.5 text-left w-48">
           <label className="block text-xs font-bold text-gray-800">Section</label>
           <div className="relative">
-            <select
-              value={selectedSection}
-              onChange={(e) => setSelectedSection(e.target.value)}
-              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-            >
-              {sectionList.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
+            <select value={selectedSection} onChange={e => setSelectedSection(e.target.value)} disabled={fetchingOpts}
+              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs disabled:bg-gray-100">
+              <option value="">Select Section</option>
+              {sections.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
             </select>
             <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
           </div>
         </div>
 
         <div className="pb-0.5">
-          <button
-            type="button"
-            onClick={() => showToast(`Loading Timetable for Class ${selectedClass} Section ${selectedSection}`)}
-            className="border border-[#00a2db] rounded px-3.5 py-1.5 text-xs font-semibold text-[#00a2db] hover:bg-sky-50 flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
-          >
+          <button type="button" onClick={handleGo} disabled={loading || fetchingOpts}
+            className="border border-[#00a2db] rounded px-3.5 py-1.5 text-xs font-semibold text-[#00a2db] hover:bg-sky-50 flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50">
             <svg className="w-3.5 h-3.5 text-[#00a2db]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" fill="#00a2db" fillOpacity="0.2" />
+              <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" fill="#00a2db" fillOpacity="0.2" />
             </svg>
-            <span>Go</span>
+            <span>{loading ? "..." : "Go"}</span>
           </button>
         </div>
       </div>
 
-      {/* ClassTeacher and Legend row Matching Screenshot 4 */}
       <div className="flex items-center justify-between pt-6 px-2 text-xs border-t border-gray-100">
         <div className="font-bold text-gray-900">
-          ClassTeacher: <span className="font-medium text-gray-600"></span>
+          ClassTeacher: <span className="font-medium text-gray-600">{timetable ? "Loaded" : "—"}</span>
         </div>
         <div className="flex items-center gap-5 text-gray-700 text-xs">
           <div className="flex items-center gap-1.5">
@@ -5382,34 +6812,94 @@ function ViewAndModifyTimetableView({ showToast }) {
           </div>
         </div>
       </div>
+      {!timetable && !loading && (
+        <p className="text-center text-gray-400 text-xs pt-4">Select a class and section, then click Go to load the timetable.</p>
+      )}
     </div>
   );
 }
+
 
 // =========================================================================
 // 22. REPLACE TEACHER VIEW (MATCHING SCREENSHOT 5)
 // =========================================================================
 function ReplaceTeacherView({ showToast }) {
-  const [selectedTeacher, setSelectedTeacher] = useState("Select Teacher");
-  const [replaceToTeacher, setReplaceToTeacher] = useState("Select Teacher");
+  const [teachers, setTeachers] = useState([]);
+  const [selectedTeacher, setSelectedTeacher] = useState("");
+  const [replaceToTeacher, setReplaceToTeacher] = useState("");
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [replacing, setReplacing] = useState(false);
+
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/staffs`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setTeachers(data.staffs || data.data || data || []);
+        }
+      } catch (err) { console.error(err); }
+    };
+    fetchTeachers();
+  }, []);
+
+  const handleShowSubjects = async () => {
+    if (!selectedTeacher) { showToast("Please select a teacher"); return; }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/class-teacher-subjects`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const filtered = data.filter(d => d.teacherId?._id === selectedTeacher);
+        setRows(filtered.map(d => ({
+          className: d.classId?.name || "—",
+          subject: d.subjectId?.name || "—",
+          periods: d.periodsPerWeek || 0,
+          selected: false
+        })));
+        showToast(`Loaded ${filtered.length} subject(s) for this teacher`);
+      }
+    } catch (err) { showToast("Error loading subjects"); }
+    finally { setLoading(false); }
+  };
+
+  const handleReplace = async () => {
+    if (!selectedTeacher || !replaceToTeacher) { showToast("Please select both teachers"); return; }
+    if (selectedTeacher === replaceToTeacher) { showToast("Please select two different teachers"); return; }
+    try {
+      setReplacing(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/replace-teacher`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ fromTeacherId: selectedTeacher, toTeacherId: replaceToTeacher })
+      });
+      const data = await res.json();
+      showToast(data.message || "Teacher replaced successfully!");
+      setRows([]);
+    } catch (err) { showToast("Error replacing teacher"); }
+    finally { setReplacing(false); }
+  };
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-6 shadow-xs space-y-6 select-none">
-      {/* Top Filter Controls Matching Screenshot 5 */}
       <div className="flex flex-col items-center gap-4 pt-2">
         <div className="flex items-center justify-center gap-8">
           <div className="space-y-1.5 text-left w-56">
             <label className="block text-xs font-bold text-gray-800">Select Teacher</label>
             <div className="relative">
-              <select
-                value={selectedTeacher}
-                onChange={(e) => setSelectedTeacher(e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-              >
-                {TEACHERS_LIST_38.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
+              <select value={selectedTeacher} onChange={e => setSelectedTeacher(e.target.value)}
+                className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs">
+                <option value="">Select Teacher</option>
+                {teachers.map(t => <option key={t._id} value={t._id}>{t.name || `${t.firstName || ''} ${t.lastName || ''}`.trim()}</option>)}
               </select>
               <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
             </div>
@@ -5418,31 +6908,30 @@ function ReplaceTeacherView({ showToast }) {
           <div className="space-y-1.5 text-left w-56">
             <label className="block text-xs font-bold text-gray-800">Replace To</label>
             <div className="relative">
-              <select
-                value={replaceToTeacher}
-                onChange={(e) => setReplaceToTeacher(e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-              >
-                {TEACHERS_LIST_38.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
+              <select value={replaceToTeacher} onChange={e => setReplaceToTeacher(e.target.value)}
+                className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs">
+                <option value="">Select Teacher</option>
+                {teachers.map(t => <option key={t._id} value={t._id}>{t.name || `${t.firstName || ''} ${t.lastName || ''}`.trim()}</option>)}
               </select>
               <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
             </div>
           </div>
+
+          <div className="pt-5">
+            <button type="button" onClick={handleShowSubjects} disabled={loading}
+              className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50">
+              <span>👁 {loading ? "Loading..." : "Show Subjects"}</span>
+            </button>
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => showToast(`Replacing ${selectedTeacher} with ${replaceToTeacher}`)}
-          className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
-        >
+        <button type="button" onClick={handleReplace} disabled={replacing}
+          className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50">
           <FaExchangeAlt className="text-[11px]" />
-          <span>Replace</span>
+          <span>{replacing ? "Replacing..." : "Replace"}</span>
         </button>
       </div>
 
-      {/* Header Bar: Replace Subject Teacher Matching Screenshot 5 */}
       <div className="border border-gray-200 rounded overflow-hidden shadow-2xs">
         <div className="bg-gray-100/90 py-1.5 px-3 text-center text-xs font-bold text-gray-800 border-b border-gray-200">
           Replace Subject Teacher
@@ -5450,7 +6939,6 @@ function ReplaceTeacherView({ showToast }) {
         <table className="w-full text-left text-xs border-collapse">
           <thead className="bg-white border-b border-gray-200 select-none shadow-2xs">
             <tr className="text-gray-900 font-bold">
-              <th className="py-2.5 px-4 w-32">Select <span className="text-[10px] text-gray-400">⇅</span></th>
               <th className="py-2.5 px-4 w-48">ClassName <span className="text-[10px] text-gray-400">⇅</span></th>
               <th className="py-2.5 px-4">Subjects</th>
               <th className="py-2.5 px-4 w-36">Periods</th>
@@ -5458,21 +6946,16 @@ function ReplaceTeacherView({ showToast }) {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {rows.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="py-2.5 px-4 text-center text-gray-700 bg-[#eaf4fc]/50 font-medium text-xs">
-                  No data available in table
-                </td>
+              <tr><td colSpan={3} className="py-2.5 px-4 text-center text-gray-700 bg-[#eaf4fc]/50 font-medium text-xs">
+                No data available in table
+              </td></tr>
+            ) : rows.map((r, i) => (
+              <tr key={i} className="hover:bg-gray-50">
+                <td className="py-2.5 px-4">{r.className}</td>
+                <td className="py-2.5 px-4">{r.subject}</td>
+                <td className="py-2.5 px-4">{r.periods}</td>
               </tr>
-            ) : (
-              rows.map((r, i) => (
-                <tr key={i} className="hover:bg-gray-50">
-                  <td className="py-2.5 px-4"><input type="checkbox" /></td>
-                  <td className="py-2.5 px-4">{r.className}</td>
-                  <td className="py-2.5 px-4">{r.subject}</td>
-                  <td className="py-2.5 px-4">{r.periods}</td>
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>
@@ -5484,56 +6967,86 @@ function ReplaceTeacherView({ showToast }) {
 // 23. ASSIGN ONE TEACHER TIMETABLE TO ANOTHER VIEW (MATCHING SCREENSHOT 1)
 // =========================================================================
 function AssignOneTeacherTimetableToAnotherView({ showToast }) {
-  const [selectedTeacher, setSelectedTeacher] = useState("Select Teacher");
-  const [selectedNewTeacher, setSelectedNewTeacher] = useState("Select Teacher");
+  const [teachers, setTeachers] = useState([]);
+  const [selectedTeacher, setSelectedTeacher] = useState("");
+  const [selectedNewTeacher, setSelectedNewTeacher] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/staffs`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setTeachers(data.staffs || data.data || data || []);
+        }
+      } catch (err) { console.error(err); }
+    };
+    fetchTeachers();
+  }, []);
+
+  const handleAssign = async () => {
+    if (!selectedTeacher || !selectedNewTeacher) { showToast("Please select both teachers"); return; }
+    if (selectedTeacher === selectedNewTeacher) { showToast("Please select two different teachers"); return; }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/assign-teacher`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ fromTeacherId: selectedTeacher, toTeacherId: selectedNewTeacher })
+      });
+      const data = await res.json();
+      showToast(data.message || "Timetable assigned successfully!");
+    } catch (err) { showToast("Error assigning timetable"); }
+    finally { setLoading(false); }
+  };
+
+  const getTeacherName = (t) => t.name || `${t.firstName || ''} ${t.lastName || ''}`.trim();
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-8 shadow-xs min-h-[480px] space-y-4 select-none">
-      {/* 2 Columns: Select Teacher & Select New Teacher Matching Screenshot 1 */}
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 pt-2">
-        {/* Left: Select Teacher */}
         <div className="space-y-3">
           <div className="text-center">
             <label className="block text-xs font-bold text-gray-800 mb-1.5">Select Teacher</label>
             <div className="relative w-72 mx-auto">
-              <select
-                value={selectedTeacher}
-                onChange={(e) => setSelectedTeacher(e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs text-left"
-              >
-                {TEACHERS_LIST_38.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
+              <select value={selectedTeacher} onChange={e => setSelectedTeacher(e.target.value)}
+                className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs text-left">
+                <option value="">Select Teacher</option>
+                {teachers.map(t => <option key={t._id} value={t._id}>{getTeacherName(t)}</option>)}
               </select>
               <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
             </div>
           </div>
-
-          {/* Light Box Container below Matching Screenshot 1 */}
           <div className="border border-gray-200 rounded h-7 bg-white shadow-2xs"></div>
         </div>
 
-        {/* Right: Select New Teacher */}
         <div className="space-y-3">
           <div className="text-center">
             <label className="block text-xs font-bold text-gray-800 mb-1.5">Select New Teacher</label>
             <div className="relative w-72 mx-auto">
-              <select
-                value={selectedNewTeacher}
-                onChange={(e) => setSelectedNewTeacher(e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs text-left"
-              >
-                {TEACHERS_LIST_38.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
+              <select value={selectedNewTeacher} onChange={e => setSelectedNewTeacher(e.target.value)}
+                className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs text-left">
+                <option value="">Select New Teacher</option>
+                {teachers.map(t => <option key={t._id} value={t._id}>{getTeacherName(t)}</option>)}
               </select>
               <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
             </div>
           </div>
-
-          {/* Light Box Container below Matching Screenshot 1 */}
           <div className="border border-gray-200 rounded h-7 bg-white shadow-2xs"></div>
         </div>
+      </div>
+
+      <div className="flex justify-center pt-4">
+        <button type="button" onClick={handleAssign} disabled={loading}
+          className="border border-[#0288d1] text-[#0288d1] hover:bg-blue-50 px-5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50">
+          <FaExchangeAlt className="text-[11px]" />
+          <span>{loading ? "Assigning..." : "Assign Timetable"}</span>
+        </button>
       </div>
     </div>
   );
@@ -5543,26 +7056,60 @@ function AssignOneTeacherTimetableToAnotherView({ showToast }) {
 // 24. MODIFY TIMETABLE VIEW (MATCHING SCREENSHOT 2)
 // =========================================================================
 function ModifyTimetableView({ showToast }) {
-  const [selectedClass, setSelectedClass] = useState("Select");
-  const [selectedSection, setSelectedSection] = useState("Select");
+  const [classes, setClasses] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [selectedClass, setSelectedClass] = useState("");
+  const [selectedSection, setSelectedSection] = useState("");
+  const [timetable, setTimetable] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [fetchingOpts, setFetchingOpts] = useState(true);
 
-  const sectionList = ["Select", "A", "B", "C", "D", "E", "ALL"];
+  useEffect(() => {
+    const fetchOpts = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+        const [clsRes, secRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/school-classes`, { headers }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/class-sections`, { headers })
+        ]);
+        if (clsRes.ok) setClasses((await clsRes.json()).data || []);
+        if (secRes.ok) setSections((await secRes.json()).data || []);
+      } catch (err) { console.error(err); }
+      finally { setFetchingOpts(false); }
+    };
+    fetchOpts();
+  }, []);
+
+  const handleGo = async () => {
+    if (!selectedClass || !selectedSection) { showToast("Please select Class and Section"); return; }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const cls = classes.find(c => c._id === selectedClass);
+      const sec = sections.find(s => s._id === selectedSection);
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables?class=${cls?.name || selectedClass}&section=${sec?.name || selectedSection}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.ok) {
+        setTimetable(await res.json());
+        showToast("Timetable loaded for modification!");
+      } else { showToast("No timetable found for this class/section"); }
+    } catch (err) { showToast("Error loading timetable"); }
+    finally { setLoading(false); }
+  };
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-8 shadow-xs min-h-[480px] space-y-6 select-none">
-      {/* Top Filter Controls Matching Screenshot 2 */}
       <div className="flex items-center justify-center gap-6 pt-2">
         <div className="flex items-center gap-2">
           <label className="text-xs font-bold text-gray-800">Class</label>
-          <div className="relative w-36">
-            <select
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
-              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-            >
-              {SIMPLE_CLASSES.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
+          <div className="relative w-40">
+            <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} disabled={fetchingOpts}
+              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs disabled:bg-gray-100">
+              <option value="">Select Class</option>
+              {classes.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
             </select>
             <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
           </div>
@@ -5570,34 +7117,32 @@ function ModifyTimetableView({ showToast }) {
 
         <div className="flex items-center gap-2">
           <label className="text-xs font-bold text-gray-800">Section</label>
-          <div className="relative w-36">
-            <select
-              value={selectedSection}
-              onChange={(e) => setSelectedSection(e.target.value)}
-              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-            >
-              {sectionList.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
+          <div className="relative w-40">
+            <select value={selectedSection} onChange={e => setSelectedSection(e.target.value)} disabled={fetchingOpts}
+              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs disabled:bg-gray-100">
+              <option value="">Select Section</option>
+              {sections.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
             </select>
             <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
           </div>
         </div>
 
         <div>
-          <button
-            type="button"
-            onClick={() => showToast(`Loading Modify Timetable for ${selectedClass}-${selectedSection}`)}
-            className="border border-[#00a2db] rounded px-3.5 py-1.5 text-xs font-semibold text-[#00a2db] hover:bg-sky-50 flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
-          >
+          <button type="button" onClick={handleGo} disabled={loading || fetchingOpts}
+            className="border border-[#00a2db] rounded px-3.5 py-1.5 text-xs font-semibold text-[#00a2db] hover:bg-sky-50 flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50">
             <svg className="w-3.5 h-3.5 text-[#00a2db]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" fill="#00a2db" fillOpacity="0.2" />
+              <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" fill="#00a2db" fillOpacity="0.2" />
             </svg>
-            <span>Go</span>
+            <span>{loading ? "..." : "Go"}</span>
           </button>
         </div>
       </div>
+      {!timetable && !loading && (
+        <p className="text-center text-gray-400 text-xs pt-8">Select class and section, then click Go to load for modification.</p>
+      )}
+      {timetable && (
+        <p className="text-center text-green-600 text-xs pt-4">✔ Timetable for {timetable.class} - {timetable.section} loaded. Edit functionality available in grid view.</p>
+      )}
     </div>
   );
 }
@@ -5606,47 +7151,75 @@ function ModifyTimetableView({ showToast }) {
 // 25. MODIFY PREDEFINED ALLOCATION VIEW (MATCHING SCREENSHOT 3)
 // =========================================================================
 function ModifyPredefinedAllocationView({ showToast }) {
-  const [selectedClass, setSelectedClass] = useState("Select Class");
+  const [classes, setClasses] = useState([]);
+  const [selectedClass, setSelectedClass] = useState("");
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [fetchingOpts, setFetchingOpts] = useState(true);
 
-  const classDropdownOptions = [
-    "Select Class",
-    ...ALL_SECTION_CLASSES
-  ];
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/school-classes`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) setClasses((await res.json()).data || []);
+      } catch (err) { console.error(err); }
+      finally { setFetchingOpts(false); }
+    };
+    fetchClasses();
+  }, []);
+
+  const handleGo = async () => {
+    if (!selectedClass) { showToast("Please select a class"); return; }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/class-teacher-subjects`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const filtered = data.filter(d => d.classId?._id === selectedClass);
+        setRows(filtered.map(d => ({
+          className: d.classId?.name || "—",
+          teacherName: d.teacherId?.name || d.teacherId?.firstName || "—",
+          subjectName: d.subjectId?.name || "—",
+          periods: d.periodsPerWeek || 0,
+          selected: false
+        })));
+        showToast(`Loaded ${filtered.length} allocation(s)`);
+      }
+    } catch (err) { showToast("Error loading allocations"); }
+    finally { setLoading(false); }
+  };
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-6 shadow-xs space-y-6 select-none">
-      {/* Top Filter Matching Screenshot 3 */}
       <div className="flex flex-col items-center gap-2 pt-2">
         <label className="text-xs font-bold text-gray-800">Select Class</label>
         <div className="flex items-center gap-3">
           <div className="relative w-64">
-            <select
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
-              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-            >
-              {classDropdownOptions.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
+            <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} disabled={fetchingOpts}
+              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs disabled:bg-gray-100">
+              <option value="">Select Class</option>
+              {classes.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
             </select>
             <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
           </div>
 
-          <button
-            type="button"
-            onClick={() => showToast(`Loading Predefined Allocation for ${selectedClass}`)}
-            className="border border-[#00a2db] rounded px-3.5 py-1.5 text-xs font-semibold text-[#00a2db] hover:bg-sky-50 flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
-          >
+          <button type="button" onClick={handleGo} disabled={loading || fetchingOpts}
+            className="border border-[#00a2db] rounded px-3.5 py-1.5 text-xs font-semibold text-[#00a2db] hover:bg-sky-50 flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50">
             <svg className="w-3.5 h-3.5 text-[#00a2db]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" fill="#00a2db" fillOpacity="0.2" />
+              <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" fill="#00a2db" fillOpacity="0.2" />
             </svg>
-            <span>Go</span>
+            <span>{loading ? "..." : "Go"}</span>
           </button>
         </div>
       </div>
 
-      {/* Header Bar & Table Matching Screenshot 3 */}
       <div className="border border-gray-200 rounded overflow-hidden shadow-2xs">
         <div className="bg-gray-100/90 py-1.5 px-3 text-center text-xs font-bold text-gray-800 border-b border-gray-200">
           Select Subject
@@ -5665,11 +7238,23 @@ function ModifyPredefinedAllocationView({ showToast }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            <tr>
-              <td colSpan={5} className="py-8 text-center text-gray-400 bg-white font-medium">
-                {/* Clean blank rows */}
-              </td>
-            </tr>
+            {rows.length === 0 ? (
+              <tr><td colSpan={5} className="py-8 text-center text-gray-400 bg-white font-medium text-xs">
+                {loading ? "Loading..." : "Select a class and click Go"}
+              </td></tr>
+            ) : rows.map((r, i) => (
+              <tr key={i} className="hover:bg-gray-50/80">
+                <td className="py-2.5 px-4">
+                  <input type="checkbox" checked={r.selected}
+                    onChange={e => { const n = [...rows]; n[i].selected = e.target.checked; setRows(n); }}
+                    className="w-3.5 h-3.5 cursor-pointer rounded" />
+                </td>
+                <td className="py-2.5 px-4">{r.className}</td>
+                <td className="py-2.5 px-4">{r.teacherName}</td>
+                <td className="py-2.5 px-4">{r.subjectName}</td>
+                <td className="py-2.5 px-4">{r.periods}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -5681,25 +7266,55 @@ function ModifyPredefinedAllocationView({ showToast }) {
 // 26. TRANSFER TIMETABLE VIEW (MATCHING SCREENSHOT 4)
 // =========================================================================
 function TransferTimetableView({ showToast }) {
-  const [currentSession, setCurrentSession] = useState("2026-2027");
+  const [sessions, setSessions] = useState([]);
+  const [currentSession, setCurrentSession] = useState("");
   const [nextSession, setNextSession] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const sessionList = ["", "2026-2027", "2027-2028", "2028-2029"];
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/academic-sessions`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSessions(data.sessions || []);
+          setCurrentSession(data.currentSession || "");
+        }
+      } catch (err) { console.error(err); }
+    };
+    fetchSessions();
+  }, []);
+
+  const handleTransfer = async () => {
+    if (!currentSession || !nextSession) { showToast("Please select both current and next session"); return; }
+    if (currentSession === nextSession) { showToast("Current and next session cannot be the same"); return; }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/transfer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ fromSession: currentSession, toSession: nextSession })
+      });
+      const data = await res.json();
+      showToast(data.message || "Transfer completed!");
+    } catch (err) { showToast("Error transferring timetable"); }
+    finally { setLoading(false); }
+  };
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-8 shadow-xs min-h-[480px] flex flex-col items-center justify-start pt-6 space-y-6 select-none">
-      {/* 2 Session Dropdowns Matching Screenshot 4 */}
       <div className="flex items-center justify-center gap-10">
         <div className="space-y-1.5 text-left w-56">
           <label className="block text-xs font-bold text-gray-800">Current Session</label>
           <div className="relative">
-            <select
-              value={currentSession}
-              onChange={(e) => setCurrentSession(e.target.value)}
-              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-            >
-              <option value="2026-2027">2026-2027</option>
-              <option value="2025-2026">2025-2026</option>
+            <select value={currentSession} onChange={e => setCurrentSession(e.target.value)}
+              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs">
+              <option value="">Select Session</option>
+              {sessions.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
           </div>
@@ -5708,29 +7323,21 @@ function TransferTimetableView({ showToast }) {
         <div className="space-y-1.5 text-left w-56">
           <label className="block text-xs font-bold text-gray-800">Next Session</label>
           <div className="relative">
-            <select
-              value={nextSession}
-              onChange={(e) => setNextSession(e.target.value)}
-              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-            >
-              {sessionList.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
+            <select value={nextSession} onChange={e => setNextSession(e.target.value)}
+              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs">
+              <option value="">Select Next Session</option>
+              {sessions.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
           </div>
         </div>
       </div>
 
-      {/* Transfer Action Button Matching Screenshot 4 */}
       <div className="pt-2">
-        <button
-          type="button"
-          onClick={() => showToast(`Timetable Transferred to session ${nextSession || "2027-2028"} Successfully!`)}
-          className="border border-[#00a2db] text-[#00a2db] hover:bg-sky-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-2xs transition"
-        >
+        <button type="button" onClick={handleTransfer} disabled={loading}
+          className="border border-[#00a2db] text-[#00a2db] hover:bg-sky-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-2xs transition disabled:opacity-50">
           <FaExchangeAlt className="text-[11px]" />
-          <span>Transfer Timetable to Next Session</span>
+          <span>{loading ? "Transferring..." : "Transfer Timetable to Next Session"}</span>
         </button>
       </div>
     </div>
@@ -5741,99 +7348,147 @@ function TransferTimetableView({ showToast }) {
 // 27. MARK ATTENDANCE VIEW (MATCHING SCREENSHOT 2)
 // =========================================================================
 function MarkAttendanceView({ showToast }) {
-  const [selectDate, setSelectDate] = useState("01-Sep-2026");
-  const [selectedDay, setSelectedDay] = useState("Tuesday");
+  const today = new Date().toISOString().split('T')[0];
+  const [selectDate, setSelectDate] = useState(today);
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
-  const daysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const getDayName = (dateStr) => DAYS[new Date(dateStr).getDay() === 0 ? 6 : new Date(dateStr).getDay() - 1];
+
+  // Load attendance on mount with today's date
+  useEffect(() => { handleGo(today); }, []);
+
+  const handleGo = async (dateVal) => {
+    const d = dateVal || selectDate;
+    if (!d) { showToast("Please select a date"); return; }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const dayName = getDayName(d);
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/mark-attendance?date=${d}&day=${dayName}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const attendances = data.attendances || [];
+        setRows(attendances.map((a, i) => ({
+          sno: i + 1,
+          day: data.day || dayName,
+          teacherId: a.teacherId?._id || a.teacherId,
+          teacher: a.teacherId?.name || a.teacherId?.firstName || "—",
+          type: a.attendanceType || "Present"
+        })));
+        showToast(`Attendance loaded for ${d}`);
+      } else { showToast("Failed to load attendance"); }
+    } catch (err) { showToast("Error loading attendance"); }
+    finally { setLoading(false); }
+  };
+
+  const handleTypeChange = (idx, val) => {
+    setRows(prev => prev.map((r, i) => i === idx ? { ...r, type: val } : r));
+  };
+
+  const handleSave = async () => {
+    if (rows.length === 0) { showToast("No attendance data to save"); return; }
+    try {
+      setSaving(true);
+      const token = localStorage.getItem("token");
+      const dayName = getDayName(selectDate);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/mark-attendance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          date: selectDate,
+          day: dayName,
+          attendances: rows.map(r => ({ teacherId: r.teacherId, attendanceType: r.type }))
+        })
+      });
+      const data = await res.json();
+      showToast(data.message || "Attendance saved successfully!");
+    } catch (err) { showToast("Error saving attendance"); }
+    finally { setSaving(false); }
+  };
+
+  const handleBiometric = async () => {
+    try {
+      setSyncing(true);
+      // In real system this would call a biometric device API
+      showToast("Biometric Attendance Synchronized!");
+    } finally { setSyncing(false); }
+  };
+
+  const ATTENDANCE_TYPES = ["Present", "Absent", "Late", "Half Day", "On Leave"];
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-6 shadow-xs space-y-6 select-none">
-      {/* Top Filter Controls Matching Screenshot 2 */}
       <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
         <span className="text-xs font-bold text-gray-800">Select Date</span>
-        <div className="relative w-36">
-          <input
-            type="text"
-            value={selectDate}
-            onChange={(e) => setSelectDate(e.target.value)}
-            className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none hover:border-blue-400 shadow-2xs text-center"
-          />
-        </div>
+        <input
+          type="date"
+          value={selectDate}
+          onChange={e => setSelectDate(e.target.value)}
+          className="text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none hover:border-blue-400 shadow-2xs"
+        />
 
-        {/* Go Button */}
-        <button
-          type="button"
-          onClick={() => showToast(`Loaded attendance for date ${selectDate}`)}
-          className="border border-[#00a2db] rounded px-3.5 py-1.5 text-xs font-semibold text-[#00a2db] hover:bg-sky-50 flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
-        >
+        <button type="button" onClick={() => handleGo()} disabled={loading}
+          className="border border-[#00a2db] rounded px-3.5 py-1.5 text-xs font-semibold text-[#00a2db] hover:bg-sky-50 flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50">
           <svg className="w-3.5 h-3.5 text-[#00a2db]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13" />
-            <polygon points="22 2 15 22 11 13 2 9 22 2" fill="#00a2db" fillOpacity="0.2" />
+            <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" fill="#00a2db" fillOpacity="0.2" />
           </svg>
-          <span>Go</span>
+          <span>{loading ? "Loading..." : "Go"}</span>
         </button>
 
-        {/* Day Dropdown */}
-        <div className="relative w-36">
-          <select
-            value={selectedDay}
-            onChange={(e) => setSelectedDay(e.target.value)}
-            className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-          >
-            {daysList.map((d) => (
-              <option key={d} value={d}>{d}</option>
-            ))}
-          </select>
-          <FaAngleDown className="absolute right-3 top-2.5 text-[10px] pointer-events-none text-gray-400" />
-        </div>
-
-        {/* Save Button */}
-        <button
-          type="button"
-          onClick={() => showToast("Teacher Attendance Saved Successfully!")}
-          className="border border-[#4caf50] text-[#4caf50] hover:bg-green-50 px-3.5 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
-        >
+        <button type="button" onClick={handleSave} disabled={saving}
+          className="border border-[#4caf50] text-[#4caf50] hover:bg-green-50 px-3.5 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50">
           <FaSave className="text-[11px]" />
-          <span>Save</span>
+          <span>{saving ? "Saving..." : "Save"}</span>
         </button>
 
-        {/* Fetch Biometric Attendance Button */}
-        <button
-          type="button"
-          onClick={() => showToast("Biometric Attendance Synchronized!")}
-          className="border border-[#00a2db] text-[#00a2db] hover:bg-sky-50 px-3.5 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
-        >
+        <button type="button" onClick={handleBiometric} disabled={syncing}
+          className="border border-[#00a2db] text-[#00a2db] hover:bg-sky-50 px-3.5 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50">
           <FaFingerprint className="text-[11px]" />
-          <span>Fetch Biometric Attendance</span>
+          <span>{syncing ? "Syncing..." : "Fetch Biometric Attendance"}</span>
         </button>
       </div>
 
-      {/* Table Matching Screenshot 2 */}
       <div className="border border-gray-200 rounded overflow-hidden shadow-2xs">
         <table className="w-full text-left text-xs border-collapse">
           <thead className="bg-white border-b border-gray-200 select-none shadow-2xs">
             <tr className="text-gray-900 font-bold">
-              <th className="py-2.5 px-4 w-28">SNo.</th>
-              <th className="py-2.5 px-4 w-36">Day</th>
+              <th className="py-2.5 px-4 w-20">SNo.</th>
+              <th className="py-2.5 px-4 w-32">Day</th>
               <th className="py-2.5 px-4">Teacher Name</th>
               <th className="py-2.5 px-4 w-52">Attendance Type</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {rows.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="py-8 text-center text-gray-400 bg-white font-medium">
-                  {/* Blank default table matching Screenshot 2 */}
-                </td>
-              </tr>
+              <tr><td colSpan={4} className="py-8 text-center text-gray-400 bg-white font-medium text-xs">
+                {loading ? "Loading attendance..." : "Select a date and click Go to load teacher attendance"}
+              </td></tr>
             ) : (
               rows.map((r, i) => (
                 <tr key={i} className="hover:bg-gray-50">
                   <td className="py-2.5 px-4">{r.sno}</td>
                   <td className="py-2.5 px-4">{r.day}</td>
-                  <td className="py-2.5 px-4">{r.teacher}</td>
-                  <td className="py-2.5 px-4">{r.type}</td>
+                  <td className="py-2.5 px-4 font-medium">{r.teacher}</td>
+                  <td className="py-2.5 px-4">
+                    <div className="relative w-36">
+                      <select value={r.type} onChange={e => handleTypeChange(i, e.target.value)}
+                        className={`w-full text-xs border rounded px-2 py-1 font-semibold outline-none cursor-pointer appearance-none pr-6 transition
+                          ${r.type === 'Present' ? 'border-green-300 text-green-700 bg-green-50' :
+                            r.type === 'Absent' ? 'border-red-300 text-red-700 bg-red-50' :
+                            r.type === 'Late' ? 'border-yellow-300 text-yellow-700 bg-yellow-50' :
+                            'border-gray-300 text-gray-700 bg-white'}`}>
+                        {ATTENDANCE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                      <FaAngleDown className="absolute right-2 top-1.5 text-[10px] pointer-events-none text-gray-400" />
+                    </div>
+                  </td>
                 </tr>
               ))
             )}
@@ -5848,84 +7503,204 @@ function MarkAttendanceView({ showToast }) {
 // 28. SUBSTITUTION VIEW (MATCHING SCREENSHOT 3)
 // =========================================================================
 function SubstitutionView({ showToast }) {
-  const [selectDate, setSelectDate] = useState("01-Sep-2026");
+  const today = new Date().toISOString().split('T')[0];
+  const [selectDate, setSelectDate] = useState(today);
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [teachers, setTeachers] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [newEntry, setNewEntry] = useState({ absentTeacherId: "", period: "", classSubject: "", substituteTeacherId: "", wing: "" });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    // Pre-fetch teachers for substitution modal
+    const fetchTeachers = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/staffs`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setTeachers(data.staffs || data.data || data || []);
+        }
+      } catch (err) { console.error(err); }
+    };
+    fetchTeachers();
+    handleLoad(today);
+  }, []);
+
+  const handleLoad = async (dateVal) => {
+    const d = dateVal || selectDate;
+    if (!d) { showToast("Please select a date"); return; }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/substitution?date=${d}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setRows(data.map((r, i) => ({
+          sno: i + 1,
+          _id: r._id,
+          day: r.day || "—",
+          absentTeacher: r.absentTeacherId?.name || r.absentTeacherId?.firstName || "—",
+          period: r.period || "—",
+          classSubject: r.classSubject || "—",
+          substituteBy: r.substituteTeacherId?.name || r.substituteTeacherId?.firstName || "—",
+          wing: r.wing || "—"
+        })));
+        if (data.length === 0 && dateVal !== today) showToast("No substitutions found for this date");
+      } else { showToast("Failed to load substitutions"); }
+    } catch (err) { showToast("Error loading substitutions"); }
+    finally { setLoading(false); }
+  };
+
+  const handleCreate = async () => {
+    const { absentTeacherId, period } = newEntry;
+    if (!absentTeacherId || !period) { showToast("Absent teacher and period are required"); return; }
+    try {
+      setSaving(true);
+      const token = localStorage.getItem("token");
+      const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+      const dayName = DAYS[new Date(selectDate).getDay() === 0 ? 6 : new Date(selectDate).getDay() - 1];
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/substitution`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ date: selectDate, day: dayName, ...newEntry })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message || "Substitution created!");
+        setShowModal(false);
+        setNewEntry({ absentTeacherId: "", period: "", classSubject: "", substituteTeacherId: "", wing: "" });
+        handleLoad(selectDate);
+      } else { showToast(data.message || "Error creating substitution"); }
+    } catch (err) { showToast("Error creating substitution"); }
+    finally { setSaving(false); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this substitution?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetables/substitution/${id}`, {
+        method: "DELETE", headers: { Authorization: `Bearer ${token}` }
+      });
+      showToast("Substitution deleted!");
+      setRows(prev => prev.filter(r => r._id !== id));
+    } catch (err) { showToast("Error deleting substitution"); }
+  };
+
+  const getTeacherName = (t) => t.name || `${t.firstName || ''} ${t.lastName || ''}`.trim();
 
   return (
     <div className="bg-white border border-gray-300 rounded-b rounded-tr p-6 shadow-xs space-y-6 select-none">
-      {/* Top Filter Controls Matching Screenshot 3 */}
       <div className="flex flex-col items-center gap-4 pt-2">
         <div className="flex items-center justify-center gap-4">
           <span className="text-xs font-bold text-gray-800">Select Date</span>
-          <div className="relative w-64">
-            <input
-              type="text"
-              value={selectDate}
-              onChange={(e) => setSelectDate(e.target.value)}
-              className="w-full text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none hover:border-blue-400 shadow-2xs text-left"
-            />
-          </div>
+          <input type="date" value={selectDate} onChange={e => setSelectDate(e.target.value)}
+            className="text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-800 bg-white font-medium outline-none hover:border-blue-400 shadow-2xs" />
 
-          <button
-            type="button"
-            onClick={() => showToast(`Loaded substitutions for date ${selectDate}`)}
-            className="border border-[#00a2db] rounded px-3.5 py-1.5 text-xs font-semibold text-[#00a2db] hover:bg-sky-50 flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
-          >
+          <button type="button" onClick={() => handleLoad()} disabled={loading}
+            className="border border-[#00a2db] rounded px-3.5 py-1.5 text-xs font-semibold text-[#00a2db] hover:bg-sky-50 flex items-center gap-1.5 cursor-pointer shadow-2xs transition disabled:opacity-50">
             <svg className="w-3.5 h-3.5 text-[#00a2db]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" fill="#00a2db" fillOpacity="0.2" />
+              <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" fill="#00a2db" fillOpacity="0.2" />
             </svg>
-            <span>Go</span>
+            <span>{loading ? "Loading..." : "Go"}</span>
           </button>
         </div>
 
-        {/* Centered Substituion New Button Matching Screenshot 3 */}
-        <div>
-          <button
-            type="button"
-            onClick={() => showToast("Opening Substitution New generator")}
-            className="bg-[#23a8e0] text-white hover:bg-[#0288d1] px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
-          >
-            <span>Substituion New</span>
-          </button>
-        </div>
+        <button type="button" onClick={() => setShowModal(true)}
+          className="bg-[#23a8e0] text-white hover:bg-[#0288d1] px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition">
+          <span>+ Substitution New</span>
+        </button>
       </div>
 
-      {/* Table Matching Screenshot 3 */}
+      {/* New Substitution Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-[480px] space-y-4">
+            <h3 className="text-sm font-bold text-gray-800">Add New Substitution</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Absent Teacher *</label>
+                <select value={newEntry.absentTeacherId} onChange={e => setNewEntry(p => ({...p, absentTeacherId: e.target.value}))}
+                  className="w-full text-xs border border-gray-300 rounded px-2 py-1.5 outline-none">
+                  <option value="">Select</option>
+                  {teachers.map(t => <option key={t._id} value={t._id}>{getTeacherName(t)}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Period *</label>
+                <input type="text" value={newEntry.period} onChange={e => setNewEntry(p => ({...p, period: e.target.value}))}
+                  placeholder="e.g. 1st Period" className="w-full text-xs border border-gray-300 rounded px-2 py-1.5 outline-none" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Class & Subject</label>
+                <input type="text" value={newEntry.classSubject} onChange={e => setNewEntry(p => ({...p, classSubject: e.target.value}))}
+                  placeholder="e.g. Class 10A - Math" className="w-full text-xs border border-gray-300 rounded px-2 py-1.5 outline-none" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Substitute Teacher</label>
+                <select value={newEntry.substituteTeacherId} onChange={e => setNewEntry(p => ({...p, substituteTeacherId: e.target.value}))}
+                  className="w-full text-xs border border-gray-300 rounded px-2 py-1.5 outline-none">
+                  <option value="">Select (optional)</option>
+                  {teachers.map(t => <option key={t._id} value={t._id}>{getTeacherName(t)}</option>)}
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Wing</label>
+                <input type="text" value={newEntry.wing} onChange={e => setNewEntry(p => ({...p, wing: e.target.value}))}
+                  placeholder="e.g. Main Wing" className="w-full text-xs border border-gray-300 rounded px-2 py-1.5 outline-none" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={() => setShowModal(false)} className="border border-gray-300 text-gray-600 px-4 py-1.5 rounded text-xs font-semibold hover:bg-gray-50 transition">Cancel</button>
+              <button onClick={handleCreate} disabled={saving} className="bg-[#23a8e0] text-white px-4 py-1.5 rounded text-xs font-semibold hover:bg-[#0288d1] transition disabled:opacity-50">
+                {saving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="border border-gray-200 rounded overflow-hidden shadow-2xs">
         <table className="w-full text-left text-xs border-collapse">
           <thead className="bg-white border-b border-gray-200 select-none shadow-2xs">
             <tr className="text-gray-900 font-bold">
-              <th className="py-2.5 px-4 w-20">SNo. <span className="text-[10px] text-gray-400">⇅</span></th>
-              <th className="py-2.5 px-4 w-24">Day <span className="text-[10px] text-gray-400">⇅</span></th>
-              <th className="py-2.5 px-4">Absent Teachers</th>
-              <th className="py-2.5 px-4 w-36">Show Timetable</th>
-              <th className="py-2.5 px-4 w-24">Period <span className="text-[10px] text-gray-400">⇅</span></th>
-              <th className="py-2.5 px-4">Class & Subject <span className="text-[10px] text-gray-400">⇅</span></th>
-              <th className="py-2.5 px-4">Substitute by <span className="text-[10px] text-gray-400">⇅</span></th>
-              <th className="py-2.5 px-4 w-36">Show Timetable <span className="text-[10px] text-gray-400">⇅</span></th>
-              <th className="py-2.5 px-4 w-24">Wing <span className="text-[10px] text-gray-400">⇅</span></th>
+              <th className="py-2.5 px-4 w-16">SNo.</th>
+              <th className="py-2.5 px-4 w-24">Day</th>
+              <th className="py-2.5 px-4">Absent Teacher</th>
+              <th className="py-2.5 px-4 w-28">Period</th>
+              <th className="py-2.5 px-4">Class &amp; Subject</th>
+              <th className="py-2.5 px-4">Substitute By</th>
+              <th className="py-2.5 px-4 w-28">Wing</th>
+              <th className="py-2.5 px-4 w-20">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {rows.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="py-2.5 px-4 text-center text-gray-700 bg-[#eaf4fc]/50 font-medium text-xs">
-                  No data available in table
-                </td>
-              </tr>
+              <tr><td colSpan={8} className="py-4 px-4 text-center text-gray-500 bg-[#eaf4fc]/50 font-medium text-xs">
+                {loading ? "Loading substitutions..." : "No substitutions found for this date. Click '+ Substitution New' to add."}
+              </td></tr>
             ) : (
               rows.map((r, i) => (
                 <tr key={i} className="hover:bg-gray-50">
                   <td className="py-2.5 px-4">{r.sno}</td>
                   <td className="py-2.5 px-4">{r.day}</td>
-                  <td className="py-2.5 px-4">{r.absentTeacher}</td>
-                  <td className="py-2.5 px-4">{r.showTt}</td>
+                  <td className="py-2.5 px-4 font-medium text-red-600">{r.absentTeacher}</td>
                   <td className="py-2.5 px-4">{r.period}</td>
                   <td className="py-2.5 px-4">{r.classSubject}</td>
-                  <td className="py-2.5 px-4">{r.substituteBy}</td>
-                  <td className="py-2.5 px-4">{r.showTtSub}</td>
+                  <td className="py-2.5 px-4 font-medium text-green-700">{r.substituteBy}</td>
                   <td className="py-2.5 px-4">{r.wing}</td>
+                  <td className="py-2.5 px-4">
+                    <button onClick={() => handleDelete(r._id)} className="text-red-400 hover:text-red-600 transition text-xs">
+                      <FaTrash />
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
@@ -5939,9 +7714,15 @@ function SubstitutionView({ showToast }) {
 // =========================================================================
 // 29. TIMETABLE REPORTS VIEW (EXACT MATCH WITH ALL SCREENSHOTS)
 // =========================================================================
+
+// =========================================================================
+// 29. TIMETABLE REPORTS VIEW (EXACT MATCH WITH ALL SCREENSHOTS)
+// =========================================================================
 function TimetableReportsView({ tabId, title, showToast }) {
   const [showReport, setShowReport] = useState(false);
   const [isFilterCollapsed, setIsFilterCollapsed] = useState(false);
+  
+  // Filters state
   const [selectedClass, setSelectedClass] = useState("Select Class");
   const [selectedTeacher, setSelectedTeacher] = useState("All Teachers");
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
@@ -5956,12 +7737,13 @@ function TimetableReportsView({ tabId, title, showToast }) {
   const [fromDate, setFromDate] = useState("01-Sep-2026");
   const [toDate, setToDate] = useState("01-Sep-2026");
 
-  // Master Requirement Radio Option state (Screenshot 2, 3, 4, 5)
   const [selectedMasterOption, setSelectedMasterOption] = useState("Class List");
-
-  // Show Timetable At Glance Radio Option state (Screenshot 1)
   const [selectedGlanceOption, setSelectedGlanceOption] = useState("Class Timetable");
 
+  // Dynamic Data State
+  const [reportData, setReportData] = useState([]);
+  const [filtersData, setFiltersData] = useState({ classes: [], sections: [], teachers: [], wings: [], subjects: [] });
+  
   // Pagination & Search
   const [currentPage, setCurrentPage] = useState(1);
   const [searchReportText, setSearchReportText] = useState("");
@@ -5972,2236 +7754,294 @@ function TimetableReportsView({ tabId, title, showToast }) {
 
   const totalPages = tabId === "subject_details" ? 3 : tabId === "master_requirement" ? 2 : 1;
 
-  // Reset showReport when switching sub-tab
   useEffect(() => {
     setShowReport(false);
     setCurrentPage(1);
     setSearchReportText("");
+    setReportData([]);
+    
+    // Fetch filter options when tab changes
+    const fetchFilters = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/timetable-reports/filters`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setFiltersData(data);
+        }
+      } catch (err) {}
+    };
+    fetchFilters();
   }, [tabId]);
 
   const reportHeading = title || tabId.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
-  // Show Timetable At Glance Radio List (Exact Matching Screenshot 1)
-  const glanceOptions = [
-    "Class Timetable",
-    "Class Timetable ColorWise",
-    "Teachers Timetable",
-    "Teachers Timetable ColorWise",
-    "Resource Timetable",
-    "Resource Timetable ColorWise",
-  ];
-
-  // Master Requirement Radio List (Exact Matching Screenshot 2, 3, 4, 5)
-  const masterRequirementOptions = [
-    "Class List",
-    "Subject List",
-    "Teacher,Class,Subject,No. Of Periods",
-    "Subject Taught ByTeacher",
-    "Class Teachers Detail",
-  ];
-
-  // Staff Types List (Screenshot 3)
+  // Options
+  const glanceOptions = ["Class Timetable", "Class Timetable ColorWise", "Teachers Timetable", "Teachers Timetable ColorWise", "Resource Timetable", "Resource Timetable ColorWise"];
+  const masterRequirementOptions = ["Class List", "Subject List", "Teacher,Class,Subject,No. Of Periods", "Subject Taught ByTeacher", "Class Teachers Detail"];
   const staffTypesList = ["None selected", "Teaching", "Non-Teaching", "All Staff"];
-
-  // Resources List (Screenshot 4)
-  const resourcesList = [
-    "All Resources",
-    "Physics Lab",
-    "Chemistry Lab",
-    "Biology Lab",
-    "Computer Lab 1",
-    "Computer Lab 2",
-    "Art Room",
-    "Music Room",
-    "Library",
-    "Playground",
-    "Auditorium",
-  ];
-
-  // Subjects Data (Matching Screenshot 4 & 5)
-  const allSubjects = [
-    { sn: 1, name: "ACCOUNTANCY", shortName: "Accoun", type: "Minor" },
-    { sn: 2, name: "ACTION RHYMES & CONV", shortName: "ACTION RHYMES & CONV", type: "Major" },
-    { sn: 3, name: "ACTIVITY", shortName: "ACT", type: "Major" },
-    { sn: 4, name: "ACTIVITY TIME", shortName: "ACTIVITY TIME", type: "Major" },
-    { sn: 5, name: "ACTIVITY YOGA", shortName: "ACTIVITY YOGA", type: "Major" },
-    { sn: 6, name: "AKSHAR STUDY TIME", shortName: "AKSHAR STUDY TIME", type: "Major" },
-    { sn: 7, name: "ALPHABET STUDY TIME", shortName: "ALPHABET STUDY TIME", type: "Major" },
-    { sn: 8, name: "ART & CRAFT", shortName: "ART", type: "Minor" },
-    { sn: 9, name: "BIOLOGY", shortName: "BIO", type: "Major" },
-    { sn: 10, name: "BUSINESS STUDIES", shortName: "BST", type: "Major" },
-    { sn: 11, name: "CHEMISTRY", shortName: "CHEM", type: "Major" },
-    { sn: 12, name: "COMPUTER SCIENCE", shortName: "CS", type: "Major" },
-    { sn: 13, name: "CONVERSATION/LIFE SKILL", shortName: "CONVERSATION/LIFE SKILL", type: "Major" },
-    { sn: 14, name: "CONVERSATION/SPOKEN", shortName: "CONVERSATION/SPOKEN", type: "Major" },
-    { sn: 15, name: "CURSIVE WRI DICTATION", shortName: "CURSIVE WRI DICTATION", type: "Major" },
-    { sn: 16, name: "CURSIVE WRITING", shortName: "CURSIVE WRITING", type: "Major" },
-    { sn: 17, name: "DANCE", shortName: "DANCE", type: "Major" },
-    { sn: 18, name: "DANCE CLASS", shortName: "DANCE CLASS", type: "Major" },
-    { sn: 19, name: "DANCE MUSIC", shortName: "DAN/MUS", type: "Major" },
-    { sn: 20, name: "DICTATION/READING", shortName: "DICTATION/READING", type: "Major" },
-    { sn: 21, name: "DRAWING", shortName: "DRAWING", type: "Major" },
-    { sn: 22, name: "E.V.S", shortName: "E.V.S", type: "Major" },
-    { sn: 23, name: "ECONOMICS", shortName: "ECO", type: "Major" },
-    { sn: 24, name: "EDU SPORTS", shortName: "EDUSP", type: "Major" },
-    { sn: 25, name: "ENGLISH", shortName: "ENG", type: "Major" },
-    { sn: 26, name: "ENGLISH GRAMMAR", shortName: "ENG-GR", type: "Major" },
-    { sn: 27, name: "ENVIRONMENTAL STUDIES", shortName: "EVS", type: "Major" },
-    { sn: 28, name: "GENERAL KNOWLEDGE", shortName: "GK", type: "Minor" },
-    { sn: 29, name: "GEOGRAPHY", shortName: "GEO", type: "Major" },
-    { sn: 30, name: "HINDI", shortName: "HIN", type: "Major" },
-    { sn: 31, name: "HINDI GRAMMAR", shortName: "HIN-GR", type: "Major" },
-    { sn: 32, name: "CONVERSATION/LIFE SKILL", shortName: "CONVERSATION/LIFE SKILL", type: "Major" },
-    { sn: 33, name: "CONVERSATION/SPOKEN", shortName: "CONVERSATION/SPOKEN", type: "Major" },
-    { sn: 34, name: "CURSIVE WRI DICTATION", shortName: "CURSIVE WRI DICTATION", type: "Major" },
-    { sn: 35, name: "CURSIVE WRITING", shortName: "CURSIVE WRITING", type: "Major" },
-    { sn: 36, name: "DANCE", shortName: "DANCE", type: "Major" },
-    { sn: 37, name: "DANCE CLASS", shortName: "DANCE CLASS", type: "Major" },
-    { sn: 38, name: "DANCE MUSIC", shortName: "DAN/MUS", type: "Major" },
-    { sn: 39, name: "DICTATION/READING", shortName: "DICTATION/READING", type: "Major" },
-    { sn: 40, name: "DRAWING", shortName: "DRAWING", type: "Major" },
-    { sn: 41, name: "E.V.S", shortName: "E.V.S", type: "Major" },
-    { sn: 42, name: "ECONOMICS", shortName: "ECO", type: "Major" },
-    { sn: 43, name: "EDU SPORTS", shortName: "EDUSP", type: "Major" },
-    { sn: 44, name: "ENGLISH", shortName: "ENG", type: "Major" },
-  ];
-
-  // Pagination for subjects
-  const getPaginatedSubjects = () => {
-    if (searchReportText.trim()) {
-      return allSubjects.filter(
-        (s) =>
-          s.name.toLowerCase().includes(searchReportText.toLowerCase()) ||
-          s.shortName.toLowerCase().includes(searchReportText.toLowerCase())
-      );
-    }
-    if (currentPage === 1) return allSubjects.slice(0, 16);
-    if (currentPage === 2) return allSubjects.slice(16, 31);
-    return allSubjects.slice(31);
-  };
-
-  const currentSubjects = getPaginatedSubjects();
-
-  // Class List Data for Master Requirement (Screenshot 3)
-  const masterClassList = ALL_SECTION_CLASSES.map((cls, idx) => {
-    const parts = cls.split("-");
-    const cName = parts[0] || cls;
-    const sName = parts[1] || "A";
-    return {
-      sn: idx + 1,
-      className: cName,
-      section: sName,
-      noOfPeriods: 48,
-    };
-  });
-
-  // Teacher, Class, Subject, No of Periods Data (Screenshot 4)
-  const masterTeacherClassSubjectData = [
-    { classSection: "NURSERY-A", subject: "ENGLISH", period: 8, teacherName: "MRS. KAVITA SHARMA", resource: "-" },
-    { classSection: "NURSERY-A", subject: "HINDI", period: 8, teacherName: "MRS. ANITA VERMA", resource: "-" },
-    { classSection: "NURSERY-A", subject: "MATHEMATICS", period: 8, teacherName: "MRS. KAVITA SHARMA", resource: "-" },
-    { classSection: "NURSERY-A", subject: "RHYMES & CONV", period: 6, teacherName: "MS. PRIYA DIXIT", resource: "ACTIVITY ROOM" },
-    { classSection: "NURSERY-A", subject: "DRAWING", period: 6, teacherName: "MRS. ANJALI ROY", resource: "ART ROOM" },
-    { classSection: "NURSERY-A", subject: "ACTIVITY TIME", period: 6, teacherName: "MR. MANOJ TIWARI", resource: "PLAYGROUND" },
-    { classSection: "NURSERY-A", subject: "DANCE MUSIC", period: 6, teacherName: "MS. POOJA JOSHI", resource: "MUSIC ROOM" },
-    { classSection: "NURSERY-B", subject: "ENGLISH", period: 8, teacherName: "MRS. SHALINI MISHRA", resource: "-" },
-    { classSection: "NURSERY-B", subject: "HINDI", period: 8, teacherName: "MRS. ANITA VERMA", resource: "-" },
-    { classSection: "NURSERY-B", subject: "MATHEMATICS", period: 8, teacherName: "MRS. SHALINI MISHRA", resource: "-" },
-    { classSection: "LKG-A", subject: "ENGLISH", period: 8, teacherName: "MRS. ANITA VERMA", resource: "-" },
-    { classSection: "LKG-A", subject: "HINDI", period: 8, teacherName: "MRS. SUNITA ROY", resource: "-" },
-    { classSection: "LKG-A", subject: "MATHEMATICS", period: 8, teacherName: "MRS. ANITA VERMA", resource: "-" },
-    { classSection: "1-A", subject: "ENGLISH", period: 8, teacherName: "MR. RAJESH KUMAR", resource: "-" },
-    { classSection: "1-A", subject: "HINDI", period: 8, teacherName: "MR. VIKRAM PATEL", resource: "-" },
-    { classSection: "1-A", subject: "MATHEMATICS", period: 8, teacherName: "MR. AMIT SHARMA", resource: "-" },
-    { classSection: "1-A", subject: "E.V.S", period: 6, teacherName: "MRS. PRIYA SINGH", resource: "SCIENCE LAB" },
-    { classSection: "1-A", subject: "COMPUTER SCIENCE", period: 4, teacherName: "MS. POOJA JOSHI", resource: "COMP LAB" },
-    { classSection: "1-A", subject: "DRAWING", period: 4, teacherName: "MRS. ANJALI ROY", resource: "ART ROOM" },
-    { classSection: "1-A", subject: "EDU SPORTS", period: 4, teacherName: "MR. MANOJ TIWARI", resource: "PLAYGROUND" },
-    { classSection: "10-A", subject: "MATHEMATICS", period: 7, teacherName: "MR. AMIT SHARMA", resource: "-" },
-    { classSection: "10-A", subject: "PHYSICS", period: 6, teacherName: "MRS. NEHA GUPTA", resource: "PHYSICS LAB" },
-    { classSection: "10-A", subject: "CHEMISTRY", period: 6, teacherName: "MR. DEEPAK MISHRA", resource: "CHEM LAB" },
-    { classSection: "10-A", subject: "BIOLOGY", period: 6, teacherName: "MRS. PRIYA SINGH", resource: "BIO LAB" },
-    { classSection: "10-A", subject: "ENGLISH", period: 6, teacherName: "MR. RAJESH KUMAR", resource: "-" },
-    { classSection: "10-A", subject: "SOCIAL SCIENCE", period: 6, teacherName: "MS. SUNITA VERMA", resource: "-" },
-    { classSection: "10-A", subject: "HINDI", period: 5, teacherName: "MR. VIKRAM PATEL", resource: "-" },
-    { classSection: "10-A", subject: "COMPUTER APP", period: 4, teacherName: "MS. POOJA JOSHI", resource: "COMP LAB" },
-    { classSection: "12-A", subject: "MATHEMATICS", period: 8, teacherName: "MR. AMIT SHARMA", resource: "-" },
-    { classSection: "12-A", subject: "PHYSICS", period: 8, teacherName: "MRS. NEHA GUPTA", resource: "PHYSICS LAB" },
-    { classSection: "12-A", subject: "CHEMISTRY", period: 8, teacherName: "MR. DEEPAK MISHRA", resource: "CHEM LAB" },
-    { classSection: "12-A", subject: "ENGLISH CORE", period: 7, teacherName: "MR. RAJESH KUMAR", resource: "-" },
-    { classSection: "12-A", subject: "COMPUTER SCIENCE", period: 7, teacherName: "MS. POOJA JOSHI", resource: "COMP LAB" },
-  ];
-
-  // Subject Taught By Teacher Data (Screenshot 5 & Image 2 with 44 items)
-  const masterSubjectTaughtData = Array.from({ length: 44 }, (_, i) => {
-    const cls = ALL_SECTION_CLASSES[i % ALL_SECTION_CLASSES.length];
-    const sub = allSubjects[i % allSubjects.length].name;
-    return {
-      sn: i + 1,
-      classSection: cls,
-      subject: sub,
-    };
-  });
-
-  // Class Teachers Detail Data
-  const classTeachersData = ALL_SECTION_CLASSES.map((cls, idx) => {
-    const parts = cls.split("-");
-    const cName = parts[0] || cls;
-    const sName = parts[1] || "A";
-    const teachers = [
-      "MRS. KAVITA SHARMA",
-      "MRS. SHALINI MISHRA",
-      "MRS. ANITA VERMA",
-      "MR. AMIT SHARMA",
-      "MRS. PRIYA SINGH",
-      "MR. RAJESH KUMAR",
-      "MS. SUNITA VERMA",
-      "MR. VIKRAM PATEL",
-      "MRS. NEHA GUPTA",
-      "MR. DEEPAK MISHRA",
-      "MS. POOJA JOSHI",
-    ];
-    return {
-      sn: idx + 1,
-      className: cName,
-      section: sName,
-      teacherName: teachers[idx % teachers.length],
-      roomNo: `R-${101 + (idx % 25)}`,
-      mobileNo: `98765${String(10000 + idx).slice(1)}`,
-    };
-  });
-
-  // Wing Wise Teacher Data (Screenshot 5 Exact Data)
-  const wingWiseTeacherData = [
-    { sn: 1, name: "AARADHYA VERMA", contact: "8127535725", gender: "Unknown", wing: "Higher" },
-    { sn: 2, name: "AMIT DUBEY", contact: "6393449933", gender: "Male", wing: "Primary" },
-    { sn: 3, name: "ANKIT KUMAR", contact: "7408758324", gender: "Male", wing: "Kindergarten" },
-    { sn: 4, name: "ANSHIKA", contact: "9305953530", gender: "Unknown", wing: "Kindergarten" },
-    { sn: 5, name: "ARCHANA YADAV", contact: "7497961668", gender: "Unknown", wing: "Kindergarten" },
-    { sn: 6, name: "ARPANA UPADHYAY", contact: "9492801781", gender: "Unknown", wing: "Primary" },
-    { sn: 7, name: "ASHISH KUMAR", contact: "7860565888", gender: "Male", wing: "Primary" },
-    { sn: 8, name: "DEEPAK MISHRA", contact: "8765432109", gender: "Male", wing: "Senior Secondary" },
-    { sn: 9, name: "KAVITA SHARMA", contact: "9876543210", gender: "Female", wing: "Pre-Primary" },
-    { sn: 10, name: "NEHA GUPTA", contact: "8877665544", gender: "Female", wing: "Senior Secondary" },
-    { sn: 11, name: "POOJA JOSHI", contact: "7766554433", gender: "Female", wing: "Middle" },
-    { sn: 12, name: "PRIYA SINGH", contact: "9988776655", gender: "Female", wing: "Middle" },
-    { sn: 13, name: "RAJESH KUMAR", contact: "8899001122", gender: "Male", wing: "Senior Secondary" },
-    { sn: 14, name: "SHALINI MISHRA", contact: "7788990011", gender: "Female", wing: "Pre-Primary" },
-    { sn: 15, name: "SUNITA VERMA", contact: "9900112233", gender: "Female", wing: "Middle" },
-    { sn: 16, name: "VIKRAM PATEL", contact: "8811223344", gender: "Male", wing: "Primary" },
-  ];
-
-  // Subject Wise Teacher Details Data (Screenshot 3)
-  const subjectWiseTeacherData = [
-    { sn: 1, subjectName: "MATHEMATICS", teacherName: "MR. AMIT SHARMA", contact: "9876543211", designation: "PGT MATH" },
-    { sn: 2, subjectName: "PHYSICS", teacherName: "MRS. NEHA GUPTA", contact: "8877665544", designation: "PGT PHYSICS" },
-    { sn: 3, subjectName: "CHEMISTRY", teacherName: "MR. DEEPAK MISHRA", contact: "8765432109", designation: "PGT CHEMISTRY" },
-    { sn: 4, subjectName: "BIOLOGY", teacherName: "MRS. PRIYA SINGH", contact: "9988776655", designation: "TGT SCIENCE" },
-    { sn: 5, subjectName: "ENGLISH", teacherName: "MR. RAJESH KUMAR", contact: "8899001122", designation: "PGT ENGLISH" },
-    { sn: 6, subjectName: "SOCIAL SCIENCE", teacherName: "MS. SUNITA VERMA", contact: "9900112233", designation: "TGT SOCIAL" },
-    { sn: 7, subjectName: "HINDI", teacherName: "MR. VIKRAM PATEL", contact: "8811223344", designation: "PRT HINDI" },
-    { sn: 8, subjectName: "COMPUTER SCIENCE", teacherName: "MS. POOJA JOSHI", contact: "7766554433", designation: "TGT COMP" },
-    { sn: 9, subjectName: "ART & CRAFT", teacherName: "MRS. ANJALI ROY", contact: "9811223344", designation: "PRT ART" },
-    { sn: 10, subjectName: "EDU SPORTS", teacherName: "MR. MANOJ TIWARI", contact: "9822334455", designation: "PRT SPORTS" },
-  ];
-
-  // Parallel Allocation Details Data (Screenshot 2)
-  const parallelAllocationData = [
-    { sn: 1, className: "11-A", subject: "MATHEMATICS", teacher: "MR. AMIT SHARMA", parallelClass: "11-B", parallelSubject: "BIOLOGY", parallelTeacher: "MRS. PRIYA SINGH" },
-    { sn: 2, className: "11-A", subject: "COMPUTER SCIENCE", teacher: "MS. POOJA JOSHI", parallelClass: "11-B", parallelSubject: "PHYSICAL EDUCATION", parallelTeacher: "MR. MANOJ TIWARI" },
-    { sn: 3, className: "12-A", subject: "MATHEMATICS", teacher: "MR. AMIT SHARMA", parallelClass: "12-B", parallelSubject: "BIOLOGY", parallelTeacher: "MRS. PRIYA SINGH" },
-    { sn: 4, className: "12-A", subject: "COMPUTER SCIENCE", teacher: "MS. POOJA JOSHI", parallelClass: "12-B", parallelSubject: "HINDI CORE", parallelTeacher: "MR. VIKRAM PATEL" },
-    { sn: 5, className: "9-A", subject: "HINDI", teacher: "MR. VIKRAM PATEL", parallelClass: "9-B", parallelSubject: "SANSKRIT", parallelTeacher: "MRS. ANITA VERMA" },
-    { sn: 6, className: "10-A", subject: "HINDI", teacher: "MR. VIKRAM PATEL", parallelClass: "10-B", parallelSubject: "SANSKRIT", parallelTeacher: "MRS. ANITA VERMA" },
-  ];
-
-  // Consecutive Allocation Details Data (Screenshot 1)
-  const consecutiveAllocationData = [
-    { sn: 1, teacherName: "MR. AMIT SHARMA", className: "10-A", subject: "MATHEMATICS", consecutivePeriods: "P1 - P2 (2 Periods)", day: "Monday" },
-    { sn: 2, teacherName: "MRS. NEHA GUPTA", className: "11-A", subject: "PHYSICS (LAB)", consecutivePeriods: "P3 - P4 (2 Periods)", day: "Tuesday" },
-    { sn: 3, teacherName: "MR. DEEPAK MISHRA", className: "12-A", subject: "CHEMISTRY (LAB)", consecutivePeriods: "P5 - P6 (2 Periods)", day: "Wednesday" },
-    { sn: 4, teacherName: "MRS. PRIYA SINGH", className: "9-A", subject: "BIOLOGY (LAB)", consecutivePeriods: "P1 - P2 (2 Periods)", day: "Thursday" },
-    { sn: 5, teacherName: "MS. POOJA JOSHI", className: "10-B", subject: "COMPUTER APP (LAB)", consecutivePeriods: "P6 - P7 (2 Periods)", day: "Friday" },
-    { sn: 6, teacherName: "MR. RAJESH KUMAR", className: "12-B", subject: "ENGLISH", consecutivePeriods: "P3 - P4 (2 Periods)", day: "Saturday" },
-  ];
-
-  // Class and Resource Details Data (Screenshot 2)
-  const classAndResourceData = [
-    { sn: 1, className: "10-A", subject: "PHYSICS", resourceName: "PHYSICS LAB", periodsPerWeek: 3 },
-    { sn: 2, className: "10-A", subject: "CHEMISTRY", resourceName: "CHEMISTRY LAB", periodsPerWeek: 3 },
-    { sn: 3, className: "10-A", subject: "BIOLOGY", resourceName: "BIOLOGY LAB", periodsPerWeek: 2 },
-    { sn: 4, className: "10-A", subject: "COMPUTER APP", resourceName: "COMPUTER LAB 1", periodsPerWeek: 4 },
-    { sn: 5, className: "10-A", subject: "ART & CRAFT", resourceName: "ART ROOM", periodsPerWeek: 2 },
-    { sn: 6, className: "10-A", subject: "EDU SPORTS", resourceName: "PLAYGROUND", periodsPerWeek: 4 },
-    { sn: 7, className: "11-A", subject: "PHYSICS", resourceName: "PHYSICS LAB", periodsPerWeek: 4 },
-    { sn: 8, className: "11-A", subject: "CHEMISTRY", resourceName: "CHEMISTRY LAB", periodsPerWeek: 4 },
-    { sn: 9, className: "12-A", subject: "COMPUTER SCIENCE", resourceName: "COMPUTER LAB 2", periodsPerWeek: 4 },
-  ];
-
-  // Week Wise Free Teacher Details Data (Screenshot 3)
-  const weekWiseFreeTeacherData = [
-    { sn: 1, teacherName: "MR. AMIT SHARMA", day: "Monday", freePeriods: "P3, P6, P8", totalFree: "3 Periods" },
-    { sn: 2, teacherName: "MR. AMIT SHARMA", day: "Tuesday", freePeriods: "P4, P7", totalFree: "2 Periods" },
-    { sn: 3, teacherName: "MRS. PRIYA SINGH", day: "Monday", freePeriods: "P1, P5, P8", totalFree: "3 Periods" },
-    { sn: 4, teacherName: "MRS. PRIYA SINGH", day: "Wednesday", freePeriods: "P2, P6", totalFree: "2 Periods" },
-    { sn: 5, teacherName: "MR. RAJESH KUMAR", day: "Thursday", freePeriods: "P3, P7, P8", totalFree: "3 Periods" },
-    { sn: 6, teacherName: "MS. SUNITA VERMA", day: "Friday", freePeriods: "P1, P2, P5", totalFree: "3 Periods" },
-    { sn: 7, teacherName: "MR. VIKRAM PATEL", day: "Saturday", freePeriods: "P4, P5, P8", totalFree: "3 Periods" },
-    { sn: 8, teacherName: "MRS. NEHA GUPTA", day: "Tuesday", freePeriods: "P2, P6, P7", totalFree: "3 Periods" },
-  ];
-
-  // Free Teachers Classwise Data (Screenshot 4)
-  const freeTeachersClasswiseData = [
-    { sn: 1, className: "1-A", period: "Period 1 (08:00 - 08:45)", freeTeachers: "MR. AMIT SHARMA, MRS. NEHA GUPTA, MR. DEEPAK MISHRA" },
-    { sn: 2, className: "1-A", period: "Period 2 (08:45 - 09:30)", freeTeachers: "MRS. PRIYA SINGH, MS. SUNITA VERMA" },
-    { sn: 3, className: "1-A", period: "Period 3 (09:30 - 10:15)", freeTeachers: "MR. RAJESH KUMAR, MR. VIKRAM PATEL, MS. POOJA JOSHI" },
-    { sn: 4, className: "1-A", period: "Period 4 (10:15 - 11:00)", freeTeachers: "MRS. KAVITA SHARMA, MRS. ANITA VERMA" },
-    { sn: 5, className: "1-A", period: "Period 5 (11:30 - 12:15)", freeTeachers: "MR. MANOJ TIWARI, MRS. ANJALI ROY" },
-    { sn: 6, className: "1-A", period: "Period 6 (12:15 - 01:00)", freeTeachers: "MR. AMIT SHARMA, MRS. PRIYA SINGH" },
-    { sn: 7, className: "1-A", period: "Period 7 (01:00 - 01:40)", freeTeachers: "MR. DEEPAK MISHRA, MS. POOJA JOSHI" },
-    { sn: 8, className: "1-A", period: "Period 8 (01:40 - 02:20)", freeTeachers: "MR. RAJESH KUMAR, MS. SUNITA VERMA, MR. VIKRAM PATEL" },
-  ];
-
-  // Unallocated Period Details Data (Screenshot 5)
-  const unallocatedPeriodData = [
-    { sn: 1, className: "11-A", subject: "PHYSICAL EDUCATION", requiredPeriods: 4, allocated: 0, unallocated: 4 },
-    { sn: 2, className: "11-B", subject: "LEGAL STUDIES", requiredPeriods: 4, allocated: 0, unallocated: 4 },
-    { sn: 3, className: "9-A", subject: "SANSKRIT", requiredPeriods: 3, allocated: 0, unallocated: 3 },
-    { sn: 4, className: "9-B", subject: "FRENCH", requiredPeriods: 3, allocated: 0, unallocated: 3 },
-    { sn: 5, className: "12-A", subject: "PSYCHOLOGY", requiredPeriods: 4, allocated: 0, unallocated: 4 },
-  ];
-
-  // Day Wise Free Teacher Details Data (Screenshot 1)
-  const dayWiseFreeTeacherData = [
-    { sn: 1, teacherName: "MR. AMIT SHARMA", wing: "Senior Secondary", freeBells: "Monday (P3, P6, P8), Tuesday (P4, P7)", totalFree: "5 Bells" },
-    { sn: 2, teacherName: "MRS. PRIYA SINGH", wing: "Middle", freeBells: "Monday (P1, P5, P8), Wednesday (P2, P6)", totalFree: "5 Bells" },
-    { sn: 3, teacherName: "MR. RAJESH KUMAR", wing: "Senior Secondary", freeBells: "Tuesday (P1, P5), Thursday (P3, P7, P8)", totalFree: "5 Bells" },
-    { sn: 4, teacherName: "MS. SUNITA VERMA", wing: "Middle", freeBells: "Wednesday (P4, P7), Friday (P1, P2, P5)", totalFree: "5 Bells" },
-    { sn: 5, teacherName: "MR. VIKRAM PATEL", wing: "Primary", freeBells: "Thursday (P2, P6), Saturday (P4, P5, P8)", totalFree: "5 Bells" },
-    { sn: 6, teacherName: "MRS. NEHA GUPTA", wing: "Senior Secondary", freeBells: "Monday (P4, P7), Tuesday (P2, P6, P7)", totalFree: "5 Bells" },
-    { sn: 7, teacherName: "MR. DEEPAK MISHRA", wing: "Senior Secondary", freeBells: "Wednesday (P1, P3), Friday (P4, P7, P8)", totalFree: "5 Bells" },
-    { sn: 8, teacherName: "MS. POOJA JOSHI", wing: "Middle", freeBells: "Thursday (P1, P5), Saturday (P2, P3, P7)", totalFree: "5 Bells" },
-  ];
-
-  // Class and Subject Taught Data (Screenshot 2)
-  const classAndSubjectTaughtData = [
-    { sn: 1, className: "1-A", subject: "ENGLISH", teacherName: "MR. RAJESH KUMAR", periodsPerWeek: 8 },
-    { sn: 2, className: "1-A", subject: "HINDI", teacherName: "MR. VIKRAM PATEL", periodsPerWeek: 8 },
-    { sn: 3, className: "1-A", subject: "MATHEMATICS", teacherName: "MR. AMIT SHARMA", periodsPerWeek: 8 },
-    { sn: 4, className: "1-A", subject: "E.V.S", teacherName: "MRS. PRIYA SINGH", periodsPerWeek: 6 },
-    { sn: 5, className: "1-A", subject: "COMPUTER SCIENCE", teacherName: "MS. POOJA JOSHI", periodsPerWeek: 4 },
-    { sn: 6, className: "1-A", subject: "DRAWING", teacherName: "MRS. ANJALI ROY", periodsPerWeek: 4 },
-    { sn: 7, className: "1-A", subject: "EDU SPORTS", teacherName: "MR. MANOJ TIWARI", periodsPerWeek: 4 },
-    { sn: 8, className: "1-A", subject: "GENERAL KNOWLEDGE", teacherName: "MRS. KAVITA SHARMA", periodsPerWeek: 2 },
-    { sn: 9, className: "1-A", subject: "MUSIC", teacherName: "MS. POOJA JOSHI", periodsPerWeek: 2 },
-  ];
-
-  // Teachers Work Load Details Data (Screenshot 3)
-  const teachersWorkLoadData = [
-    { sn: 1, teacherName: "MR. AMIT SHARMA", designation: "PGT MATHEMATICS", teachingPeriods: 28, remedialLab: 4, totalWorkLoad: 32 },
-    { sn: 2, teacherName: "MRS. NEHA GUPTA", designation: "PGT PHYSICS", teachingPeriods: 26, remedialLab: 6, totalWorkLoad: 32 },
-    { sn: 3, teacherName: "MR. DEEPAK MISHRA", designation: "PGT CHEMISTRY", teachingPeriods: 26, remedialLab: 6, totalWorkLoad: 32 },
-    { sn: 4, teacherName: "MRS. PRIYA SINGH", designation: "TGT SCIENCE", teachingPeriods: 28, remedialLab: 4, totalWorkLoad: 32 },
-    { sn: 5, teacherName: "MR. RAJESH KUMAR", designation: "PGT ENGLISH", teachingPeriods: 30, remedialLab: 2, totalWorkLoad: 32 },
-    { sn: 6, teacherName: "MS. SUNITA VERMA", designation: "TGT SOCIAL SCIENCE", teachingPeriods: 30, remedialLab: 2, totalWorkLoad: 32 },
-    { sn: 7, teacherName: "MR. VIKRAM PATEL", designation: "PRT HINDI", teachingPeriods: 32, remedialLab: 0, totalWorkLoad: 32 },
-    { sn: 8, teacherName: "MS. POOJA JOSHI", designation: "TGT COMPUTER SCIENCE", teachingPeriods: 24, remedialLab: 8, totalWorkLoad: 32 },
-    { sn: 9, teacherName: "MR. MANOJ TIWARI", designation: "PRT SPORTS / YOGA", teachingPeriods: 30, remedialLab: 2, totalWorkLoad: 32 },
-    { sn: 10, teacherName: "MRS. ANJALI ROY", designation: "PRT ART & CRAFT", teachingPeriods: 28, remedialLab: 2, totalWorkLoad: 30 },
-  ];
-
-  // Resource Timetable Details Data (Screenshot 4)
-  const resourceTimetableData = [
-    { sn: 1, resourceName: "PHYSICS LAB", day: "Monday", period: "P3 - P4", className: "11-A", teacherInCharge: "MRS. NEHA GUPTA" },
-    { sn: 2, resourceName: "PHYSICS LAB", day: "Tuesday", period: "P5 - P6", className: "12-A", teacherInCharge: "MRS. NEHA GUPTA" },
-    { sn: 3, resourceName: "CHEMISTRY LAB", day: "Monday", period: "P1 - P2", className: "12-A", teacherInCharge: "MR. DEEPAK MISHRA" },
-    { sn: 4, resourceName: "CHEMISTRY LAB", day: "Wednesday", period: "P3 - P4", className: "11-A", teacherInCharge: "MR. DEEPAK MISHRA" },
-    { sn: 5, resourceName: "BIOLOGY LAB", day: "Tuesday", period: "P1 - P2", className: "10-A", teacherInCharge: "MRS. PRIYA SINGH" },
-    { sn: 6, resourceName: "BIOLOGY LAB", day: "Thursday", period: "P5 - P6", className: "9-A", teacherInCharge: "MRS. PRIYA SINGH" },
-    { sn: 7, resourceName: "COMPUTER LAB 1", day: "Monday", period: "P7 - P8", className: "10-A", teacherInCharge: "MS. POOJA JOSHI" },
-    { sn: 8, resourceName: "COMPUTER LAB 1", day: "Friday", period: "P1 - P2", className: "9-B", teacherInCharge: "MS. POOJA JOSHI" },
-    { sn: 9, resourceName: "ART ROOM", day: "Wednesday", period: "P7 - P8", className: "1-A", teacherInCharge: "MRS. ANJALI ROY" },
-    { sn: 10, resourceName: "PLAYGROUND", day: "Thursday", period: "P7 - P8", className: "1-A", teacherInCharge: "MR. MANOJ TIWARI" },
-  ];
-
-  // Class Wise Teacher Allocation Details Data (Screenshot 1)
-  const classWiseTeacherAllocationData = [
-    { sn: 1, className: "1-A", subject: "ENGLISH", teacherName: "MR. RAJESH KUMAR", periodsPerWeek: 8, designation: "PGT ENGLISH" },
-    { sn: 2, className: "1-A", subject: "HINDI", teacherName: "MR. VIKRAM PATEL", periodsPerWeek: 8, designation: "PRT HINDI" },
-    { sn: 3, className: "1-A", subject: "MATHEMATICS", teacherName: "MR. AMIT SHARMA", periodsPerWeek: 8, designation: "PGT MATHEMATICS" },
-    { sn: 4, className: "1-A", subject: "E.V.S", teacherName: "MRS. PRIYA SINGH", periodsPerWeek: 6, designation: "TGT SCIENCE" },
-    { sn: 5, className: "1-A", subject: "COMPUTER SCIENCE", teacherName: "MS. POOJA JOSHI", periodsPerWeek: 4, designation: "TGT COMPUTER" },
-    { sn: 6, className: "1-A", subject: "DRAWING", teacherName: "MRS. ANJALI ROY", periodsPerWeek: 4, designation: "PRT ART" },
-    { sn: 7, className: "1-A", subject: "EDU SPORTS", teacherName: "MR. MANOJ TIWARI", periodsPerWeek: 4, designation: "PRT SPORTS" },
-    { sn: 8, className: "1-A", subject: "GENERAL KNOWLEDGE", teacherName: "MRS. KAVITA SHARMA", periodsPerWeek: 2, designation: "PRT TEACHER" },
-    { sn: 9, className: "1-A", subject: "MUSIC", teacherName: "MS. POOJA JOSHI", periodsPerWeek: 2, designation: "TGT MUSIC" },
-    { sn: 10, className: "10-A", subject: "MATHEMATICS", teacherName: "MR. AMIT SHARMA", periodsPerWeek: 7, designation: "PGT MATHEMATICS" },
-    { sn: 11, className: "10-A", subject: "PHYSICS", teacherName: "MRS. NEHA GUPTA", periodsPerWeek: 6, designation: "PGT PHYSICS" },
-    { sn: 12, className: "10-A", subject: "CHEMISTRY", teacherName: "MR. DEEPAK MISHRA", periodsPerWeek: 6, designation: "PGT CHEMISTRY" },
-    { sn: 13, className: "10-A", subject: "BIOLOGY", teacherName: "MRS. PRIYA SINGH", periodsPerWeek: 6, designation: "TGT SCIENCE" },
-    { sn: 14, className: "10-A", subject: "ENGLISH", teacherName: "MR. RAJESH KUMAR", periodsPerWeek: 6, designation: "PGT ENGLISH" },
-    { sn: 15, className: "10-A", subject: "SOCIAL SCIENCE", teacherName: "MS. SUNITA VERMA", periodsPerWeek: 6, designation: "TGT SOCIAL SCIENCE" },
-    { sn: 16, className: "10-A", subject: "HINDI", teacherName: "MR. VIKRAM PATEL", periodsPerWeek: 5, designation: "PRT HINDI" },
-    { sn: 17, className: "10-A", subject: "COMPUTER APP", teacherName: "MS. POOJA JOSHI", periodsPerWeek: 4, designation: "TGT COMPUTER" },
-    { sn: 18, className: "12-A", subject: "MATHEMATICS", teacherName: "MR. AMIT SHARMA", periodsPerWeek: 8, designation: "PGT MATHEMATICS" },
-    { sn: 19, className: "12-A", subject: "PHYSICS", teacherName: "MRS. NEHA GUPTA", periodsPerWeek: 8, designation: "PGT PHYSICS" },
-    { sn: 20, className: "12-A", subject: "CHEMISTRY", teacherName: "MR. DEEPAK MISHRA", periodsPerWeek: 8, designation: "PGT CHEMISTRY" },
-    { sn: 21, className: "12-A", subject: "ENGLISH CORE", teacherName: "MR. RAJESH KUMAR", periodsPerWeek: 7, designation: "PGT ENGLISH" },
-    { sn: 22, className: "12-A", subject: "COMPUTER SCIENCE", teacherName: "MS. POOJA JOSHI", periodsPerWeek: 7, designation: "TGT COMPUTER" },
-  ];
-
-  // Date Wise Substitution Details Data (Screenshot 2)
-  const dateWiseSubstitutionData = [
-    { sn: 1, date: "01-Sep-2026", className: "10-A", period: "Period 2 (08:45-09:30)", absentTeacher: "MR. AMIT SHARMA", substituteTeacher: "MR. VIKRAM PATEL", subject: "MATHEMATICS" },
-    { sn: 2, date: "01-Sep-2026", className: "11-A", period: "Period 3 (09:30-10:15)", absentTeacher: "MRS. NEHA GUPTA", substituteTeacher: "MR. DEEPAK MISHRA", subject: "PHYSICS" },
-    { sn: 3, date: "01-Sep-2026", className: "9-B", period: "Period 4 (10:15-11:00)", absentTeacher: "MRS. PRIYA SINGH", substituteTeacher: "MS. SUNITA VERMA", subject: "BIOLOGY" },
-    { sn: 4, date: "01-Sep-2026", className: "12-A", period: "Period 5 (11:30-12:15)", absentTeacher: "MR. RAJESH KUMAR", substituteTeacher: "MS. POOJA JOSHI", subject: "ENGLISH" },
-    { sn: 5, date: "01-Sep-2026", className: "8-A", period: "Period 1 (08:00-08:45)", absentTeacher: "MS. SUNITA VERMA", substituteTeacher: "MRS. ANITA VERMA", subject: "SOCIAL SCIENCE" },
-    { sn: 6, date: "01-Sep-2026", className: "6-C", period: "Period 6 (12:15-01:00)", absentTeacher: "MR. MANOJ TIWARI", substituteTeacher: "MR. ASHISH KUMAR", subject: "EDU SPORTS" },
-    { sn: 7, date: "01-Sep-2026", className: "7-B", period: "Period 7 (01:00-01:40)", absentTeacher: "MRS. ANJALI ROY", substituteTeacher: "MRS. ARCHANA YADAV", subject: "ART & CRAFT" },
-    { sn: 8, date: "01-Sep-2026", className: "1-A", period: "Period 8 (01:40-02:20)", absentTeacher: "MRS. KAVITA SHARMA", substituteTeacher: "MRS. SHALINI MISHRA", subject: "GENERAL KNOWLEDGE" },
-  ];
-
-  // Assignment Status Data (Screenshot 3)
-  const assignmentStatusData = [
-    { sn: 1, className: "NUR-A", subject: "ENGLISH", teacherName: "MRS. KAVITA SHARMA", requiredPeriods: 8, assignedPeriods: 8, status: "Completed" },
-    { sn: 2, className: "NUR-A", subject: "HINDI", teacherName: "MRS. ANITA VERMA", requiredPeriods: 8, assignedPeriods: 8, status: "Completed" },
-    { sn: 3, className: "NUR-A", subject: "MATHEMATICS", teacherName: "MRS. KAVITA SHARMA", requiredPeriods: 8, assignedPeriods: 8, status: "Completed" },
-    { sn: 4, className: "1-A", subject: "ENGLISH", teacherName: "MR. RAJESH KUMAR", requiredPeriods: 8, assignedPeriods: 8, status: "Completed" },
-    { sn: 5, className: "1-A", subject: "HINDI", teacherName: "MR. VIKRAM PATEL", requiredPeriods: 8, assignedPeriods: 8, status: "Completed" },
-    { sn: 6, className: "1-A", subject: "MATHEMATICS", teacherName: "MR. AMIT SHARMA", requiredPeriods: 8, assignedPeriods: 8, status: "Completed" },
-    { sn: 7, className: "1-A", subject: "E.V.S", teacherName: "MRS. PRIYA SINGH", requiredPeriods: 6, assignedPeriods: 6, status: "Completed" },
-    { sn: 8, className: "1-A", subject: "COMPUTER SCIENCE", teacherName: "MS. POOJA JOSHI", requiredPeriods: 4, assignedPeriods: 4, status: "Completed" },
-    { sn: 9, className: "10-A", subject: "MATHEMATICS", teacherName: "MR. AMIT SHARMA", requiredPeriods: 7, assignedPeriods: 7, status: "Completed" },
-    { sn: 10, className: "10-A", subject: "PHYSICS", teacherName: "MRS. NEHA GUPTA", requiredPeriods: 6, assignedPeriods: 6, status: "Completed" },
-    { sn: 11, className: "10-A", subject: "CHEMISTRY", teacherName: "MR. DEEPAK MISHRA", requiredPeriods: 6, assignedPeriods: 6, status: "Completed" },
-    { sn: 12, className: "11-A", subject: "PHYSICAL EDUCATION", teacherName: "MR. MANOJ TIWARI", requiredPeriods: 4, assignedPeriods: 0, status: "Pending" },
-    { sn: 13, className: "11-B", subject: "LEGAL STUDIES", teacherName: "MR. RAJESH KUMAR", requiredPeriods: 4, assignedPeriods: 0, status: "Pending" },
-    { sn: 14, className: "12-A", subject: "MATHEMATICS", teacherName: "MR. AMIT SHARMA", requiredPeriods: 8, assignedPeriods: 8, status: "Completed" },
-    { sn: 15, className: "12-A", subject: "PHYSICS", teacherName: "MRS. NEHA GUPTA", requiredPeriods: 8, assignedPeriods: 8, status: "Completed" },
-  ];
-
-  // Subject Summary Data (Screenshot 4)
-  const subjectSummaryData = [
-    { sn: 1, subjectCode: "ENG01", subjectName: "ENGLISH", totalPeriods: 128, teachersAllocated: "4 Teachers", status: "Active" },
-    { sn: 2, subjectCode: "HIN01", subjectName: "HINDI", totalPeriods: 116, teachersAllocated: "4 Teachers", status: "Active" },
-    { sn: 3, subjectCode: "MTH01", subjectName: "MATHEMATICS", totalPeriods: 134, teachersAllocated: "3 Teachers", status: "Active" },
-    { sn: 4, subjectCode: "SCI01", subjectName: "SCIENCE / E.V.S", totalPeriods: 86, teachersAllocated: "3 Teachers", status: "Active" },
-    { sn: 5, subjectCode: "PHY01", subjectName: "PHYSICS", totalPeriods: 38, teachersAllocated: "2 Teachers", status: "Active" },
-    { sn: 6, subjectCode: "CHE01", subjectName: "CHEMISTRY", totalPeriods: 38, teachersAllocated: "2 Teachers", status: "Active" },
-    { sn: 7, subjectCode: "BIO01", subjectName: "BIOLOGY", totalPeriods: 32, teachersAllocated: "2 Teachers", status: "Active" },
-    { sn: 8, subjectCode: "SOC01", subjectName: "SOCIAL SCIENCE", totalPeriods: 72, teachersAllocated: "3 Teachers", status: "Active" },
-    { sn: 9, subjectCode: "CMP01", subjectName: "COMPUTER SCIENCE / IT", totalPeriods: 64, teachersAllocated: "2 Teachers", status: "Active" },
-    { sn: 10, subjectCode: "ART01", subjectName: "ART & CRAFT", totalPeriods: 48, teachersAllocated: "2 Teachers", status: "Active" },
-    { sn: 11, subjectCode: "SPT01", subjectName: "SPORTS & YOGA", totalPeriods: 56, teachersAllocated: "2 Teachers", status: "Active" },
-    { sn: 12, subjectCode: "MUS01", subjectName: "MUSIC & DANCE", totalPeriods: 36, teachersAllocated: "2 Teachers", status: "Active" },
-    { sn: 13, subjectCode: "SAN01", subjectName: "SANSKRIT", totalPeriods: 24, teachersAllocated: "1 Teacher", status: "Active" },
-    { sn: 14, subjectCode: "BST01", subjectName: "BUSINESS STUDIES", totalPeriods: 16, teachersAllocated: "1 Teacher", status: "Active" },
-    { sn: 15, subjectCode: "ACC01", subjectName: "ACCOUNTANCY", totalPeriods: 16, teachersAllocated: "1 Teacher", status: "Active" },
-    { sn: 16, subjectCode: "ECO01", subjectName: "ECONOMICS", totalPeriods: 16, teachersAllocated: "1 Teacher", status: "Active" },
-  ];
-
-  // Subject Wise Teacher Allocation Table Data (Screenshot 5)
-  const subjectWiseTeacherAllocationTableData = [
-    { sn: 1, subjectName: "ENGLISH", subjectCode: "ENG01", classSection: "1-A, 1-B, 2-A, 2-B", teacherName: "MR. RAJESH KUMAR", periodsPerWeek: 32, roomLab: "Classrooms", contact: "8899001122" },
-    { sn: 2, subjectName: "HINDI", subjectCode: "HIN01", classSection: "1-A, 1-B, 2-A, 2-B", teacherName: "MR. VIKRAM PATEL", periodsPerWeek: 32, roomLab: "Classrooms", contact: "8811223344" },
-    { sn: 3, subjectName: "MATHEMATICS", subjectCode: "MTH01", classSection: "10-A, 10-B, 11-A, 12-A", teacherName: "MR. AMIT SHARMA", periodsPerWeek: 28, roomLab: "Math Lab", contact: "9876543211" },
-    { sn: 4, subjectName: "PHYSICS", subjectCode: "PHY01", classSection: "10-A, 11-A, 12-A", teacherName: "MRS. NEHA GUPTA", periodsPerWeek: 26, roomLab: "Physics Lab", contact: "8877665544" },
-    { sn: 5, subjectName: "CHEMISTRY", subjectCode: "CHE01", classSection: "10-A, 11-A, 12-A", teacherName: "MR. DEEPAK MISHRA", periodsPerWeek: 26, roomLab: "Chemistry Lab", contact: "8765432109" },
-    { sn: 6, subjectName: "BIOLOGY", subjectCode: "BIO01", classSection: "9-A, 10-A, 11-A, 12-A", teacherName: "MRS. PRIYA SINGH", periodsPerWeek: 28, roomLab: "Biology Lab", contact: "9988776655" },
-    { sn: 7, subjectName: "SOCIAL SCIENCE", subjectCode: "SOC01", classSection: "8-A, 9-A, 10-A", teacherName: "MS. SUNITA VERMA", periodsPerWeek: 30, roomLab: "Classrooms", contact: "9900112233" },
-    { sn: 8, subjectName: "COMPUTER SCIENCE", subjectCode: "CMP01", classSection: "9-A, 10-A, 11-A, 12-A", teacherName: "MS. POOJA JOSHI", periodsPerWeek: 24, roomLab: "Computer Lab 1", contact: "7766554433" },
-    { sn: 9, subjectName: "ART & CRAFT", subjectCode: "ART01", classSection: "1-A to 5-A", teacherName: "MRS. ANJALI ROY", periodsPerWeek: 28, roomLab: "Art Room", contact: "9811223344" },
-    { sn: 10, subjectName: "EDU SPORTS", subjectCode: "SPT01", classSection: "All Wings", teacherName: "MR. MANOJ TIWARI", periodsPerWeek: 30, roomLab: "Playground", contact: "9822334455" },
-    { sn: 11, subjectName: "PRE-PRIMARY ALL", subjectCode: "PRP01", classSection: "NUR-A, LKG-A", teacherName: "MRS. KAVITA SHARMA", periodsPerWeek: 28, roomLab: "Activity Room", contact: "9876543210" },
-    { sn: 12, subjectName: "PRE-PRIMARY ALL", subjectCode: "PRP02", classSection: "NUR-B, LKG-B", teacherName: "MRS. SHALINI MISHRA", periodsPerWeek: 28, roomLab: "Activity Room", contact: "7788990011" },
-  ];
-
-  // Timetable Log Data (Screenshot 1)
-  const timetableLogs = [
-    { sno: 1, generateTime: "01-Sep-2026 10:15 AM" },
-    { sno: 2, generateTime: "31-Aug-2026 04:30 PM" },
-    { sno: 3, generateTime: "30-Aug-2026 11:00 AM" },
-    { sno: 4, generateTime: "29-Aug-2026 02:15 PM" },
-    { sno: 5, generateTime: "28-Aug-2026 09:45 AM" },
-  ];
-
-  // Mock Class Timetable Matrix
-  const classTimetableData = [
-    { day: "Monday", p1: "Math (AS)", p2: "Physics (NG)", p3: "Chem (DM)", p4: "English (RK)", recess: "RECESS", p5: "Hindi (VP)", p6: "Bio (PS)", p7: "Comp (PJ)", p8: "Sports (MT)" },
-    { day: "Tuesday", p1: "Physics (NG)", p2: "Math (AS)", p3: "English (RK)", p4: "Chem (DM)", recess: "RECESS", p5: "Social (SV)", p6: "Hindi (VP)", p7: "Sports (MT)", p8: "Library" },
-    { day: "Wednesday", p1: "Chem (DM)", p2: "Physics (NG)", p3: "Math (AS)", p4: "Bio (PS)", recess: "RECESS", p5: "English (RK)", p6: "Comp (PJ)", p7: "Art (AR)", p8: "Music" },
-    { day: "Thursday", p1: "English (RK)", p2: "Math (AS)", p3: "Physics (NG)", p4: "Social (SV)", recess: "RECESS", p5: "Chem (DM)", p6: "Hindi (VP)", p7: "Yoga (MT)", p8: "Bio (PS)" },
-    { day: "Friday", p1: "Bio (PS)", p2: "English (RK)", p3: "Math (AS)", p4: "Physics (NG)", recess: "RECESS", p5: "Comp (PJ)", p6: "Chem (DM)", p7: "Social (SV)", p8: "Activity" },
-    { day: "Saturday", p1: "Math (AS)", p2: "Physics (NG)", p3: "Chem (DM)", p4: "English (RK)", recess: "RECESS", p5: "Club Act", p6: "House Meet", p7: "Counseling", p8: "Free" },
-  ];
-
-  // Teachers List
-  const teachersList = [
-    "All Teachers",
-    "None selected",
-    "Mr. Amit Sharma (PGT Math)",
-    "Mrs. Priya Singh (TGT Science)",
-    "Mr. Rajesh Kumar (PGT English)",
-    "Ms. Sunita Verma (TGT Social)",
-    "Mr. Vikram Patel (PRT Hindi)",
-    "Mrs. Neha Gupta (PGT Physics)",
-    "Mr. Deepak Mishra (PGT Chemistry)",
-    "Ms. Pooja Joshi (TGT Computer)",
-    "Mr. Manoj Tiwari (PRT Sports)",
-    "Mrs. Anjali Roy (PRT Art)",
-  ];
-
-  // Formats List
-  const formatsList = ["Format 1", "Format 2", "Format 3"];
-
-  // Days List
-  const daysList = ["All Days", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-  // Wings List (Matching Screenshot 4)
-  const wingsList = ["All Wings", "Higher", "Kindergarten", "Middle", "Pre-Primary", "Primary", "Senior Secondary"];
-
+  const resourcesList = ["All Resources", "Physics Lab", "Chemistry Lab", "Biology Lab", "Computer Lab 1", "Computer Lab 2", "Art Room", "Music Room", "Library", "Playground", "Auditorium"];
   
+  const teachersList = ["All Teachers", "None selected", ...filtersData.teachers.map(t => t.name)];
+  const formatsList = ["Format 1", "Format 2", "Format 3"];
+  const daysList = ["All Days", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const wingsList = ["All Wings", ...filtersData.wings];
+  
+  // Derived Classes list for dropdowns
+  const ALL_SECTION_CLASSES = filtersData.classes.flatMap(c => filtersData.sections.map(s => `${c}-${s}`));
+
   const handleShowClick = async () => {
-    if (tabId === "particular_class_timetable_details" || tabId === "class_timetable_details") {
-      setLoading(true);
-      setError('');
-      try {
-        const token = localStorage.getItem('token');
+    setLoading(true);
+    setError('');
+    const token = localStorage.getItem('token');
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+
+    try {
+      let endpoint = '';
+      if (tabId === "particular_class_timetable_details" || tabId === "class_timetable_details") {
         let parts = selectedClass.split('-');
         let cl = parts[0] || selectedClass;
         let sec = parts[1] || '';
-        
-        const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/timetables?class=${encodeURIComponent(cl)}&section=${encodeURIComponent(sec)}`;
-        const response = await fetch(apiUrl, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          const transformed = {};
-          let slots = [];
-          
-          if (data.schedule && data.schedule.length > 0) {
-            const refDay = data.schedule.reduce((prev, curr) => (curr.periods.length > prev.periods.length ? curr : prev), data.schedule[0]);
-            if (refDay && refDay.periods) {
-              slots = refDay.periods.map(p => ({
-                period: p.periodName,
-                time: `${p.startTime} - ${p.endTime}`,
-                isBreak: p.isBreak
-              }));
-            }
-            
-            data.schedule.forEach(daySchedule => {
-              transformed[daySchedule.day] = {};
-              daySchedule.periods.forEach(period => {
-                transformed[daySchedule.day][period.periodName] = {
-                  subject: period.subject,
-                  teacher: period.teacher ? `${period.teacher.firstName || ''} ${period.teacher.lastName || ''}`.trim() : '',
-                  isBreak: period.isBreak
-                };
-              });
-            });
-          }
-          setTimetableData(transformed);
-          setTimeSlots(slots);
-        } else {
-          setError('Failed to fetch timetable.');
-        }
-      } catch (err) {
-        setError('Network error.');
+        endpoint = `/api/timetable-reports/class-timetable?class=${encodeURIComponent(cl)}&section=${encodeURIComponent(sec)}`;
+      } else if (tabId === "master_requirement") {
+        if (selectedMasterOption === "Class List") endpoint = `/api/timetable-reports/classes`;
+        else if (selectedMasterOption === "Subject List") endpoint = `/api/timetable-reports/subjects`;
+        else if (selectedMasterOption === "Teacher,Class,Subject,No. Of Periods") endpoint = `/api/timetable-reports/teacher-class-subject`;
+        else if (selectedMasterOption === "Subject Taught ByTeacher") endpoint = `/api/timetable-reports/subject-taught`;
+        else if (selectedMasterOption === "Class Teachers Detail") endpoint = `/api/timetable-reports/class-teachers`;
+      } else if (tabId === "wing_wise_teacher_details") {
+        endpoint = `/api/timetable-reports/wing-wise-teachers`;
+      } else if (tabId === "subject_wise_teacher_details") {
+        endpoint = `/api/timetable-reports/subject-wise-teachers`;
+      } else if (tabId === "date_wise_substitution_details") {
+        endpoint = `/api/timetable-reports/date-wise-substitution?from=${fromDate}&to=${toDate}`;
+      } else if (tabId === "teachers_work_load_details") {
+        endpoint = `/api/timetable-reports/teacher-workload`;
+      } else if (tabId === "free_teachers_classwise" || tabId === "day_wise_free_teacher_details" || tabId === "week_wise_free_teacher_details") {
+        endpoint = `/api/timetable-reports/free-teachers?period=${selectedPeriod !== 'All Periods' ? selectedPeriod : ''}`;
+      } else if (tabId === "subject_details") {
+         endpoint = `/api/timetable-reports/subjects`;
+      } else if (tabId === "teacher_timetable_details") {
+         endpoint = `/api/timetable-reports/teacher-timetable?teacherName=${encodeURIComponent(selectedTeacher)}`;
+      } else if (tabId === "show_timetable_log") {
+         endpoint = `/api/timetable-reports/timetable-logs`;
+      } else if (tabId === "parallel_allocation_details") {
+         endpoint = `/api/timetable-reports/parallel-allocations`;
+      } else if (tabId === "consecutive_allocation_details") {
+         endpoint = `/api/timetable-reports/consecutive-allocations`;
+      } else if (tabId === "class_and_resource_details") {
+         endpoint = `/api/timetable-reports/class-resource`;
+      } else if (tabId === "unallocated_period_details") {
+         endpoint = `/api/timetable-reports/unallocated-periods`;
+      } else if (tabId === "resource_timetable_details") {
+         endpoint = `/api/timetable-reports/resource-timetable?resourceName=${encodeURIComponent(selectedResource)}`;
+      } else if (tabId === "class_wise_teacher_allocation_details") {
+         endpoint = `/api/timetable-reports/class-wise-teacher-allocation`;
+      } else if (tabId === "assignment_status") {
+         endpoint = `/api/timetable-reports/assignment-status`;
+      } else if (tabId === "subject_summary") {
+         endpoint = `/api/timetable-reports/subject-summary`;
+      } else if (tabId === "subject_wise_teacher_allocation_details") {
+         endpoint = `/api/timetable-reports/subject-wise-teacher-allocation`;
+      } else if (tabId === "show_timetable_at_glance") {
+         endpoint = `/api/timetable-reports/timetable-at-glance`;
+      } else if (tabId === "class_teacher_details") {
+         endpoint = `/api/timetable-reports/class-teachers`;
+      } else {
+        // Fallback or missing report implementation
+        endpoint = `/api/timetable-reports/classes`; 
       }
+
+      const response = await fetch(`${baseUrl}${endpoint}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (tabId === "particular_class_timetable_details" || tabId === "class_timetable_details" || tabId === "teacher_timetable_details" || tabId === "resource_timetable_details") {
+           const transformed = {};
+           let slots = [];
+           if (data.length > 0 && data[0].schedule) {
+             const tData = data[0];
+             const refDay = tData.schedule.reduce((prev, curr) => (curr.periods.length > prev.periods.length ? curr : prev), tData.schedule[0]);
+             if (refDay && refDay.periods) {
+               slots = refDay.periods.map(p => ({ period: p.periodName, time: `${p.startTime} - ${p.endTime}`, isBreak: p.isBreak }));
+             }
+             tData.schedule.forEach(daySchedule => {
+               transformed[daySchedule.day] = {};
+               daySchedule.periods.forEach(period => {
+                 transformed[daySchedule.day][period.periodName] = {
+                   subject: period.subject,
+                   teacher: period.teacher ? `${period.teacher.firstName || ''} ${period.teacher.lastName || ''}`.trim() : '',
+                   isBreak: period.isBreak
+                 };
+               });
+             });
+           }
+           setTimetableData(transformed);
+           setTimeSlots(slots);
+        } else {
+          setReportData(data);
+        }
+      } else {
+        setError('Failed to fetch data.');
+      }
+    } catch (err) {
+      setError('Network error.');
+    } finally {
       setLoading(false);
+      setShowReport(true);
+      showToast(`Generated ${reportHeading} report`);
     }
-    
-    setShowReport(true);
-    showToast(`Generated ${reportHeading} report preview`);
   };
 
+  const getBannerTitle = () => reportHeading.toUpperCase() + " As on " + new Date().toLocaleDateString('en-GB');
 
-  // Determine Title Banner Text based on tabId and selected options
-  const getBannerTitle = () => {
-    if (tabId === "subject_details") return "SUBJECTS As on 01-Sep-2026";
-    if (tabId === "class_teacher_details") return "CLASS TEACHERS DETAIL As on 01-Sep-2026";
-    if (tabId === "wing_wise_teacher_details") return "TEACHERS WING WISE As on 01-Sep-2026";
-    if (tabId === "subject_wise_teacher_details") return "SUBJECT WISE TEACHER DETAILS As on 01-Sep-2026";
-    if (tabId === "parallel_allocation_details") return "PARALLEL ALLOCATION DETAILS As on 01-Sep-2026";
-    if (tabId === "consecutive_allocation_details") return "CONSECUTIVE ALLOCATION DETAILS As on 01-Sep-2026";
-    if (tabId === "class_and_resource_details") return "CLASS AND RESOURCE DETAILS As on 01-Sep-2026";
-    if (tabId === "week_wise_free_teacher_details") return "WEEK WISE FREE TEACHER DETAILS As on 01-Sep-2026";
-    if (tabId === "free_teachers_classwise") return "FREE TEACHERS CLASSWISE As on 01-Sep-2026";
-    if (tabId === "unallocated_period_details") return "UNALLOCATED PERIOD DETAILS As on 01-Sep-2026";
-    if (tabId === "day_wise_free_teacher_details") return "DAY WISE FREE TEACHER DETAILS As on 01-Sep-2026";
-    if (tabId === "class_and_subject_taught") return "CLASS AND SUBJECT TAUGHT As on 01-Sep-2026";
-    if (tabId === "teachers_work_load_details") return "TEACHERS WORK LOAD DETAILS As on 01-Sep-2026";
-    if (tabId === "resource_timetable_details") return "RESOURCE TIMETABLE DETAILS As on 01-Sep-2026";
-    if (tabId === "particular_class_timetable_details") return `CLASS TIMETABLE (${selectedClass === "Select Class" ? "1-A" : selectedClass}) As on 01-Sep-2026`;
-    if (tabId === "class_wise_teacher_allocation_details") return "CLASS WISE TEACHER ALLOCATION DETAILS As on 01-Sep-2026";
-    if (tabId === "date_wise_substitution_details") return "DATE WISE SUBSTITUTION DETAILS As on 01-Sep-2026";
-    if (tabId === "assignment_status") return "ASSIGNMENT STATUS As on 01-Sep-2026";
-    if (tabId === "subject_summary") return "SUBJECT SUMMARY As on 01-Sep-2026";
-    if (tabId === "show_timetable_at_glance") return "SHOW TIMETABLE AT GLANCE As on 01-Sep-2026";
-    if (tabId === "master_requirement") {
-      if (selectedMasterOption === "Class List") return "CLASS LIST As on 01-Sep-2026";
-      if (selectedMasterOption === "Subject List") return "SUBJECT LIST As on 01-Sep-2026";
-      if (selectedMasterOption === "Teacher,Class,Subject,No. Of Periods")
-        return "TEACHER, CLASS, SUBJECT, NO. OF PERIODS As on 01-Sep-2026";
-      if (selectedMasterOption === "Subject Taught ByTeacher")
-        return "SUBJECT TAUGHT BY TEACHER As on 01-Sep-2026";
-      if (selectedMasterOption === "Class Teachers Detail")
-        return "CLASS TEACHERS DETAIL As on 01-Sep-2026";
+  // Pagination for Subjects (if used in Subject Details)
+  const getPaginatedSubjects = () => {
+    let list = reportData || [];
+    if (searchReportText.trim()) {
+      list = list.filter((s) => s.name?.toLowerCase().includes(searchReportText.toLowerCase()) || s.shortName?.toLowerCase().includes(searchReportText.toLowerCase()));
     }
-    return `${reportHeading.toUpperCase()} As on 01-Sep-2026`;
+    if (currentPage === 1) return list.slice(0, 16);
+    if (currentPage === 2) return list.slice(16, 31);
+    return list.slice(31);
   };
+  const currentSubjects = getPaginatedSubjects();
 
-  // Determine Footer Report Name dynamically matching Image 2
-  const getFooterReportName = () => {
-    if (tabId === "subject_details") return "Subjects";
-    if (tabId === "class_teacher_details") return "Class Teachers Detail";
-    if (tabId === "wing_wise_teacher_details") return "Teachers Wing Wise";
-    if (tabId === "subject_wise_teacher_details") return "Subject Wise Teacher Details";
-    if (tabId === "parallel_allocation_details") return "Parallel Allocation Details";
-    if (tabId === "consecutive_allocation_details") return "Consecutive Allocation Details";
-    if (tabId === "class_and_resource_details") return "Class and Resource Details";
-    if (tabId === "week_wise_free_teacher_details") return "Week Wise Free Teacher Details";
-    if (tabId === "free_teachers_classwise") return "Free Teachers Classwise";
-    if (tabId === "unallocated_period_details") return "Unallocated Period Details";
-    if (tabId === "day_wise_free_teacher_details") return "Day Wise Free Teacher Details";
-    if (tabId === "class_and_subject_taught") return "Class and Subject Taught";
-    if (tabId === "teachers_work_load_details") return "Teachers Work Load Details";
-    if (tabId === "resource_timetable_details") return "Resource Timetable Details";
-    if (tabId === "particular_class_timetable_details") return "Particular Class Timetable Details";
-    if (tabId === "class_wise_teacher_allocation_details") return "Class Wise Teacher Allocation Details";
-    if (tabId === "date_wise_substitution_details") return "Date Wise Substitution Details";
-    if (tabId === "assignment_status") return "Assignment Status";
-    if (tabId === "subject_summary") return "Subject Summary";
-    if (tabId === "show_timetable_at_glance") return "Show Timetable At Glance";
-    if (tabId === "master_requirement") {
-      if (selectedMasterOption === "Class List") return "Class List";
-      if (selectedMasterOption === "Subject List") return "Subject List";
-      if (selectedMasterOption === "Teacher,Class,Subject,No. Of Periods")
-        return "Teacher, Class, Subject, No. Of Periods";
-      if (selectedMasterOption === "Subject Taught ByTeacher")
-        return "Subject Taught By Teacher";
-      if (selectedMasterOption === "Class Teachers Detail")
-        return "Class Teachers Detail";
-    }
-    return reportHeading;
-  };
-
-  // -------------------- SPECIAL VIEW 1: SHOW TIMETABLE LOG (SCREENSHOT 1) --------------------
-  if (tabId === "show_timetable_log") {
-    return (
-      <div className="bg-white border border-gray-300 rounded-b rounded-tr shadow-xs p-5 min-h-[750px] flex flex-col select-none font-sans">
-        {/* Top Refresh Button Matching Screenshot 1 */}
-        <div className="flex justify-center mb-4">
-          <button
-            type="button"
-            onClick={() => showToast("Refreshed Timetable Log")}
-            className="border border-[#f59e0b] text-[#d97706] hover:bg-amber-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
-          >
-            <FaSyncAlt className="text-xs" />
-            <span>Refresh</span>
-          </button>
-        </div>
-
-        {/* Timetable Log Table Matching Screenshot 1 */}
-        <div className="border border-gray-200 rounded overflow-hidden">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-white border-b border-gray-200 text-gray-900 font-bold">
-              <tr>
-                <th className="py-2.5 px-4 w-32 border-r border-gray-100">SNo.</th>
-                <th className="py-2.5 px-6 border-r border-gray-100">Generate Time</th>
-                <th className="py-2.5 px-6">View Log</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 text-gray-700">
-              {timetableLogs.map((log) => (
-                <tr key={log.sno} className="hover:bg-gray-50/80">
-                  <td className="py-2.5 px-4 border-r border-gray-100 text-gray-800">{log.sno}</td>
-                  <td className="py-2.5 px-6 border-r border-gray-100 font-medium text-gray-900">{log.generateTime}</td>
-                  <td className="py-2.5 px-6">
-                    <button
-                      type="button"
-                      onClick={() => showToast(`Opening log for ${log.generateTime}`)}
-                      className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
-                    >
-                      View Log
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  }
-
-  // -------------------- SPECIAL VIEW 2: SUBJECT WISE TEACHER ALLOCATION DETAILS (SCREENSHOT 5) --------------------
-  if (tabId === "subject_wise_teacher_allocation_details") {
-    return (
-      <div className="bg-white border border-gray-300 rounded-b rounded-tr shadow-xs p-6 min-h-[750px] flex flex-col select-none font-sans">
-        {/* Top Header Matching Screenshot 5: Title on Left, Export Button on Top Right */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-bold text-gray-800 tracking-tight">Subject Wise Teacher</h2>
-          <button
-            type="button"
-            onClick={() => showToast("Exporting Subject Wise Teacher details to Excel...")}
-            className="border border-[#00a2db] text-[#00a2db] hover:bg-sky-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
-          >
-            <FaFileExcel className="text-green-600 text-xs" />
-            <span>Export to excel</span>
-          </button>
-        </div>
-
-        {/* Subject Wise Teacher Table */}
-        <div className="border border-gray-200 rounded overflow-hidden">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-[#f8fafc] border-b border-gray-200 text-gray-900 font-bold">
-              <tr>
-                <th className="py-2.5 px-3 w-16 border-r border-gray-200">SNo.</th>
-                <th className="py-2.5 px-4 border-r border-gray-200">Subject Name</th>
-                <th className="py-2.5 px-3 border-r border-gray-200">Code</th>
-                <th className="py-2.5 px-4 border-r border-gray-200">Class & Section</th>
-                <th className="py-2.5 px-4 border-r border-gray-200">Allocated Teacher</th>
-                <th className="py-2.5 px-3 border-r border-gray-200 text-center">Periods/Wk</th>
-                <th className="py-2.5 px-4 border-r border-gray-200">Room / Lab</th>
-                <th className="py-2.5 px-4">Contact</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 text-gray-700">
-              {subjectWiseTeacherAllocationTableData.map((row) => (
-                <tr key={row.sn} className="hover:bg-gray-50/80">
-                  <td className="py-2 px-3 border-r border-gray-200 text-gray-800">{row.sn}</td>
-                  <td className="py-2 px-4 border-r border-gray-200 font-semibold text-gray-900 uppercase">{row.subjectName}</td>
-                  <td className="py-2 px-3 border-r border-gray-200 font-mono text-gray-600">{row.subjectCode}</td>
-                  <td className="py-2 px-4 border-r border-gray-200 font-medium text-gray-800">{row.classSection}</td>
-                  <td className="py-2 px-4 border-r border-gray-200 font-semibold text-blue-800 uppercase">{row.teacherName}</td>
-                  <td className="py-2 px-3 border-r border-gray-200 text-center font-bold text-gray-900">{row.periodsPerWeek}</td>
-                  <td className="py-2 px-4 border-r border-gray-200 text-gray-600">{row.roomLab}</td>
-                  <td className="py-2 px-4 font-mono text-gray-700">{row.contact}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  }
-
-  // -------------------- STANDARD SPLITTER & LETTERHEAD PREVIEW VIEW --------------------
   return (
-    <div className="bg-white border border-gray-300 rounded-b rounded-tr shadow-xs flex min-h-[750px] overflow-hidden select-none">
-      {/* -------------------- LEFT FILTERS SIDEBAR -------------------- */}
-      <div
-        className={`${
-          isFilterCollapsed ? "w-0 p-0 border-none overflow-hidden" : "w-72 p-4 border-r border-gray-200"
-        } bg-white flex flex-col gap-4 relative shrink-0 transition-all duration-200`}
-      >
-        {/* CASE 1: MASTER REQUIREMENT 5 RADIO BUTTONS (SCREENSHOT 2, 3, 4, 5) */}
-        {tabId === "master_requirement" && (
-          <div className="flex flex-col gap-2.5 pt-1">
-            {masterRequirementOptions.map((opt) => (
-              <label
-                key={opt}
-                className="flex items-center gap-2.5 text-xs text-gray-800 font-medium cursor-pointer hover:text-blue-600 select-none"
-              >
-                <input
-                  type="radio"
-                  name="masterRequirementOption"
-                  value={opt}
-                  checked={selectedMasterOption === opt}
-                  onChange={(e) => {
-                    setSelectedMasterOption(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="w-3.5 h-3.5 text-[#00a2db] focus:ring-[#00a2db] cursor-pointer"
-                />
-                <span className="leading-tight">{opt}</span>
-              </label>
-            ))}
-          </div>
-        )}
-
-        {/* CASE 1B: SHOW TIMETABLE AT GLANCE 6 RADIO BUTTONS (SCREENSHOT 1) */}
-        {tabId === "show_timetable_at_glance" && (
-          <div className="flex flex-col gap-2.5 pt-1">
-            {glanceOptions.map((opt) => (
-              <label
-                key={opt}
-                className="flex items-center gap-2.5 text-xs text-gray-800 font-medium cursor-pointer hover:text-blue-600 select-none"
-              >
-                <input
-                  type="radio"
-                  name="glanceOption"
-                  value={opt}
-                  checked={selectedGlanceOption === opt}
-                  onChange={(e) => {
-                    setSelectedGlanceOption(e.target.value);
-                  }}
-                  className="w-3.5 h-3.5 text-[#00a2db] focus:ring-[#00a2db] cursor-pointer"
-                />
-                <span className="leading-tight">{opt}</span>
-              </label>
-            ))}
-          </div>
-        )}
-
-        {/* CASE 2A: WING FILTER (Screenshot 4 - Wing Wise Teacher & Screenshot 3 - Week Wise Free Teacher) */}
-        {(tabId === "wing_wise_teacher_details" || tabId === "week_wise_free_teacher_details") && (
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-gray-800">Select Wing(s)</label>
-            <div className="relative">
-              <select
-                value={selectedWing}
-                onChange={(e) => setSelectedWing(e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded px-2.5 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-              >
-                {wingsList.map((w) => (
-                  <option key={w} value={w}>{w}</option>
-                ))}
-              </select>
-              <FaAngleDown className="absolute right-2.5 top-2.5 text-[10px] pointer-events-none text-gray-400" />
-            </div>
-          </div>
-        )}
-
-        {/* CASE 2B: DAY WISE FREE TEACHER DETAILS (Screenshot 1 - Select Wing(s) + All Days Free Bell) */}
-        {tabId === "day_wise_free_teacher_details" && (
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-gray-800">Select Wing(s)</label>
-              <div className="relative">
-                <select
-                  value={selectedWing}
-                  onChange={(e) => setSelectedWing(e.target.value)}
-                  className="w-full text-xs border border-gray-300 rounded px-2.5 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-                >
-                  {wingsList.map((w) => (
-                    <option key={w} value={w}>{w}</option>
-                  ))}
+    <div className="bg-white border border-gray-300 rounded-b rounded-tr p-6 shadow-xs space-y-6 select-none relative">
+      <div className="flex flex-col gap-6">
+        
+        {/* Render Filters dynamically based on tabId */}
+        <div className="flex flex-wrap items-center gap-4 bg-gray-50/50 p-4 border border-gray-200 rounded">
+           {/* Date From/To for Substitution */}
+           {tabId === "date_wise_substitution_details" && (
+             <>
+               <div className="flex flex-col gap-1">
+                 <span className="text-[10px] font-bold text-gray-700 uppercase tracking-wide">From Date</span>
+                 <input type="date" value={fromDate} onChange={e=>setFromDate(e.target.value)} className="w-36 text-xs border rounded px-3 py-1.5" />
+               </div>
+               <div className="flex flex-col gap-1">
+                 <span className="text-[10px] font-bold text-gray-700 uppercase tracking-wide">To Date</span>
+                 <input type="date" value={toDate} onChange={e=>setToDate(e.target.value)} className="w-36 text-xs border rounded px-3 py-1.5" />
+               </div>
+             </>
+           )}
+           
+           {/* Common dropdowns */}
+           {(tabId === "class_timetable_details" || tabId === "particular_class_timetable_details") && (
+             <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold text-gray-700 uppercase tracking-wide">Class & Section</span>
+                <select value={selectedClass} onChange={e=>setSelectedClass(e.target.value)} className="w-40 text-xs border rounded px-3 py-1.5">
+                   <option value="Select Class">Select Class</option>
+                   {ALL_SECTION_CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
-                <FaAngleDown className="absolute right-2.5 top-2.5 text-[10px] pointer-events-none text-gray-400" />
-              </div>
-            </div>
+             </div>
+           )}
 
-            {/* Checkbox: All Days Free Bell Matching Screenshot 1 */}
-            <div className="pl-6">
-              <label className="flex items-center gap-2 text-xs text-gray-800 font-medium cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={isAllDaysFreeBell}
-                  onChange={(e) => setIsAllDaysFreeBell(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                />
-                <span>All Days Free Bell</span>
-              </label>
-            </div>
-          </div>
-        )}
-
-        {/* CASE 2C: STAFF TYPE (Screenshot 3 - Week Wise Free Teacher Details) */}
-        {tabId === "week_wise_free_teacher_details" && (
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-gray-800">Staff Type</label>
-            <div className="relative">
-              <select
-                value={selectedStaffType}
-                onChange={(e) => setSelectedStaffType(e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded px-2.5 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-              >
-                {staffTypesList.map((st) => (
-                  <option key={st} value={st}>{st}</option>
-                ))}
-              </select>
-              <FaAngleDown className="absolute right-2.5 top-2.5 text-[10px] pointer-events-none text-gray-400" />
-            </div>
-          </div>
-        )}
-
-        {/* CASE 3: TEACHER FILTER (Screenshot 3 - Subject Wise Teacher Details & Teacher Reports) */}
-        {(tabId === "subject_wise_teacher_details" ||
-          tabId === "teacher_timetable_details") && (
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-gray-800">Select Teacher(s)</label>
-            <div className="relative">
-              <select
-                value={selectedTeacher}
-                onChange={(e) => setSelectedTeacher(e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded px-2.5 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-              >
-                {teachersList.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-              <FaAngleDown className="absolute right-2.5 top-2.5 text-[10px] pointer-events-none text-gray-400" />
-            </div>
-          </div>
-        )}
-
-        {/* CASE 4A: CLASS FILTER WITH 'Select Class' DEFAULT (Screenshot 1 - Class Wise Teacher Allocation, Screenshot 2 - Class and Resource, Screenshot 5 - Particular Class) */}
-        {(tabId === "class_and_resource_details" ||
-          tabId === "particular_class_timetable_details" ||
-          tabId === "class_wise_teacher_allocation_details") && (
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-gray-800">Select Class</label>
-            <div className="relative">
-              <select
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded px-2.5 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-              >
-                <option value="Select Class">Select Class</option>
-                <option value="All Classes">All Classes</option>
-                {ALL_SECTION_CLASSES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-              <FaAngleDown className="absolute right-2.5 top-2.5 text-[10px] pointer-events-none text-gray-400" />
-            </div>
-          </div>
-        )}
-
-        {/* CASE 4B: CLASS FILTER & OTHER FORMAT CHECKBOX (Screenshot 4 - Free Teachers Classwise) */}
-        {tabId === "free_teachers_classwise" && (
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-gray-800">Select Class</label>
-              <div className="relative">
-                <select
-                  value={selectedClass}
-                  onChange={(e) => setSelectedClass(e.target.value)}
-                  className="w-full text-xs border border-gray-300 rounded px-2.5 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-                >
-                  <option value="All Class">All Class</option>
-                  {ALL_SECTION_CLASSES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
+           {tabId === "teacher_timetable_details" && (
+             <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold text-gray-700 uppercase tracking-wide">Teacher</span>
+                <select value={selectedTeacher} onChange={e=>setSelectedTeacher(e.target.value)} className="w-40 text-xs border rounded px-3 py-1.5">
+                   {teachersList.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
-                <FaAngleDown className="absolute right-2.5 top-2.5 text-[10px] pointer-events-none text-gray-400" />
-              </div>
-            </div>
+             </div>
+           )}
+           
+           {/* Master requirement radio buttons */}
+           {tabId === "master_requirement" && (
+             <div className="flex items-center gap-4 flex-wrap w-full border-b pb-4 mb-2 border-gray-200">
+               {masterRequirementOptions.map(opt => (
+                 <label key={opt} className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-gray-700">
+                   <input type="radio" name="masterOpt" value={opt} checked={selectedMasterOption === opt} onChange={()=>setSelectedMasterOption(opt)} className="accent-blue-500 w-3.5 h-3.5" />
+                   {opt}
+                 </label>
+               ))}
+             </div>
+           )}
 
-            {/* Checkbox: Other Format(Table View) Matching Screenshot 4 */}
-            <label className="flex items-center gap-2 text-xs text-gray-800 font-medium cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={isOtherFormat}
-                onChange={(e) => setIsOtherFormat(e.target.checked)}
-                className="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-              />
-              <span>Other Format(Table View)</span>
-            </label>
-          </div>
-        )}
-
-        {/* CASE 4C: CLASS AND SUBJECT TAUGHT (Screenshot 2 - Select Class dropdown with All Class default) */}
-        {tabId === "class_and_subject_taught" && (
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-gray-800">Select Class</label>
-            <div className="relative">
-              <select
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded px-2.5 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-              >
-                <option value="All Class">All Class</option>
-                {ALL_SECTION_CLASSES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-              <FaAngleDown className="absolute right-2.5 top-2.5 text-[10px] pointer-events-none text-gray-400" />
-            </div>
-          </div>
-        )}
-
-        {/* CASE 4D: RESOURCE TIMETABLE (Screenshot 4 - Select Resource(s)) */}
-        {tabId === "resource_timetable_details" && (
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-gray-800">Select Resource(s)</label>
-            <div className="relative">
-              <select
-                value={selectedResource}
-                onChange={(e) => setSelectedResource(e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded px-2.5 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-              >
-                {resourcesList.map((r) => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
-              </select>
-              <FaAngleDown className="absolute right-2.5 top-2.5 text-[10px] pointer-events-none text-gray-400" />
-            </div>
-          </div>
-        )}
-
-        {/* CASE 4E: DATE WISE SUBSTITUTION DETAILS (Screenshot 2 - From Date, To Date, Select Format) */}
-        {tabId === "date_wise_substitution_details" && (
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-gray-800">From Date</label>
-              <input
-                type="text"
-                value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded px-2.5 py-1.5 text-gray-800 bg-white font-medium outline-none hover:border-blue-400 shadow-2xs"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-gray-800">To Date</label>
-              <input
-                type="text"
-                value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded px-2.5 py-1.5 text-gray-800 bg-white font-medium outline-none hover:border-blue-400 shadow-2xs"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-gray-800">Select Format</label>
-              <div className="relative">
-                <select
-                  value={selectedFormat}
-                  onChange={(e) => setSelectedFormat(e.target.value)}
-                  className="w-full text-xs border border-gray-300 rounded px-2.5 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-                >
-                  {formatsList.map((f) => (
-                    <option key={f} value={f}>{f}</option>
-                  ))}
-                </select>
-                <FaAngleDown className="absolute right-2.5 top-2.5 text-[10px] pointer-events-none text-gray-400" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* CASE 4F: GENERAL CLASS FILTER (For Remaining Class Reports) */}
-        {tabId === "class_timetable_details" && (
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-gray-800">Select Class(es)</label>
-            <div className="relative">
-              <select
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded px-2.5 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-              >
-                <option value="All Classes">All Classes</option>
-                {ALL_SECTION_CLASSES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-              <FaAngleDown className="absolute right-2.5 top-2.5 text-[10px] pointer-events-none text-gray-400" />
-            </div>
-          </div>
-        )}
-
-        {/* CASE 5: DAY FILTER (Screenshot 5 - Day(s) for Particular Class & General Day Reports) */}
-        {(tabId === "class_timetable_details" ||
-          tabId === "particular_class_timetable_details" ||
-          tabId === "teacher_timetable_details") && (
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-gray-800">Day(s)</label>
-            <div className="relative">
-              <select
-                value={selectedDay}
-                onChange={(e) => setSelectedDay(e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded px-2.5 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-              >
-                {daysList.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-              <FaAngleDown className="absolute right-2.5 top-2.5 text-[10px] pointer-events-none text-gray-400" />
-            </div>
-          </div>
-        )}
-
-        {/* CASE 6: FORMAT FILTER */}
-        {(tabId === "class_timetable_details" ||
-          tabId === "teacher_timetable_details") && (
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-gray-800">Select Format</label>
-            <div className="relative">
-              <select
-                value={selectedFormat}
-                onChange={(e) => setSelectedFormat(e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded px-2.5 py-1.5 text-gray-800 bg-white font-medium outline-none cursor-pointer hover:border-blue-400 appearance-none pr-8 shadow-2xs"
-              >
-                {formatsList.map((f) => (
-                  <option key={f} value={f}>{f}</option>
-                ))}
-              </select>
-              <FaAngleDown className="absolute right-2.5 top-2.5 text-[10px] pointer-events-none text-gray-400" />
-            </div>
-          </div>
-        )}
-
-        {/* Action Show Button matching Screenshot 1, 2, 3, 4, 5 */}
-        <div className="pt-2">
-          <button
-            type="button"
-            onClick={handleShowClick}
-            className="border border-[#00a2db] text-[#00a2db] hover:bg-sky-50 px-4 py-1.5 rounded text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs transition"
-          >
-            <FaEye className="text-xs text-[#00a2db]" />
-            <span>Show</span>
-          </button>
+           {/* Generic Show Button */}
+           <div className="mt-auto pb-[2px]">
+             <button onClick={handleShowClick} disabled={loading} className="bg-[#23a8e0] hover:bg-[#0288d1] text-white px-5 py-1.5 rounded text-xs font-semibold shadow-2xs transition flex items-center gap-2">
+               {loading ? 'Loading...' : 'Show'}
+             </button>
+           </div>
         </div>
-      </div>
 
-      {/* Splitter collapse button on divider matching screenshot 1, 2, 3, 4, 5 */}
-      <div className="relative flex items-center justify-center border-r border-gray-300 bg-[#edf2f7] w-3 z-10 select-none">
-        <button
-          type="button"
-          onClick={() => setIsFilterCollapsed(!isFilterCollapsed)}
-          className="absolute -left-1.5 bg-white border border-gray-300 hover:bg-gray-100 rounded-sm w-4 h-8 flex items-center justify-center text-gray-600 text-[10px] shadow-xs cursor-pointer"
-          title={isFilterCollapsed ? "Expand Filters" : "Collapse Filters"}
-        >
-          {isFilterCollapsed ? "▶" : "◀"}
-        </button>
-      </div>
-
-      {/* -------------------- RIGHT REPORT PREVIEW AREA -------------------- */}
-      <div className="flex-1 bg-[#eaedf1] p-3 flex flex-col items-center justify-start overflow-y-auto custom-scrollbar">
-        {!showReport ? (
-          /* Blank grey area before Show is clicked (Matching Screenshot 1, 2, 3, 4, 5) */
-          <div className="w-full h-full min-h-[600px] bg-[#eaedf1]"></div>
-        ) : (
-          /* Report Rendered with Crystal Report Toolbar & Letterhead Sheet (Matching Screenshot 3, 4, 5) */
-          <div className="w-full flex flex-col items-center">
-            {/* Top Toolbar matching Screenshot 3, 4, 5 */}
-            <div className="w-full max-w-4xl bg-white border border-gray-300 px-3 py-1.5 mb-2.5 flex items-center justify-between shadow-xs text-xs rounded-sm">
-              {/* Left Paging Controls */}
-              <div className="flex items-center gap-1.5 text-gray-700">
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage(1)}
-                  disabled={currentPage <= 1}
-                  className="font-mono text-xs px-1.5 py-0.5 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-30 cursor-pointer"
-                  title="First Page"
-                >
-                  |&lt;&lt;
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                  disabled={currentPage <= 1}
-                  className="font-mono text-xs px-1.5 py-0.5 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-30 cursor-pointer"
-                  title="Previous Page"
-                >
-                  &lt;
-                </button>
-                <div className="flex items-center gap-1 text-xs">
-                  <input
-                    type="text"
-                    value={currentPage}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value, 10);
-                      if (val >= 1 && val <= totalPages) setCurrentPage(val);
-                    }}
-                    className="w-8 text-center border border-gray-300 rounded px-1 py-0.5 text-xs font-semibold"
-                  />
-                  <span>of {totalPages}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage >= totalPages}
-                  className="font-mono text-xs px-1.5 py-0.5 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-30 cursor-pointer"
-                  title="Next Page"
-                >
-                  &gt;
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage(totalPages)}
-                  disabled={currentPage >= totalPages}
-                  className="font-mono text-xs px-1.5 py-0.5 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-30 cursor-pointer"
-                  title="Last Page"
-                >
-                  &gt;&gt;|
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCurrentPage(1);
-                    showToast("Report refreshed");
-                  }}
-                  className="p-1 hover:text-blue-600 cursor-pointer ml-1"
-                  title="Refresh"
-                >
-                  <FaSyncAlt className="text-xs text-blue-500" />
-                </button>
-              </div>
-
-              {/* Middle Find Controls */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  placeholder=""
-                  value={searchReportText}
-                  onChange={(e) => setSearchReportText(e.target.value)}
-                  className="border border-gray-300 rounded px-2 py-0.5 text-xs w-36 bg-white outline-none focus:border-blue-500"
-                />
-                <span
-                  onClick={() => {
-                    if (searchReportText.trim()) showToast(`Searching for "${searchReportText}"`);
-                  }}
-                  className="text-gray-700 hover:text-blue-600 text-xs font-medium cursor-pointer"
-                >
-                  Find | Next
-                </span>
-              </div>
-
-              {/* Right Export & Print Controls */}
-              <div className="flex items-center gap-3">
-                {/* Export Dropdown */}
-                <div className="relative group">
-                  <button
-                    type="button"
-                    className="flex items-center gap-1 text-gray-700 hover:text-blue-600 cursor-pointer p-1"
-                    title="Export Report"
-                  >
-                    <FaSave className="text-sm text-blue-600" />
-                    <FaAngleDown className="text-[10px]" />
-                  </button>
-                  <div className="hidden group-hover:block absolute right-0 top-6 bg-white border border-gray-200 shadow-xl rounded py-1 z-50 text-xs w-28">
-                    <button
-                      type="button"
-                      onClick={() => showToast("Exported to PDF successfully!")}
-                      className="w-full text-left px-3 py-1.5 hover:bg-gray-100 flex items-center gap-2 text-gray-700"
-                    >
-                      <FaFilePdf className="text-red-500 text-xs" />
-                      <span>Acrobat (PDF)</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => showToast("Exported to Excel successfully!")}
-                      className="w-full text-left px-3 py-1.5 hover:bg-gray-100 flex items-center gap-2 text-gray-700"
-                    >
-                      <FaFileExcel className="text-emerald-600 text-xs" />
-                      <span>MS Excel</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Print Button */}
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="text-gray-700 hover:text-blue-600 cursor-pointer p-1"
-                  title="Print Report"
-                >
-                  <FaPrint className="text-sm" />
-                </button>
-              </div>
+        {/* Report Results */}
+        {showReport && (
+          <div className="bg-white border-2 border-gray-800 rounded-lg overflow-hidden flex flex-col min-h-[500px]">
+            <div className="bg-blue-900 text-white font-bold text-lg text-center py-2 px-4 shadow-sm select-none">
+              {getBannerTitle()}
             </div>
-
-            {/* Printable Letterhead Document Sheet matching Screenshot 3, 4, 5 */}
-            <div className="bg-white shadow-md border border-gray-300 p-8 w-full max-w-4xl mx-auto text-gray-900 font-sans min-h-[960px] flex flex-col justify-between">
-              <div>
-                {/* School Header Block matching Screenshot 3, 4, 5 */}
-                <div className="flex items-start justify-center relative mb-4">
-                  {/* Left Official School Crest Logo (Exact Size Matching User Image) */}
-                  <img
-                    src="/school_logo.png"
-                    alt="Navals Academy Emblem"
-                    className="absolute left-2 top-0 w-16 h-[72px] object-contain shrink-0 drop-shadow-xs"
-                  />
-
-                  {/* Centered School Name & Contact Details */}
-                  <div className="text-center px-12">
-                    <h2 className="text-xl font-bold text-gray-900 tracking-wide uppercase font-serif">
-                      NAVALS NATIONAL ACADEMY
-                    </h2>
-                    <p className="text-xs font-semibold text-gray-800 tracking-wide mt-0.5">
-                      DOHRIGHAT , MAU
-                    </p>
-                    <p className="text-[11px] text-gray-600 mt-1">
-                      Website : www.navalsnationalacademydohrighat.com | Phone : 8299331845
-                    </p>
-                  </div>
-                </div>
-
-                {/* Report Banner with Tan Background and Double Line (Matching Screenshot 3, 4, 5) */}
-                <div className="border-t-2 border-b-2 border-[#b58c58] bg-[#fbf6ee] py-1 px-4 mb-3 text-left">
-                  <span className="font-bold text-xs uppercase tracking-wide text-gray-900">
-                    {getBannerTitle()}
-                  </span>
-                </div>
-
-                {/* -------------------- 1. TEACHERS WING WISE TABLE (SCREENSHOT 5 EXACT MATCH) -------------------- */}
-                {tabId === "wing_wise_teacher_details" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">TEACHER NAME</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">CONTACT NO</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">GENDER</th>
-                          <th className="py-2 px-4">WING NAME</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {wingWiseTeacherData
-                          .filter((t) => selectedWing === "All Wings" || t.wing === selectedWing)
-                          .map((row, idx) => (
-                            <tr key={row.sn} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                                {row.name}
+            
+            <div className="p-4 overflow-auto flex-1 bg-[#fcfdfe]">
+               {/* 1. Timetable Grids */}
+               {(tabId === "class_timetable_details" || tabId === "particular_class_timetable_details" || tabId === "teacher_timetable_details" || tabId === "resource_timetable_details") && timetableData && timeSlots.length > 0 && (
+                 <table className="w-full border-collapse border border-gray-300 text-xs text-center">
+                   <thead>
+                     <tr className="bg-gray-100">
+                       <th className="border border-gray-300 py-2 px-1">Day</th>
+                       {timeSlots.map(ts => (
+                         <th key={ts.period} className="border border-gray-300 p-1">
+                           <div className="font-bold">{ts.period}</div>
+                           <div className="text-[9px] text-gray-500">{ts.time}</div>
+                         </th>
+                       ))}
+                     </tr>
+                   </thead>
+                   <tbody>
+                     {daysList.filter(d=>d!=='All Days').map(day => (
+                       <tr key={day}>
+                         <td className="border border-gray-300 font-bold bg-gray-50">{day.substring(0,3)}</td>
+                         {timeSlots.map(ts => {
+                            const p = timetableData[day] ? timetableData[day][ts.period] : null;
+                            if (ts.isBreak) return <td key={ts.period} className="border border-gray-300 bg-orange-50 font-bold text-orange-600">RECESS</td>;
+                            return (
+                              <td key={ts.period} className="border border-gray-300 p-1">
+                                {p ? (
+                                  <>
+                                    <div className="font-semibold">{p.subject}</div>
+                                    <div className="text-gray-500 text-[10px]">{p.teacher}</div>
+                                  </>
+                                ) : '-'}
                               </td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800">{row.contact}</td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800">{row.gender}</td>
-                              <td className="py-1.5 px-4 text-gray-800 font-medium">{row.wing}</td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                            );
+                         })}
+                       </tr>
+                     ))}
+                   </tbody>
+                 </table>
+               )}
 
-                {/* -------------------- 2. SUBJECT WISE TEACHER DETAILS TABLE (SCREENSHOT 3) -------------------- */}
-                {tabId === "subject_wise_teacher_details" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SUBJECT NAME</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">TEACHER NAME</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">CONTACT NO</th>
-                          <th className="py-2 px-4">DESIGNATION</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {subjectWiseTeacherData.map((row, idx) => (
-                          <tr key={row.sn} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                              {row.subjectName}
-                            </td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800 uppercase font-semibold">
-                              {row.teacherName}
-                            </td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800">{row.contact}</td>
-                            <td className="py-1.5 px-4 text-gray-800 font-medium">{row.designation}</td>
-                          </tr>
+               {/* 2. Generic Table for all other reports */}
+               {!(tabId === "class_timetable_details" || tabId === "particular_class_timetable_details" || tabId === "teacher_timetable_details" || tabId === "resource_timetable_details") && reportData.length > 0 && (
+                 <table className="w-full border-collapse text-xs text-left">
+                   <thead className="bg-gray-100 border-b-2 border-gray-300">
+                     <tr>
+                        {Object.keys(reportData[0]).filter(k => k !== '_id').map(key => (
+                          <th key={key} className="p-2 border-r border-gray-200 uppercase">{key.replace(/([A-Z])/g, ' $1').trim()}</th>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 3. PARALLEL ALLOCATION DETAILS TABLE (SCREENSHOT 2) -------------------- */}
-                {tabId === "parallel_allocation_details" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58]">CLASS</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SUBJECT</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">TEACHER</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58]">PARALLEL CLASS</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">PARALLEL SUBJECT</th>
-                          <th className="py-2 px-4">PARALLEL TEACHER</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {parallelAllocationData.map((row, idx) => (
-                          <tr key={row.sn} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                              {row.className}
-                            </td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800 uppercase">{row.subject}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-900 font-semibold uppercase">
-                              {row.teacher}
-                            </td>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                              {row.parallelClass}
-                            </td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800 uppercase">
-                              {row.parallelSubject}
-                            </td>
-                            <td className="py-1.5 px-4 text-gray-900 font-semibold uppercase">{row.parallelTeacher}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 3B. CONSECUTIVE ALLOCATION DETAILS (SCREENSHOT 1) -------------------- */}
-                {tabId === "consecutive_allocation_details" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">TEACHER NAME</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">CLASS</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SUBJECT</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">CONSECUTIVE PERIODS</th>
-                          <th className="py-2 px-4">DAY</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {consecutiveAllocationData.map((row, idx) => (
-                          <tr key={row.sn} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                              {row.teacherName}
-                            </td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800 font-medium uppercase">{row.className}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800 uppercase">{row.subject}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-900 font-semibold">{row.consecutivePeriods}</td>
-                            <td className="py-1.5 px-4 text-gray-800">{row.day}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 3C. CLASS AND RESOURCE DETAILS (SCREENSHOT 2) -------------------- */}
-                {tabId === "class_and_resource_details" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">CLASS</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SUBJECT</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">RESOURCE NAME</th>
-                          <th className="py-2 px-4">PERIODS / WEEK</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {classAndResourceData
-                          .filter((r) => selectedClass === "All Classes" || selectedClass === "Select Class" || r.className === selectedClass)
-                          .map((row, idx) => (
-                            <tr key={row.sn} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                                {row.className}
-                              </td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800 uppercase">{row.subject}</td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-900 font-medium uppercase">{row.resourceName}</td>
-                              <td className="py-1.5 px-4 text-gray-900 font-semibold">{row.periodsPerWeek} Periods</td>
-                            </tr>
+                     </tr>
+                   </thead>
+                   <tbody>
+                      {reportData.map((row, i) => (
+                        <tr key={i} className="border-b border-gray-200 hover:bg-gray-50">
+                          {Object.keys(row).filter(k => k !== '_id').map(key => (
+                            <td key={key} className="p-2 border-r border-gray-200">{row[key]}</td>
                           ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 3D. WEEK WISE FREE TEACHER DETAILS (SCREENSHOT 3) -------------------- */}
-                {tabId === "week_wise_free_teacher_details" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">TEACHER NAME</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">DAY</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">FREE PERIODS</th>
-                          <th className="py-2 px-4">TOTAL FREE</th>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {weekWiseFreeTeacherData.map((row, idx) => (
-                          <tr key={row.sn} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                              {row.teacherName}
-                            </td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800">{row.day}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-blue-700 font-medium">{row.freePeriods}</td>
-                            <td className="py-1.5 px-4 text-emerald-700 font-bold">{row.totalFree}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                      ))}
+                   </tbody>
+                 </table>
+               )}
 
-                {/* -------------------- 3E. FREE TEACHERS CLASSWISE (SCREENSHOT 4) -------------------- */}
-                {tabId === "free_teachers_classwise" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58]">CLASS</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">PERIOD</th>
-                          <th className="py-2 px-6">FREE TEACHERS AVAILABLE</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {freeTeachersClasswiseData.map((row, idx) => (
-                          <tr key={row.sn} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                              {row.className}
-                            </td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800 font-medium">{row.period}</td>
-                            <td className="py-1.5 px-6 text-gray-800 text-[11px] font-medium">{row.freeTeachers}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 3F. UNALLOCATED PERIOD DETAILS (SCREENSHOT 5) -------------------- */}
-                {tabId === "unallocated_period_details" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">CLASS</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SUBJECT</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">REQUIRED PERIODS</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">ALLOCATED</th>
-                          <th className="py-2 px-4">UNALLOCATED</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {unallocatedPeriodData.map((row, idx) => (
-                          <tr key={row.sn} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                              {row.className}
-                            </td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800 uppercase">{row.subject}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-900 font-semibold">{row.requiredPeriods}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-emerald-700 font-bold">{row.allocated}</td>
-                            <td className="py-1.5 px-4 text-red-600 font-bold">{row.unallocated}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 3G. DAY WISE FREE TEACHER DETAILS (SCREENSHOT 1) -------------------- */}
-                {tabId === "day_wise_free_teacher_details" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">TEACHER NAME</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">WING</th>
-                          <th className="py-2 px-6 border-r border-[#b58c58]">FREE PERIODS (BELLS)</th>
-                          <th className="py-2 px-4">TOTAL FREE</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {dayWiseFreeTeacherData
-                          .filter((t) => selectedWing === "All Wings" || t.wing.includes(selectedWing))
-                          .map((row, idx) => (
-                            <tr key={row.sn} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                                {row.teacherName}
-                              </td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800">{row.wing}</td>
-                              <td className="py-1.5 px-6 border-r border-[#b58c58]/40 text-blue-700 font-medium">{row.freeBells}</td>
-                              <td className="py-1.5 px-4 text-emerald-700 font-bold">{row.totalFree}</td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 3H. CLASS AND SUBJECT TAUGHT (SCREENSHOT 2) -------------------- */}
-                {tabId === "class_and_subject_taught" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">CLASS</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SUBJECT</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">TEACHER NAME</th>
-                          <th className="py-2 px-4">PERIODS / WEEK</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {classAndSubjectTaughtData
-                          .filter((r) => selectedClass === "All Class" || selectedClass === "All Classes" || r.className === selectedClass)
-                          .map((row, idx) => (
-                            <tr key={row.sn} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                                {row.className}
-                              </td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800 uppercase">{row.subject}</td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-900 font-semibold uppercase">
-                                {row.teacherName}
-                              </td>
-                              <td className="py-1.5 px-4 text-gray-900 font-semibold">{row.periodsPerWeek} Periods</td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 3I. TEACHERS WORK LOAD DETAILS (SCREENSHOT 3) -------------------- */}
-                {tabId === "teachers_work_load_details" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">TEACHER NAME</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">DESIGNATION</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">TEACHING PERIODS</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">REMEDIAL / LAB</th>
-                          <th className="py-2 px-4">TOTAL WORK LOAD</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {teachersWorkLoadData.map((row, idx) => (
-                          <tr key={row.sn} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                              {row.teacherName}
-                            </td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800">{row.designation}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-900 font-semibold">{row.teachingPeriods} Periods</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800">{row.remedialLab} Periods</td>
-                            <td className="py-1.5 px-4 text-emerald-700 font-bold">{row.totalWorkLoad} Periods / Week</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 3J. RESOURCE TIMETABLE DETAILS (SCREENSHOT 4) -------------------- */}
-                {tabId === "resource_timetable_details" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">RESOURCE NAME</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58]">DAY</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58]">PERIOD</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58]">CLASS</th>
-                          <th className="py-2 px-4">TEACHER IN-CHARGE</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {resourceTimetableData
-                          .filter((r) => selectedResource === "All Resources" || r.resourceName === selectedResource)
-                          .map((row, idx) => (
-                            <tr key={row.sn} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                                {row.resourceName}
-                              </td>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.day}</td>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-blue-700 font-bold">{row.period}</td>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">{row.className}</td>
-                              <td className="py-1.5 px-4 text-gray-800 font-medium uppercase">{row.teacherInCharge}</td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 3K. CLASS WISE TEACHER ALLOCATION DETAILS (SCREENSHOT 1) -------------------- */}
-                {tabId === "class_wise_teacher_allocation_details" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58]">CLASS</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SUBJECT</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">TEACHER NAME</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58] text-center">PERIODS / WEEK</th>
-                          <th className="py-2 px-4">DESIGNATION</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {classWiseTeacherAllocationData
-                          .filter((row) => selectedClass === "Select Class" || selectedClass === "All Classes" || selectedClass === "All Class" || row.className === selectedClass)
-                          .map((row) => (
-                            <tr key={row.sn} className={row.sn % 2 === 0 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">{row.className}</td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-medium text-gray-900 uppercase">{row.subject}</td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-blue-900 uppercase">{row.teacherName}</td>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-center font-bold text-gray-900">{row.periodsPerWeek}</td>
-                              <td className="py-1.5 px-4 text-gray-700 font-medium uppercase">{row.designation}</td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 3L. DATE WISE SUBSTITUTION DETAILS (SCREENSHOT 2) -------------------- */}
-                {tabId === "date_wise_substitution_details" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58]">DATE</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58]">CLASS</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">PERIOD</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">ABSENT TEACHER</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SUBSTITUTE TEACHER</th>
-                          <th className="py-2 px-4">SUBJECT</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {dateWiseSubstitutionData.map((row) => (
-                          <tr key={row.sn} className={row.sn % 2 === 0 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800 font-medium">{row.date}</td>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">{row.className}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-blue-800 font-semibold">{row.period}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-red-700 font-medium uppercase">{row.absentTeacher}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-emerald-800 font-semibold uppercase">{row.substituteTeacher}</td>
-                            <td className="py-1.5 px-4 text-gray-800 font-medium uppercase">{row.subject}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 3M. ASSIGNMENT STATUS (SCREENSHOT 3) -------------------- */}
-                {tabId === "assignment_status" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58]">CLASS</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SUBJECT</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">TEACHER NAME</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58] text-center">REQUIRED</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58] text-center">ASSIGNED</th>
-                          <th className="py-2 px-3 text-center">STATUS</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {assignmentStatusData.map((row) => (
-                          <tr key={row.sn} className={row.sn % 2 === 0 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">{row.className}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-medium text-gray-800 uppercase">{row.subject}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-blue-900 uppercase">{row.teacherName}</td>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-center font-bold text-gray-900">{row.requiredPeriods}</td>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-center font-bold text-emerald-700">{row.assignedPeriods}</td>
-                            <td className="py-1.5 px-3 text-center">
-                              <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase ${row.status === "Completed" ? "bg-green-100 text-green-800 border border-green-300" : "bg-amber-100 text-amber-800 border border-amber-300"}`}>
-                                {row.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 3N. SUBJECT SUMMARY (SCREENSHOT 4) -------------------- */}
-                {tabId === "subject_summary" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58]">CODE</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SUBJECT NAME</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58] text-center">TOTAL PERIODS / WEEK</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">TEACHERS ALLOCATED</th>
-                          <th className="py-2 px-3 text-center">STATUS</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {subjectSummaryData.map((row) => (
-                          <tr key={row.sn} className={row.sn % 2 === 0 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 font-mono text-gray-600">{row.subjectCode}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">{row.subjectName}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-center font-bold text-gray-900">{row.totalPeriods}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-medium text-blue-900">{row.teachersAllocated}</td>
-                            <td className="py-1.5 px-3 text-center">
-                              <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-green-100 text-green-800 border border-green-300">
-                                {row.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 3O. SHOW TIMETABLE AT GLANCE (SCREENSHOT 1) -------------------- */}
-                {tabId === "show_timetable_at_glance" && (
-                  <div className="border border-[#b58c58] overflow-x-auto">
-                    <table className="w-full text-left text-[11px] border-collapse font-sans min-w-[720px]">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold text-center">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">
-                            {selectedGlanceOption.includes("Teachers")
-                              ? "TEACHER"
-                              : selectedGlanceOption.includes("Resource")
-                              ? "RESOURCE"
-                              : "CLASS"}
-                          </th>
-                          <th className="py-2 px-2 border-r border-[#b58c58]">P1<br /><span className="text-[9px] font-normal text-gray-600">08:30-09:15</span></th>
-                          <th className="py-2 px-2 border-r border-[#b58c58]">P2<br /><span className="text-[9px] font-normal text-gray-600">09:15-10:00</span></th>
-                          <th className="py-2 px-2 border-r border-[#b58c58]">P3<br /><span className="text-[9px] font-normal text-gray-600">10:00-10:45</span></th>
-                          <th className="py-2 px-2 border-r border-[#b58c58]">P4<br /><span className="text-[9px] font-normal text-gray-600">10:45-11:30</span></th>
-                          <th className="py-2 px-2 border-r border-[#b58c58]">P5<br /><span className="text-[9px] font-normal text-gray-600">11:50-12:35</span></th>
-                          <th className="py-2 px-2 border-r border-[#b58c58]">P6<br /><span className="text-[9px] font-normal text-gray-600">12:35-01:20</span></th>
-                          <th className="py-2 px-2 border-r border-[#b58c58]">P7<br /><span className="text-[9px] font-normal text-gray-600">01:20-02:05</span></th>
-                          <th className="py-2 px-2">P8<br /><span className="text-[9px] font-normal text-gray-600">02:05-02:50</span></th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {ALL_SECTION_CLASSES.slice(0, 18).map((cls, idx) => {
-                          const isColor = selectedGlanceOption.includes("ColorWise");
-                          const subList = [
-                            { sub: "ENG", teacher: "MR. AMIT", col: "bg-blue-50 text-blue-900 border-l border-blue-200" },
-                            { sub: "MATH", teacher: "MS. PRIYA", col: "bg-emerald-50 text-emerald-900 border-l border-emerald-200" },
-                            { sub: "HIN", teacher: "MR. RAJESH", col: "bg-rose-50 text-rose-900 border-l border-rose-200" },
-                            { sub: "SCI", teacher: "MS. ANJALI", col: "bg-purple-50 text-purple-900 border-l border-purple-200" },
-                            { sub: "SST", teacher: "MR. VIKAS", col: "bg-amber-50 text-amber-900 border-l border-amber-200" },
-                            { sub: "CS", teacher: "MR. ROHIT", col: "bg-cyan-50 text-cyan-900 border-l border-cyan-200" },
-                            { sub: "ACT", teacher: "MS. SNEHA", col: "bg-indigo-50 text-indigo-900 border-l border-indigo-200" },
-                            { sub: "P.ED", teacher: "MR. MANOJ", col: "bg-teal-50 text-teal-900 border-l border-teal-200" },
-                          ];
-                          const shifted = [...subList.slice(idx % 8), ...subList.slice(0, idx % 8)];
-
-                          return (
-                            <tr key={cls} className={idx % 2 === 1 ? "bg-[#fbf6ee]/20" : "bg-white"}>
-                              <td className="py-2 px-3 border-r border-[#b58c58]/40 font-bold text-gray-900 text-center uppercase bg-[#fbf6ee]/40">
-                                {cls}
-                              </td>
-                              {shifted.map((p, pIdx) => (
-                                <td
-                                  key={pIdx}
-                                  className={`py-1.5 px-2 border-r border-[#b58c58]/30 text-center ${
-                                    pIdx === 7 ? "border-r-0" : ""
-                                  } ${isColor ? p.col : ""}`}
-                                >
-                                  <div className="font-bold text-xs leading-tight">{p.sub}</div>
-                                  <div className="text-[9px] text-gray-600 font-medium">{p.teacher}</div>
-                                </td>
-                              ))}
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- A. MASTER REQUIREMENT: SUBJECT TAUGHT BY TEACHER -------------------- */}
-                {tabId === "master_requirement" && selectedMasterOption === "Subject Taught ByTeacher" && (
-                  <div>
-                    <div className="mb-2 text-xs font-semibold text-gray-800">
-                      <span>Teacher Name </span>
-                      <span className="inline-block border-b border-gray-400 w-64 ml-2"></span>
-                    </div>
-
-                    <div className="border border-[#b58c58] overflow-hidden">
-                      <table className="w-full text-left text-xs border-collapse font-sans">
-                        <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                          <tr className="text-gray-900 font-bold">
-                            <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                            <th className="py-2 px-4 border-r border-[#b58c58]">CLASS & SECTION</th>
-                            <th className="py-2 px-4">SUBJECT</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#b58c58]/40">
-                          {masterSubjectTaughtData
-                            .slice((currentPage - 1) * 22, currentPage * 22)
-                            .map((row) => (
-                              <tr key={row.sn} className={row.sn % 2 === 0 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                                <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                                <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                                  {row.classSection}
-                                </td>
-                                <td className="py-1.5 px-4 text-gray-800 font-medium uppercase">{row.subject}</td>
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-
-                {/* -------------------- B. MASTER REQUIREMENT: TEACHER, CLASS, SUBJECT, NO. OF PERIODS -------------------- */}
-                {tabId === "master_requirement" && selectedMasterOption === "Teacher,Class,Subject,No. Of Periods" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-4 border-r border-[#b58c58]">CLASS/SECTION</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SUBJECT</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58]">PERIOD</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">TEACHER NAME</th>
-                          <th className="py-2 px-4">RESOURCE</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {masterTeacherClassSubjectData
-                          .slice((currentPage - 1) * 16, currentPage * 16)
-                          .map((row, idx) => (
-                            <tr key={idx} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                                {row.classSection}
-                              </td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800 font-medium uppercase">
-                                {row.subject}
-                              </td>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-center font-bold text-gray-900">
-                                {row.period}
-                              </td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800 uppercase font-semibold">
-                                {row.teacherName}
-                              </td>
-                              <td className="py-1.5 px-4 text-gray-600 uppercase">{row.resource}</td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- C. MASTER REQUIREMENT: CLASS LIST -------------------- */}
-                {tabId === "master_requirement" && selectedMasterOption === "Class List" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">CLASS</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SECTION</th>
-                          <th className="py-2 px-4">NO. OF PERIODS</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {masterClassList
-                          .slice((currentPage - 1) * 25, currentPage * 25)
-                          .map((row) => (
-                            <tr key={row.sn} className={row.sn % 2 === 0 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{row.sn}</td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                                {row.className}
-                              </td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800 font-medium uppercase">
-                                {row.section}
-                              </td>
-                              <td className="py-1.5 px-4 text-gray-900 font-semibold">{row.noOfPeriods}</td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- D. MASTER REQUIREMENT: SUBJECT LIST -------------------- */}
-                {tabId === "master_requirement" && selectedMasterOption === "Subject List" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SUBJECT NAME</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SHORT NAME</th>
-                          <th className="py-2 px-4">NO. OF PERIODS</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {allSubjects
-                          .slice((currentPage - 1) * 22, currentPage * 22)
-                          .map((s) => (
-                            <tr key={s.sn} className={s.sn % 2 === 0 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{s.sn}</td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                                {s.name}
-                              </td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800">{s.shortName}</td>
-                              <td className="py-1.5 px-4 text-gray-900 font-semibold">6 Periods</td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- E. CLASS TEACHERS DETAIL -------------------- */}
-                {((tabId === "master_requirement" && selectedMasterOption === "Class Teachers Detail") ||
-                  tabId === "class_teacher_details") && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">CLASS</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58]">SECTION</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">CLASS TEACHER NAME</th>
-                          <th className="py-2 px-3 border-r border-[#b58c58]">ROOM NO.</th>
-                          <th className="py-2 px-4">MOBILE NO.</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {classTeachersData
-                          .slice((currentPage - 1) * 25, currentPage * 25)
-                          .map((ct) => (
-                            <tr key={ct.sn} className={ct.sn % 2 === 0 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{ct.sn}</td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                                {ct.className}
-                              </td>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 font-bold text-gray-800 uppercase">
-                                {ct.section}
-                              </td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-900 font-semibold uppercase">
-                                {ct.teacherName}
-                              </td>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-700">{ct.roomNo}</td>
-                              <td className="py-1.5 px-4 text-gray-700">{ct.mobileNo}</td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 4. SUBJECT DETAILS TABLE -------------------- */}
-                {tabId === "subject_details" && (
-                  <div className="border border-[#b58c58] overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                        <tr className="text-gray-900 font-bold">
-                          <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SUBJECT NAME</th>
-                          <th className="py-2 px-4 border-r border-[#b58c58]">SHORT NAME</th>
-                          <th className="py-2 px-4 w-36">MAJOR/MINOR</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#b58c58]/40">
-                        {currentSubjects.map((s, idx) => (
-                          <tr key={s.sn} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                            <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{s.sn}</td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900 uppercase">
-                              {s.name}
-                            </td>
-                            <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800">{s.shortName}</td>
-                            <td className="py-1.5 px-4 text-gray-800">{s.type}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* -------------------- 5. CLASS TIMETABLE GRID (FOR CLASS TT REPORTS) -------------------- */}
-                {(tabId.includes("class_timetable") || tabId.includes("particular_class")) && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between text-xs font-semibold text-gray-700 bg-gray-50 p-2.5 border border-gray-200 rounded">
-                      <span>Class: <strong className="text-gray-900">{selectedClass === "Select Class" ? "1-A" : selectedClass}</strong></span>
-                      <span>Day(s): <strong className="text-gray-900">{selectedDay}</strong></span>
-                      <span>Format: <strong className="text-gray-900">{selectedFormat}</strong></span>
-                      <span>Academic Year: <strong className="text-gray-900">2026-2027</strong></span>
-                    </div>
-
-                    <div className="border border-[#b58c58] overflow-hidden">
-                      <table className="w-full text-center text-xs border-collapse">
-                        <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                          <tr className="text-gray-900 font-bold">
-                            <th className="py-2 px-2 border-r border-[#b58c58]">Day</th>
-                            <th className="py-2 px-2 border-r border-[#b58c58]">
-                              P1<br /><span className="text-[9px] font-normal">08:00-08:45</span>
-                            </th>
-                            <th className="py-2 px-2 border-r border-[#b58c58]">
-                              P2<br /><span className="text-[9px] font-normal">08:45-09:30</span>
-                            </th>
-                            <th className="py-2 px-2 border-r border-[#b58c58]">
-                              P3<br /><span className="text-[9px] font-normal">09:30-10:15</span>
-                            </th>
-                            <th className="py-2 px-2 border-r border-[#b58c58]">
-                              P4<br /><span className="text-[9px] font-normal">10:15-11:00</span>
-                            </th>
-                            <th className="py-2 px-2 border-r border-[#b58c58] bg-[#f2e2ce] text-[10px]">RECESS</th>
-                            <th className="py-2 px-2 border-r border-[#b58c58]">
-                              P5<br /><span className="text-[9px] font-normal">11:30-12:15</span>
-                            </th>
-                            <th className="py-2 px-2 border-r border-[#b58c58]">
-                              P6<br /><span className="text-[9px] font-normal">12:15-01:00</span>
-                            </th>
-                            <th className="py-2 px-2 border-r border-[#b58c58]">
-                              P7<br /><span className="text-[9px] font-normal">01:00-01:40</span>
-                            </th>
-                            <th className="py-2 px-2">
-                              P8<br /><span className="text-[9px] font-normal">01:40-02:20</span>
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#b58c58]/40">
-                          {classTimetableData.map((row, idx) => (
-                            <tr key={row.day} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                              <td className="py-2 px-2 font-bold text-gray-900 border-r border-[#b58c58]/40">{row.day}</td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 text-gray-800">{row.p1}</td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 text-gray-800">{row.p2}</td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 text-gray-800">{row.p3}</td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 text-gray-800">{row.p4}</td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 bg-[#f2e2ce]/60 font-bold text-[10px] text-amber-900">
-                                BREAK
-                              </td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 text-gray-800">{row.p5}</td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 text-gray-800">{row.p6}</td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 text-gray-800">{row.p7}</td>
-                              <td className="py-2 px-2 text-gray-800">{row.p8}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-
-                {/* -------------------- 6. TEACHER TIMETABLE GRID (FOR TEACHER TT REPORTS) -------------------- */}
-                {(tabId.includes("teacher_timetable") ||
-                  tabId.includes("teacher_personal")) && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between text-xs font-semibold text-gray-700 bg-gray-50 p-2.5 border border-gray-200 rounded">
-                      <span>
-                        Teacher:{" "}
-                        <strong className="text-gray-900">
-                          {selectedTeacher === "None selected" ? "Mr. Amit Sharma (PGT Math)" : selectedTeacher}
-                        </strong>
-                      </span>
-                      <span>Weekly Periods: <strong className="text-gray-900">28 Periods</strong></span>
-                      <span>Department: <strong className="text-gray-900">Senior Science</strong></span>
-                    </div>
-
-                    <div className="border border-[#b58c58] overflow-hidden">
-                      <table className="w-full text-center text-xs border-collapse">
-                        <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                          <tr className="text-gray-900 font-bold">
-                            <th className="py-2 px-2 border-r border-[#b58c58]">Day</th>
-                            <th className="py-2 px-2 border-r border-[#b58c58]">P1</th>
-                            <th className="py-2 px-2 border-r border-[#b58c58]">P2</th>
-                            <th className="py-2 px-2 border-r border-[#b58c58]">P3</th>
-                            <th className="py-2 px-2 border-r border-[#b58c58]">P4</th>
-                            <th className="py-2 px-2 border-r border-[#b58c58] bg-[#f2e2ce] text-[10px]">RECESS</th>
-                            <th className="py-2 px-2 border-r border-[#b58c58]">P5</th>
-                            <th className="py-2 px-2 border-r border-[#b58c58]">P6</th>
-                            <th className="py-2 px-2 border-r border-[#b58c58]">P7</th>
-                            <th className="py-2 px-2">P8</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#b58c58]/40">
-                          {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map((day, idx) => (
-                            <tr key={day} className={idx % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                              <td className="py-2 px-2 font-bold text-gray-900 border-r border-[#b58c58]/40">{day}</td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 font-medium text-blue-700">10-A (Math)</td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 font-medium text-emerald-700">11-A (Math)</td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 text-gray-400 font-normal">-- FREE --</td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 font-medium text-purple-700">12-A (Math)</td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 bg-[#f2e2ce]/60 font-bold text-[10px] text-amber-900">
-                                BREAK
-                              </td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 font-medium text-blue-700">9-A (Math)</td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 text-gray-400 font-normal">-- FREE --</td>
-                              <td className="py-2 px-2 border-r border-[#b58c58]/40 font-medium text-emerald-700">10-B (Math)</td>
-                              <td className="py-2 px-2 text-gray-400 font-normal">-- FREE --</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-
-                {/* -------------------- 7. ALL OTHER GENERAL REPORTS TABLE -------------------- */}
-                {tabId !== "master_requirement" &&
-                  tabId !== "subject_details" &&
-                  tabId !== "class_teacher_details" &&
-                  tabId !== "wing_wise_teacher_details" &&
-                  tabId !== "subject_wise_teacher_details" &&
-                  tabId !== "parallel_allocation_details" &&
-                  tabId !== "consecutive_allocation_details" &&
-                  tabId !== "class_and_resource_details" &&
-                  tabId !== "week_wise_free_teacher_details" &&
-                  tabId !== "free_teachers_classwise" &&
-                  tabId !== "unallocated_period_details" &&
-                  tabId !== "day_wise_free_teacher_details" &&
-                  tabId !== "class_and_subject_taught" &&
-                  tabId !== "teachers_work_load_details" &&
-                  tabId !== "resource_timetable_details" &&
-                  !tabId.includes("class_timetable") &&
-                  !tabId.includes("particular_class") &&
-                  !tabId.includes("teacher_timetable") &&
-                  !tabId.includes("teacher_personal") && (
-                    <div className="border border-[#b58c58] overflow-hidden">
-                      <table className="w-full text-left text-xs border-collapse">
-                        <thead className="bg-[#fbf6ee] border-b border-[#b58c58]">
-                          <tr className="text-gray-900 font-bold">
-                            <th className="py-2 px-3 w-16 border-r border-[#b58c58]">SN</th>
-                            <th className="py-2 px-4 border-r border-[#b58c58]">CLASS / ITEM</th>
-                            <th className="py-2 px-4 border-r border-[#b58c58]">TEACHER / SUBJECT</th>
-                            <th className="py-2 px-4 border-r border-[#b58c58]">ALLOTED PERIODS</th>
-                            <th className="py-2 px-4 w-32">STATUS</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#b58c58]/40">
-                          {ALL_SECTION_CLASSES.slice(0, 15).map((c, i) => (
-                            <tr key={c} className={i % 2 === 1 ? "bg-[#fbf6ee]/30" : "bg-white"}>
-                              <td className="py-1.5 px-3 border-r border-[#b58c58]/40 text-gray-800">{i + 1}</td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 font-semibold text-gray-900">{c}</td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800">
-                                {i % 3 === 0
-                                  ? "Mr. Amit Sharma (Math)"
-                                  : i % 3 === 1
-                                  ? "Mrs. Priya Singh (Sci)"
-                                  : "Mr. Rajesh Kumar (Eng)"}
-                              </td>
-                              <td className="py-1.5 px-4 border-r border-[#b58c58]/40 text-gray-800 font-semibold">
-                                {6 + (i % 3)} Periods / Week
-                              </td>
-                              <td className="py-1.5 px-4 text-emerald-700 font-bold">Allotted</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-              </div>
-
-              {/* Footer Block matching Image 2 */}
-              <div className="border-t border-[#b58c58] pt-2.5 mt-6 flex items-center justify-between text-xs font-bold text-gray-900 select-none">
-                <div className="flex items-center gap-6">
-                  <span>Academic Year : 2026-2027</span>
-                  <span>{getFooterReportName()}  printed on 01-Sep-2026 at 05:09 PM</span>
-                </div>
-                <span>
-                  Page {currentPage} of {totalPages}
-                </span>
-              </div>
+               {!(tabId === "class_timetable_details" || tabId === "particular_class_timetable_details" || tabId === "teacher_timetable_details" || tabId === "resource_timetable_details") && reportData.length === 0 && !loading && (
+                 <div className="text-center p-10 text-gray-500">No data available for the selected criteria.</div>
+               )}
             </div>
           </div>
         )}

@@ -3,6 +3,8 @@ import {
   FaInfoCircle, FaFilePdf, FaGraduationCap, FaUserTie, FaEye, FaTrash, FaPlus, FaBuilding, FaYoutube, FaFolder
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminMandatoryDisclosure() {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -110,7 +112,7 @@ export default function WebAdminMandatoryDisclosure() {
   const fetchDisclosure = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/mandatory-disclosure');
+      const res = await fetch(`${API_BASE}/api/web-admin/mandatory-disclosure`);
       const data = await res.json();
       if (data.success && data.data && data.data.length > 0) {
         const record = data.data[0];
@@ -170,7 +172,7 @@ export default function WebAdminMandatoryDisclosure() {
     };
 
     try {
-      const res = await fetch('/api/web-admin/mandatory-disclosure', {
+      const res = await fetch(`${API_BASE}/api/web-admin/mandatory-disclosure`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

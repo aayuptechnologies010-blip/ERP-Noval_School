@@ -47,6 +47,8 @@ import WebAdminFeedbackQuestionMaster from './WebAdminFeedbackQuestionMaster';
 import WebAdminFeedbackTemplate from './WebAdminFeedbackTemplate';
 import logo from '../assets/logo.png';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 class LocalErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -134,7 +136,7 @@ function WebAdminApp() {
   const fetchStats = async () => {
     setLoadingStats(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/web-admin/dashboard-stats`);
+      const res = await fetch(`${API_BASE}/api/web-admin/dashboard-stats`);
       const data = await res.json();
       if (data.success && data.data) {
         setStats(data.data);

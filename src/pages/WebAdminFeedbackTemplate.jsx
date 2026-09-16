@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaClipboardList, FaPlus, FaTrash, FaCalendarAlt, FaLink, FaCheckCircle, FaTimesCircle, FaUsers } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminFeedbackTemplate() {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -26,7 +28,7 @@ export default function WebAdminFeedbackTemplate() {
   const fetchTemplates = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/feedback/templates');
+      const res = await fetch(`${API_BASE}/api/web-admin/feedback/templates`);
       const data = await res.json();
       if (data.success) {
         setTemplates(data.data || []);
@@ -47,7 +49,7 @@ export default function WebAdminFeedbackTemplate() {
 
     try {
       const generatedLink = form.webLink.trim() || `https://navalschool.edu/feedback/${encodeURIComponent(form.formName.toLowerCase().replace(/\s+/g, '-'))}`;
-      const res = await fetch('/api/web-admin/feedback/templates', {
+      const res = await fetch(`${API_BASE}/api/web-admin/feedback/templates`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -81,7 +83,7 @@ export default function WebAdminFeedbackTemplate() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this feedback template?')) return;
     try {
-      const res = await fetch(`/api/web-admin/feedback/templates/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/feedback/templates/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

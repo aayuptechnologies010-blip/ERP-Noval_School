@@ -6,6 +6,8 @@ import {
   FaEye, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminVideoAlbums() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +45,7 @@ export default function WebAdminVideoAlbums() {
   const fetchVideos = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/videos');
+      const res = await fetch(`${API_BASE}/api/web-admin/videos`);
       const data = await res.json();
       if (data.success && data.data) {
         setVideos(data.data);
@@ -138,7 +140,7 @@ export default function WebAdminVideoAlbums() {
 
     setSaving(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/videos', {
+      const res = await fetch(`${API_BASE}/api/web-admin/videos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -181,7 +183,7 @@ export default function WebAdminVideoAlbums() {
   const handleDeleteVideo = async (id) => {
     if (!window.confirm('Are you sure you want to delete this video album?')) return;
     try {
-      const res = await fetch(`http://localhost:5005/api/web-admin/videos/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/videos/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

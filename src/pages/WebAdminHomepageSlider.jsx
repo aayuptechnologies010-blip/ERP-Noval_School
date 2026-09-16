@@ -3,6 +3,8 @@ import {
   FaImage, FaCloudUploadAlt, FaListUl, FaTrash
 } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function WebAdminHomepageSlider() {
   const [status, setStatus] = useState(true);
   const [sliders, setSliders] = useState([]);
@@ -26,7 +28,7 @@ export default function WebAdminHomepageSlider() {
   const fetchSliders = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/web-admin/slider');
+      const res = await fetch(`${API_BASE}/api/web-admin/slider`);
       const data = await res.json();
       if (data.success) {
         setSliders(data.data);
@@ -72,7 +74,7 @@ export default function WebAdminHomepageSlider() {
         status: status ? 'Active' : 'Inactive'
       };
       
-      const res = await fetch('/api/web-admin/slider', {
+      const res = await fetch(`${API_BASE}/api/web-admin/slider`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -98,7 +100,7 @@ export default function WebAdminHomepageSlider() {
     if (!window.confirm('Are you sure you want to delete this slider?')) return;
     
     try {
-      const res = await fetch(`/api/web-admin/slider/${id}`, {
+      const res = await fetch(`${API_BASE}/api/web-admin/slider/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();

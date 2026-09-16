@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaEdit, FaTrash, FaPlus, FaSpinner, FaAngleUp } from 'react-icons/fa';
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export default function ManageReportLayoutSetting() {
   const [data, setData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,7 +16,7 @@ export default function ManageReportLayoutSetting() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch('http://localhost:5005/api/report-layout-settings');
+      const res = await fetch(`${API_BASE}/api/report-layout-settings`);
       const json = await res.json();
       setData(json);
     } catch (err) {
@@ -27,13 +29,13 @@ export default function ManageReportLayoutSetting() {
     setIsLoading(true);
     try {
       if (editItem) {
-        await fetch(`http://localhost:5005/api/report-layout-settings/${editItem._id}`, {
+        await fetch(`${API_BASE}/api/report-layout-settings/${editItem._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: inputValue })
         });
       } else {
-        await fetch('http://localhost:5005/api/report-layout-settings', {
+        await fetch(`${API_BASE}/api/report-layout-settings`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: inputValue })
@@ -53,7 +55,7 @@ export default function ManageReportLayoutSetting() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       try {
-        await fetch(`http://localhost:5005/api/report-layout-settings/${id}`, { method: 'DELETE' });
+        await fetch(`${API_BASE}/api/report-layout-settings/${id}`, { method: 'DELETE' });
         fetchData();
       } catch (err) {
         console.error(err);
