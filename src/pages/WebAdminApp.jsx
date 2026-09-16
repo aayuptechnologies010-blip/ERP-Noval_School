@@ -134,7 +134,7 @@ function WebAdminApp() {
   const fetchStats = async () => {
     setLoadingStats(true);
     try {
-      const res = await fetch('http://localhost:5005/api/web-admin/dashboard-stats');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/web-admin/dashboard-stats`);
       const data = await res.json();
       if (data.success && data.data) {
         setStats(data.data);
