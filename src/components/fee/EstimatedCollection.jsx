@@ -48,7 +48,6 @@ const fmtY = (v) => {
 };
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-const token = localStorage.getItem('token');
 
 export default function EstimatedCollection() {
   const [feeType, setFeeType] = useState('All Fee Type');
@@ -68,6 +67,7 @@ export default function EstimatedCollection() {
   useEffect(() => {
     const fetchAllData = async () => {
       try {
+        const token = localStorage.getItem('token');
         // Fetch Chart Data
         const res1 = await fetch(`${API_URL}/api/fee-reports/dashboard/estimated-collection`, {
           headers: { Authorization: `Bearer ${token}` }
