@@ -343,11 +343,62 @@ function SidebarItem({ icon, text, active = false, children = [], isOpen, isExpa
 function AdmissionLayout() {
   const [isPinned, setIsPinned] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5005';
   const isExpanded = isPinned || isHovered;
   const [openTopLevelIndex, setOpenTopLevelIndex] = useState(null);
   const [tabs, setTabs] = useState([{ id: 'Dashboard', title: 'Dashboard' }]);
   const [activeTab, setActiveTab] = useState('Dashboard');
   const userName = "ANKIT KUMAR";
+
+  // Master Lists for dynamic Dropdowns
+  const [masterClasses, setMasterClasses] = useState(['NUR', 'LKG', 'UKG', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']);
+  const [masterSections, setMasterSections] = useState(['A', 'B', 'C', 'D']);
+  const [masterBloodGroups, setMasterBloodGroups] = useState(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
+  const [masterBoards, setMasterBoards] = useState(['CBSE', 'UP BOARD', 'ICSE']);
+  const [masterReligions, setMasterReligions] = useState(['HINDU', 'MUSLIM', 'CHRISTIAN', 'SIKH', 'JAIN', 'OTHER']);
+  const [masterCategories, setMasterCategories] = useState(['GEN', 'OBC', 'SC', 'ST', 'EWS']);
+  const [masterHouses, setMasterHouses] = useState(['Red', 'Blue', 'Green', 'Yellow']);
+
+  useEffect(() => {
+    // Fetch classes and sections if available from backend
+    const fetchMasters = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+        
+        const [classRes, secRes, catRes, relRes] = await Promise.all([
+          fetch(`${API_BASE}/api/classes`, { headers }).catch(() => null),
+          fetch(`${API_BASE}/api/sections`, { headers }).catch(() => null),
+          fetch(`${API_BASE}/api/categories`, { headers }).catch(() => null),
+          fetch(`${API_BASE}/api/religions`, { headers }).catch(() => null)
+        ]);
+
+        if (classRes && classRes.ok) {
+          const cData = await classRes.json();
+          const list = Array.isArray(cData) ? cData : (cData.data || []);
+          if (list.length > 0) setMasterClasses(list.map(c => c.name || c.className || c));
+        }
+        if (secRes && secRes.ok) {
+          const sData = await secRes.json();
+          const list = Array.isArray(sData) ? sData : (sData.data || []);
+          if (list.length > 0) setMasterSections(list.map(s => s.name || s.sectionName || s));
+        }
+        if (catRes && catRes.ok) {
+          const catData = await catRes.json();
+          const list = Array.isArray(catData) ? catData : (catData.data || []);
+          if (list.length > 0) setMasterCategories(list.map(c => c.name || c.categoryName || c));
+        }
+        if (relRes && relRes.ok) {
+          const relData = await relRes.json();
+          const list = Array.isArray(relData) ? relData : (relData.data || []);
+          if (list.length > 0) setMasterReligions(list.map(r => r.name || r.religionName || r));
+        }
+      } catch (e) {
+        console.warn("Using default master lists", e);
+      }
+    };
+    fetchMasters();
+  }, [API_BASE]);
 
   const [updateStudentList, setUpdateStudentList] = useState([]);
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
@@ -663,31 +714,108 @@ function AdmissionLayout() {
   };
 
   const searchStudentRegFromAdmission = async (e) => {
-    e.preventDefault();
-    if (!studentRegData.admNo) { alert("Please enter Reg No / Admission No"); return; }
+    if (e) e.preventDefault();
+    const query = (studentRegData.admNo || '').trim().toLowerCase();
+    if (!query) { alert("Please enter Name or Adm No to search"); return; }
+    
     try {
-      const res = await fetch(`${API_BASE}/api/admission-forms`);
-      const data = await res.json();
-      const list = data.data || data;
-      const found = list.find(f => f.regNo === studentRegData.admNo || f.prospectusNo === studentRegData.admNo || f.enquiryNo === studentRegData.admNo);
-      if (found) {
-        setStudentRegData(prev => ({
-          ...prev,
-          class: found.class || '', firstName: found.firstName || '', middleName: found.middleName || '', lastName: found.lastName || '',
-          dob: found.dob ? found.dob.substring(0, 10) : '', doa: found.date ? found.date.substring(0, 10) : '',
-          admittedClass: found.class || '', mobile: found.mobile || '', gender: found.gender || 'Male',
-          placeOfBirth: found.placeOfBirth || '', email: found.email || '', contactPersonName: found.contactPersonName || '',
-          contactPersonEmail: found.contactPersonEmail || '', contactPersonMobile: found.contactPersonMobile || '',
-          secondaryContactNo: found.secondaryContactNo || '', sibling: found.sibling || 'No',
-          corrHNoAndStreets: found.hNoAndStreets || '', corrCity: found.city || '', corrState: found.state || '', corrPinCode: found.pinCode || '',
-          nationality: found.nationality || 'Indian', religion: found.religion || '', caste: found.caste || '', category: found.category || '',
-          isEws: found.isEws || 'No', fatherName: found.fatherName || '', motherName: found.motherName || ''
-        }));
-        alert("Admission Form Details Loaded!");
-      } else {
-        alert("Admission Form Not Found!");
+      const token = localStorage.getItem('token');
+      // 1. Search in students collection
+      const res = await fetch(`${API_BASE}/api/students`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const raw = await res.json();
+        const list = Array.isArray(raw) ? raw : (raw.data || []);
+        const found = list.find(s => {
+          const adm = (s.academicDetails?.admissionNumber || s.admissionNumber || s.admNo || '').toString().toLowerCase();
+          const fname = (s.personalDetails?.firstName || s.firstName || '').toLowerCase();
+          const lname = (s.personalDetails?.lastName || s.lastName || '').toLowerCase();
+          const fullname = `${fname} ${lname}`.trim();
+          return adm === query || fname === query || lname === query || fullname.includes(query);
+        });
+
+        if (found) {
+          const p = found.personalDetails || {};
+          const a = found.academicDetails || {};
+          const c = found.contactAddress || {};
+          const f = (found.familyDetails && found.familyDetails.father) || {};
+          const m = (found.familyDetails && found.familyDetails.mother) || {};
+
+          setStudentRegData(prev => ({
+            ...prev,
+            admNo: a.admissionNumber || found.admissionNumber || found.admNo || prev.admNo,
+            class: a.class || found.class || '',
+            section: a.section || found.section || '',
+            firstName: p.firstName || found.firstName || '',
+            middleName: p.middleName || found.middleName || '',
+            lastName: p.lastName || found.lastName || '',
+            nameAsPerAadhar: p.nameAsPerAadhar || `${p.firstName || ''} ${p.lastName || ''}`.trim(),
+            gender: p.gender || 'Male',
+            bloodGroup: p.bloodGroup || '',
+            board: a.board || 'CBSE',
+            rollNo: a.rollNumber || found.rollNumber || '',
+            studentStatus: a.currentStatus || 'STUDYING',
+            mobile: c.contactNumber || f.mobile || found.mobile || '',
+            email: c.studentEmail || '',
+            dob: p.dateOfBirth ? p.dateOfBirth.substring(0, 10) : '',
+            doa: a.dateOfAdmission ? a.dateOfAdmission.substring(0, 10) : '',
+            doj: a.dateOfJoining ? a.dateOfJoining.substring(0, 10) : '',
+            corrHNoAndStreets: c.currentAddress || '',
+            corrCity: c.city || '',
+            corrState: c.state || '',
+            corrPinCode: c.pinCode || '',
+            fatherName: f.firstName ? `${f.firstName} ${f.lastName || ''}`.trim() : (found.fatherName || ''),
+            fatherMobile: f.mobile || '',
+            fatherEmail: f.email || '',
+            motherName: m.firstName ? `${m.firstName} ${m.lastName || ''}`.trim() : (found.motherName || ''),
+            motherMobile: m.mobile || '',
+            motherEmail: m.email || ''
+          }));
+          alert("Student Details Loaded Successfully!");
+          return;
+        }
       }
-    } catch (err) { console.error(err); alert("Error fetching data"); }
+
+      // 2. Fallback: Search in admission forms
+      const admRes = await fetch(`${API_BASE}/api/admission-forms`);
+      if (admRes.ok) {
+        const data = await admRes.json();
+        const list = data.data || data;
+        const found = list.find(f => 
+          (f.regNo && f.regNo.toString().toLowerCase() === query) || 
+          (f.prospectusNo && f.prospectusNo.toString().toLowerCase() === query) || 
+          (f.enquiryNo && f.enquiryNo.toString().toLowerCase() === query) ||
+          ((f.firstName || '').toLowerCase().includes(query))
+        );
+        if (found) {
+          setStudentRegData(prev => ({
+            ...prev,
+            admNo: found.regNo || found.prospectusNo || prev.admNo,
+            class: found.class || '',
+            firstName: found.firstName || '',
+            middleName: found.middleName || '',
+            lastName: found.lastName || '',
+            dob: found.dob ? found.dob.substring(0, 10) : '',
+            doa: found.date ? found.date.substring(0, 10) : '',
+            admittedClass: found.class || '',
+            mobile: found.mobile || '',
+            gender: found.gender || 'Male',
+            placeOfBirth: found.placeOfBirth || '',
+            email: found.email || '',
+            fatherName: found.fatherName || '',
+            motherName: found.motherName || ''
+          }));
+          alert("Admission Form Details Loaded!");
+          return;
+        }
+      }
+
+      alert("Student / Admission Record Not Found!");
+    } catch (err) { 
+      console.error(err); 
+      alert("Error fetching student data"); 
+    }
   };
 
   const submitStudentRegistration = async () => {
@@ -7769,16 +7897,40 @@ function AdmissionLayout() {
                           Student Details
                           <button className="text-white hover:text-gray-200"><FaAngleUp /></button>
                         </div>
-                        <div className="p-6 border border-gray-200 border-t-0 mb-6">
+                        <div className="p-6 border border-gray-200 border-t-0 mb-6 bg-white">
                            <div className="flex items-center gap-4 mb-6">
-                              <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-48 text-sm">
-                                <option>Select Class</option>
+                              <select 
+                                name="class" 
+                                value={studentRegData.class} 
+                                onChange={handleStudentRegChange} 
+                                className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-48 text-sm"
+                              >
+                                <option value="">Select Class</option>
+                                {masterClasses.map((cls, i) => (
+                                  <option key={i} value={cls}>{cls}</option>
+                                ))}
                               </select>
-                              <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-48 text-sm">
-                                <option>Select Section</option>
+                              <select 
+                                name="section" 
+                                value={studentRegData.section} 
+                                onChange={handleStudentRegChange} 
+                                className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-48 text-sm"
+                              >
+                                <option value="">Select Section</option>
+                                {masterSections.map((sec, i) => (
+                                  <option key={i} value={sec}>{sec}</option>
+                                ))}
                               </select>
-                              <input type="text" name="admNo" value={studentRegData.admNo} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] flex-1 text-sm" />
-                              <button className="bg-white border border-[#32a3d7] text-[#32a3d7] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#f0f9ff]">
+                              <input 
+                                type="text" 
+                                name="admNo" 
+                                placeholder="Enter Adm No or Student Name (e.g. 2511)..."
+                                value={studentRegData.admNo} 
+                                onChange={handleStudentRegChange} 
+                                onKeyDown={(e) => e.key === 'Enter' && searchStudentRegFromAdmission(e)}
+                                className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] flex-1 text-sm" 
+                              />
+                              <button onClick={searchStudentRegFromAdmission} className="bg-[#32a3d7] text-white px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#2892c2]">
                                 <FaSearch /> Search
                               </button>
                               <button onClick={searchStudentRegFromAdmission} className="bg-white border border-[#32a3d7] text-[#32a3d7] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#f0f9ff]">
@@ -7788,28 +7940,40 @@ function AdmissionLayout() {
 
                            <div className="flex gap-6">
                               <div className="w-32 flex flex-col items-center gap-2">
-                                 <div className="w-32 h-32 bg-gray-200 rounded flex items-center justify-center text-gray-400">
-                                   <FaInfoCircle className="text-5xl" />
+                                 <div className="w-32 h-32 bg-gray-200 rounded flex items-center justify-center text-gray-400 overflow-hidden">
+                                   {studentRegData.photo ? (
+                                     <img src={studentRegData.photo} alt="Student" className="w-full h-full object-cover" />
+                                   ) : (
+                                     <FaInfoCircle className="text-5xl" />
+                                   )}
                                  </div>
-                                 <div className="text-sm font-bold text-center">Name:<br/>Adm No.:<br/>Parent Status:</div>
+                                 <div className="text-xs font-semibold text-gray-700 text-center">
+                                   <div><strong>Name:</strong> {studentRegData.firstName} {studentRegData.lastName}</div>
+                                   <div><strong>Adm No:</strong> {studentRegData.admNo}</div>
+                                   <div><strong>Class:</strong> {studentRegData.class} ({studentRegData.section})</div>
+                                 </div>
                               </div>
                               <div className="flex-1 grid grid-cols-5 gap-4">
                                 <div className="flex flex-col gap-1 w-full col-span-2">
                                   <label className="text-sm font-bold text-gray-700">Name of the Student as Per Aadhar</label>
-                                  <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                  <input type="text" name="nameAsPerAadhar" value={studentRegData.nameAsPerAadhar} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">Class <span className="text-red-500">*</span></label>
                                   <select name="class" value={studentRegData.class} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
                                     <option value="">Select Class</option>
-                                    <option value="1">Class 1</option>
-                                    <option value="2">Class 2</option>
+                                    {masterClasses.map((cls, i) => (
+                                      <option key={i} value={cls}>{cls}</option>
+                                    ))}
                                   </select>
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">Section <span className="text-red-500">*</span></label>
-                                  <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                    <option>Select Sect</option>
+                                  <select name="section" value={studentRegData.section} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                    <option value="">Select Section</option>
+                                    {masterSections.map((sec, i) => (
+                                      <option key={i} value={sec}>{sec}</option>
+                                    ))}
                                   </select>
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
@@ -7827,14 +7991,20 @@ function AdmissionLayout() {
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">Blood Group</label>
-                                  <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                    <option>Select Bloo</option>
+                                  <select name="bloodGroup" value={studentRegData.bloodGroup} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                    <option value="">Select Blood Group</option>
+                                    {masterBloodGroups.map((bg, i) => (
+                                      <option key={i} value={bg}>{bg}</option>
+                                    ))}
                                   </select>
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">Board</label>
-                                  <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                    <option>up board</option>
+                                  <select name="board" value={studentRegData.board} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                    <option value="">Select Board</option>
+                                    {masterBoards.map((b, i) => (
+                                      <option key={i} value={b}>{b}</option>
+                                    ))}
                                   </select>
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
@@ -7843,55 +8013,64 @@ function AdmissionLayout() {
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">Roll No.</label>
-                                  <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                  <input type="text" name="rollNo" value={studentRegData.rollNo} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">Bill/GR No.</label>
-                                  <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                  <input type="text" name="billGrNo" value={studentRegData.billGrNo} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                                 </div>
 
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">TC No.</label>
-                                  <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                  <input type="text" name="tcNo" value={studentRegData.tcNo} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">Saral ID.</label>
-                                  <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                  <input type="text" name="saralId" value={studentRegData.saralId} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">Student Status</label>
-                                  <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                    <option>STUDYING</option>
+                                  <select name="studentStatus" value={studentRegData.studentStatus} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                    <option value="STUDYING">STUDYING</option>
+                                    <option value="PASSED">PASSED</option>
+                                    <option value="LEFT">LEFT</option>
+                                    <option value="SUSPENDED">SUSPENDED</option>
                                   </select>
                                 </div>
                                 <div className="flex flex-col gap-1 w-full col-span-2">
                                   <label className="text-sm font-bold text-gray-700">Reason</label>
                                   <div className="flex items-center gap-4">
-                                     <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                     <input type="text" name="reason" value={studentRegData.reason} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                                      <label className="flex items-center gap-1 text-sm text-gray-700 whitespace-nowrap"><input type="checkbox" defaultChecked className="accent-[#32a3d7] w-4 h-4"/> Is Active</label>
                                   </div>
                                 </div>
                                 <div className="flex flex-col gap-1 w-full">
                                   <label className="text-sm font-bold text-gray-700">House</label>
-                                  <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                    <option>Select Hou</option>
+                                  <select name="house" value={studentRegData.house} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                    <option value="">Select House</option>
+                                    {masterHouses.map((h, i) => (
+                                      <option key={i} value={h}>{h}</option>
+                                    ))}
                                   </select>
                                 </div>
                                 
                                 <div className="flex flex-col gap-1 w-full col-span-2">
                                   <label className="text-sm font-bold text-gray-700">Classification Name</label>
-                                  <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-1/2 text-sm">
-                                    <option>Select clast</option>
+                                  <select name="classificationName" value={studentRegData.classificationName} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-1/2 text-sm">
+                                    <option value="">Select Classification</option>
+                                    <option value="Regular">Regular</option>
+                                    <option value="Day Boarder">Day Boarder</option>
+                                    <option value="Hosteler">Hosteler</option>
                                   </select>
                                 </div>
                                 <div className="flex flex-col gap-1 w-full pt-4">
-                                  <label className="flex items-center gap-1 text-sm text-gray-700 whitespace-nowrap"><input type="checkbox" className="accent-[#32a3d7] w-4 h-4"/> Is Only Child</label>
+                                  <label className="flex items-center gap-1 text-sm text-gray-700 whitespace-nowrap"><input type="checkbox" name="isOnlyChild" checked={studentRegData.isOnlyChild} onChange={handleStudentRegChange} className="accent-[#32a3d7] w-4 h-4"/> Is Only Child</label>
                                 </div>
                                 <div className="flex flex-col gap-1 w-full pt-4 col-span-2">
                                   <label className="text-sm font-bold text-gray-700">Is New</label>
                                   <div className="flex items-center gap-4 mt-1">
-                                    <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="is_new" defaultChecked className="accent-[#32a3d7] w-4 h-4"/> Yes</label>
-                                    <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="is_new" className="accent-[#32a3d7] w-4 h-4"/> No</label>
+                                    <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="isNew" value="Yes" checked={studentRegData.isNew === 'Yes'} onChange={handleStudentRegChange} className="accent-[#32a3d7] w-4 h-4"/> Yes</label>
+                                    <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="isNew" value="No" checked={studentRegData.isNew === 'No'} onChange={handleStudentRegChange} className="accent-[#32a3d7] w-4 h-4"/> No</label>
                                   </div>
                                 </div>
                               </div>

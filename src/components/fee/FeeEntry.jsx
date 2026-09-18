@@ -29,7 +29,22 @@ export default function FeeEntry() {
       });
       if (res.ok) {
         const data = await res.json();
-        setStudents(data);
+        // Normalize students to handle nested or flat schema
+        const normalized = (Array.isArray(data) ? data : []).map(s => ({
+          _id: s._id,
+          firstName: s.personalDetails?.firstName || s.firstName || '',
+          middleName: s.personalDetails?.middleName || s.middleName || '',
+          lastName: s.personalDetails?.lastName || s.lastName || '',
+          fullName: `${s.personalDetails?.firstName || s.firstName || ''} ${s.personalDetails?.lastName || s.lastName || ''}`.trim(),
+          admissionNumber: s.academicDetails?.admissionNumber || s.admissionNumber || s.admNo || '',
+          rollNumber: s.academicDetails?.rollNumber || s.rollNumber || '',
+          className: s.academicDetails?.class || s.class?.name || s.class || s.className || '',
+          section: s.academicDetails?.section || s.section || '',
+          fatherName: `${s.familyDetails?.father?.firstName || ''} ${s.familyDetails?.father?.lastName || ''}`.trim() || s.fatherName || '',
+          mobileNumber: s.contactAddress?.contactNumber || s.familyDetails?.father?.mobile || s.mobileNumber || '',
+          profilePicture: s.personalDetails?.studentPhoto || s.profilePicture || ''
+        }));
+        setStudents(normalized);
       }
     } catch (error) {
       console.error('Error fetching students:', error);
@@ -37,10 +52,15 @@ export default function FeeEntry() {
   };
 
   const handleSearch = () => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return;
+
     const student = students.find(s => 
-      s.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      s.admissionNumber === searchQuery || 
-      s.rollNumber === searchQuery
+      s.fullName?.toLowerCase().includes(q) ||
+      s.firstName?.toLowerCase().includes(q) || 
+      s.lastName?.toLowerCase().includes(q) ||
+      s.admissionNumber?.toString().toLowerCase() === q || 
+      s.rollNumber?.toString().toLowerCase() === q
     );
     
     if (student) {
@@ -162,11 +182,11 @@ export default function FeeEntry() {
         {selectedStudent ? (
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: '#374151', lineHeight: 1.4 }}>
             <div><strong>Name:</strong> {selectedStudent.firstName} {selectedStudent.lastName}</div>
-            <div><strong>Class:</strong> {selectedStudent.class?.name || 'N/A'}</div>
-            <div><strong>Roll No.:</strong> {selectedStudent.rollNumber}</div>
+            <div><strong>Class:</strong> {selectedStudent.className || 'N/A'} {selectedStudent.section ? `(${selectedStudent.section})` : ''}</div>
+            <div><strong>Roll No.:</strong> {selectedStudent.rollNumber || 'N/A'}</div>
             <div><strong>Admission No.:</strong> {selectedStudent.admissionNumber}</div>
-            <div><strong>Father's Name:</strong> {selectedStudent.fatherName}</div>
-            <div><strong>Mobile:</strong> {selectedStudent.mobileNumber}</div>
+            <div><strong>Father's Name:</strong> {selectedStudent.fatherName || 'N/A'}</div>
+            <div><strong>Mobile:</strong> {selectedStudent.mobileNumber || 'N/A'}</div>
           </div>
         ) : (
           <div style={{ fontSize: '12px', color: '#6b7280', textAlign: 'center', marginTop: '20px' }}>
