@@ -923,7 +923,7 @@ export default function FeeManagementDashboard() {
           {activeTab === 'Fees Upload From Tally' && <FeesUploadFromTally />}
           {activeTab === 'Update Bank Date' && <UpdateBankDate />}
           {activeTab === 'Advance Adjustment' && <AdvanceAdjustment />}
-          {activeTab === 'Fees Upload With Paymode' && <FeesUploadWithPaymode />}
+          {(activeTab === 'Fees Upload With Paymode' || activeTab === 'Fees Upload') && <FeesUploadWithPaymode />}
           {activeTab === 'Online Fees Upload With Deposit Bank' && <OnlineFeesUploadWithDepositBank />}
           {activeTab === 'Fees Upload With Deposit Bank' && <FeesUploadWithDepositBank />}
           {activeTab === 'Pay Amount Without Structure' && <PayAmountWithoutStructure />}
