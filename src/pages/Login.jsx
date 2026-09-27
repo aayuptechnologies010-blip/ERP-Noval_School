@@ -28,15 +28,8 @@ function Login() {
         body: JSON.stringify({ userId, password }),
       });
 
-      const responseText = await response.text();
-      console.log('Login Response Status:', response.status);
-      console.log('Login Response Text:', responseText);
-
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('Failed to parse JSON:', parseError);
+      const data = await response.json().catch(() => null);
+      if (!data) {
         toast.error(`Server returned invalid response. Status: ${response.status}`);
         setLoading(false);
         return;
