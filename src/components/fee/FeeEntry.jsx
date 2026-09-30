@@ -32,7 +32,10 @@ export default function FeeEntry() {
   const [receiptNo, setReceiptNo] = useState('0');
   const [remark, setRemark] = useState('');
   const [depositBank, setDepositBank] = useState('');
-  const [selectedInstallment, setSelectedInstallment] = useState('September');
+  const [selectedInstallment, setSelectedInstallment] = useState(() => {
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    return months[new Date().getMonth()];
+  });
   
   const [discountChecked, setDiscountChecked] = useState(false);
   const [discountAmount, setDiscountAmount] = useState('0.00');
@@ -64,7 +67,7 @@ export default function FeeEntry() {
 
       const [clsRes, secRes, ftRes, bnkRes, instRes, stdRes] = await Promise.all([
         fetch(`${API_URL}/api/school-classes`, { headers }).catch(() => ({ ok: false })),
-        fetch(`${API_URL}/api/class-sections`, { headers }).catch(() => ({ ok: false })),
+        fetch(`${API_URL}/api/sections`, { headers }).catch(() => ({ ok: false })),
         fetch(`${API_URL}/api/fee-types`, { headers }).catch(() => ({ ok: false })),
         fetch(`${API_URL}/api/banks`, { headers }).catch(() => ({ ok: false })),
         fetch(`${API_URL}/api/fee-installments`, { headers }).catch(() => ({ ok: false })),
@@ -77,7 +80,9 @@ export default function FeeEntry() {
       }
       if (secRes.ok) {
         const d = await secRes.json();
-        setSections(Array.isArray(d) ? d : []);
+        // /api/sections returns [{_id, sectionName: "A", orderNo}] or nested array
+        const list = Array.isArray(d) ? d : (d?.data && Array.isArray(d.data) ? d.data : []);
+        setSections(list);
       }
       if (ftRes.ok) {
         const d = await ftRes.json();
@@ -157,11 +162,138 @@ export default function FeeEntry() {
     }
   };
 
+  // Helper: extract numeric class level from any className format
+  const getClassLevel = (className) => {
+    if (!className) return 0;
+    const c = String(className).toUpperCase().trim();
+    // Nursery / KG range
+    if (/NUR|NURSERY/.test(c)) return 0;
+    if (/LKG|L\.K\.G|LOWER KG/.test(c)) return 0;
+    if (/UKG|U\.K\.G|UPPER KG/.test(c)) return 0;
+    // Roman numerals
+    const romanMap = { 'XII': 12, 'XI': 11, 'X': 10, 'IX': 9, 'VIII': 8, 'VII': 7, 'VI': 6, 'V': 5, 'IV': 4, 'III': 3, 'II': 2, 'I': 1 };
+    for (const [roman, num] of Object.entries(romanMap)) {
+      if (new RegExp(`\\b${roman}\\b`).test(c)) return num;
+    }
+    // Extract first number in string
+    const numMatch = c.match(/\d+/);
+    if (numMatch) return parseInt(numMatch[0]);
+    return 0;
+  };
+
+  const getClassTuition = (className) => {
+    const level = getClassLevel(className);
+    if (level === 0) return 1200;           // NUR / LKG / UKG
+    if (level <= 2) return 1500;            // Class 1–2
+    if (level <= 5) return 1600;            // Class 3–5
+    if (level <= 8) return 1800;            // Class 6–8
+    if (level === 9) return 2300;           // Class 9
+    if (level === 10) return 2500;          // Class 10
+    if (level === 11) return 2700;          // Class 11
+    if (level >= 12) return 3000;           // Class 12
+    return 1200;
+  };
+
+  const getExamFee = (className) => {
+    const level = getClassLevel(className);
+    if (level >= 9 && level <= 10) return 1000;   // Class 9–10
+    if (level >= 11) return 1200;                  // Class 11–12
+    if (level >= 6) return 900;                    // Class 6–8
+    return 800;                                    // Class 1–5 / KG
+  };
+
+  const computeHeadsForStudent = (s, instName, fType, receiptsList = historyReceipts) => {
+    if (!s) return [];
+    const className = s.academicDetails?.class || s.className || s.class || '';
+    const tuitionAmt = getClassTuition(className);
+    const examAmt = getExamFee(className);
+    const isTransport = s.transportDetails?.isTransportStudent || s.transportDetails?.route || s.transportDetails?.stopName || s.transportDetails?.isSelfTransport === false;
+    const transportAmt = Number(s.transportDetails?.transportFee || 600);
+    const isNew = s.academicDetails?.isNew === 'Yes' || s.isNew === 'Yes' || s.academicDetails?.studentStatus === 'NEW';
+
+    const heads = [];
+
+    // 1. Tuition Fee (Every installment / month)
+    heads.push({
+      head: 'TUITION FEE',
+      actualAmt: tuitionAmt,
+      concAmt: 0,
+      lastRecAmt: 0,
+      payableAmt: tuitionAmt,
+      amtBeingPaid: tuitionAmt,
+      feesType: 'School Fee',
+      paySchedule: 'Installment'
+    });
+
+    // 2. Exam Fees if applicable for the installment month
+    if (instName === 'September' || instName === 'October') {
+      heads.push({
+        head: 'Exam Fee (Half Yearly)',
+        actualAmt: examAmt,
+        concAmt: 0,
+        lastRecAmt: 0,
+        payableAmt: examAmt,
+        amtBeingPaid: examAmt,
+        feesType: 'School Fee',
+        paySchedule: 'Installment'
+      });
+    } else if (instName === 'February' || instName === 'March') {
+      heads.push({
+        head: 'Exam Fee (Annual)',
+        actualAmt: examAmt,
+        concAmt: 0,
+        lastRecAmt: 0,
+        payableAmt: examAmt,
+        amtBeingPaid: examAmt,
+        feesType: 'School Fee',
+        paySchedule: 'Installment'
+      });
+    }
+
+    // 3. Admission / Composite if April and new admission
+    if (instName === 'April' && isNew) {
+      heads.unshift({
+        head: 'Admission Fee',
+        actualAmt: 1500,
+        concAmt: 0,
+        lastRecAmt: 0,
+        payableAmt: 1500,
+        amtBeingPaid: 1500,
+        feesType: 'School Fee',
+        paySchedule: 'Lifetime'
+      });
+    }
+
+    // 4. Transport Fee
+    if (isTransport && transportAmt > 0) {
+      heads.push({
+        head: 'Transport',
+        actualAmt: transportAmt,
+        concAmt: 0,
+        lastRecAmt: 0,
+        payableAmt: transportAmt,
+        amtBeingPaid: transportAmt,
+        feesType: 'Bus Fee',
+        paySchedule: 'Installment'
+      });
+    }
+
+    // Filter by selected Fee Type if not 'All Fee Types'
+    let filteredHeads = heads;
+    if (fType && fType !== 'All Fee Types' && fType !== 'All') {
+      const match = heads.filter(h => h.feesType.toLowerCase().includes(fType.toLowerCase()) || fType.toLowerCase().includes(h.feesType.toLowerCase()));
+      if (match.length > 0) filteredHeads = match;
+    }
+
+    return filteredHeads;
+  };
+
   const populateStudentData = async (s) => {
     setSelectedStudent(s);
     setSearchQuery(`${s.personalDetails?.firstName || s.firstName || ''} ${s.personalDetails?.lastName || s.lastName || ''}`.trim());
     setReceiptNo(Math.floor(1000 + Math.random() * 9000).toString());
 
+    let receipts = [];
     // Fetch ledger / dues
     try {
       const token = localStorage.getItem('token');
@@ -170,45 +302,35 @@ export default function FeeEntry() {
       });
       if (res.ok) {
         const ledgerData = await res.json();
-        setHistoryReceipts(ledgerData.transactions || []);
+        receipts = ledgerData.transactions || [];
+        setHistoryReceipts(receipts);
       }
     } catch (e) {
       console.error(e);
     }
 
-    // Prepare default heads structure (Tuition + Transport if transport student)
-    const isTransport = s.transportDetails?.isTransportStudent || s.transportDetails?.route;
-    const transportAmt = Number(s.transportDetails?.transportFee || 600);
-    const tuitionAmt = 1200;
+    // Prepare heads structure
+    const calculatedHeads = computeHeadsForStudent(s, selectedInstallment, selectedFeeType, receipts);
+    setFeeHeads(calculatedHeads);
+    calculateTotals(calculatedHeads, discountChecked ? discountAmount : 0, manualLateFineChecked ? manualLateFine : 0);
+  };
 
-    const defaultHeads = [
-      {
-        head: 'TUITION FEE',
-        actualAmt: tuitionAmt,
-        concAmt: 0,
-        lastRecAmt: 0,
-        payableAmt: tuitionAmt,
-        amtBeingPaid: tuitionAmt,
-        feesType: 'School Fee',
-        paySchedule: 'Installment'
-      }
-    ];
-
-    if (isTransport || s.transportDetails?.stopName || s.transportDetails?.route) {
-      defaultHeads.push({
-        head: 'Transport',
-        actualAmt: transportAmt,
-        concAmt: 0,
-        lastRecAmt: 0,
-        payableAmt: transportAmt,
-        amtBeingPaid: transportAmt,
-        feesType: 'School Fee',
-        paySchedule: 'Installment'
-      });
+  const handleInstallmentChange = (newInst) => {
+    setSelectedInstallment(newInst);
+    if (selectedStudent) {
+      const updatedHeads = computeHeadsForStudent(selectedStudent, newInst, selectedFeeType);
+      setFeeHeads(updatedHeads);
+      calculateTotals(updatedHeads, discountChecked ? discountAmount : 0, manualLateFineChecked ? manualLateFine : 0);
     }
+  };
 
-    setFeeHeads(defaultHeads);
-    calculateTotals(defaultHeads, 0, 0);
+  const handleFeeTypeChange = (newType) => {
+    setSelectedFeeType(newType);
+    if (selectedStudent) {
+      const updatedHeads = computeHeadsForStudent(selectedStudent, selectedInstallment, newType);
+      setFeeHeads(updatedHeads);
+      calculateTotals(updatedHeads, discountChecked ? discountAmount : 0, manualLateFineChecked ? manualLateFine : 0);
+    }
   };
 
   const calculateTotals = (heads, disc, fine) => {
@@ -496,9 +618,12 @@ export default function FeeEntry() {
                 style={{ padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px', background: '#fff', color: '#334155', outline: 'none' }}
               >
                 <option value="All Section">All Section</option>
-                {sections.map(s => (
-                  <option key={s._id} value={s.name || s.sectionName}>{s.name || s.sectionName}</option>
-                ))}
+                {sections.map((s, idx) => {
+                  const secVal = typeof s === 'string' ? s : (s.sectionName || s.name || s.section || '');
+                  return (
+                    <option key={s._id || idx} value={secVal}>{secVal}</option>
+                  );
+                })}
               </select>
 
               <div style={{ display: 'flex', position: 'relative' }}>
@@ -624,7 +749,7 @@ export default function FeeEntry() {
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>Fees Type</label>
                 <select 
                   value={selectedFeeType} 
-                  onChange={(e) => setSelectedFeeType(e.target.value)}
+                  onChange={(e) => handleFeeTypeChange(e.target.value)}
                   style={{ width: '100%', padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px', outline: 'none', background: '#fff' }}
                 >
                   <option value="All Fee Types">All Fee Types</option>
@@ -674,22 +799,29 @@ export default function FeeEntry() {
               <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>Installment</label>
               <select 
                 value={selectedInstallment} 
-                onChange={(e) => setSelectedInstallment(e.target.value)}
+                onChange={(e) => handleInstallmentChange(e.target.value)}
                 style={{ width: '100%', padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px', outline: 'none', background: '#fff' }}
               >
-                <option value="September">September</option>
-                <option value="None selected">None selected</option>
-                <option value="April">April</option>
-                <option value="May">May</option>
-                <option value="June">June</option>
-                <option value="July">July</option>
-                <option value="August">August</option>
-                <option value="October">October</option>
-                <option value="November">November</option>
-                <option value="December">December</option>
-                <option value="January">January</option>
-                <option value="February">February</option>
-                <option value="March">March</option>
+                {installments.length > 0 ? (
+                  installments.map(inst => (
+                    <option key={inst._id} value={inst.name || inst.installmentName || inst.month}>{inst.name || inst.installmentName || inst.month}</option>
+                  ))
+                ) : (
+                  <>
+                    <option value="April">April</option>
+                    <option value="May">May</option>
+                    <option value="June">June</option>
+                    <option value="July">July</option>
+                    <option value="August">August</option>
+                    <option value="September">September</option>
+                    <option value="October">October</option>
+                    <option value="November">November</option>
+                    <option value="December">December</option>
+                    <option value="January">January</option>
+                    <option value="February">February</option>
+                    <option value="March">March</option>
+                  </>
+                )}
               </select>
             </div>
 

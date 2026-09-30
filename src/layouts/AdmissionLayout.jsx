@@ -402,6 +402,31 @@ function AdmissionLayout() {
 
   const [updateStudentList, setUpdateStudentList] = useState([]);
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+  
+  // Student Detail 360 Modal State
+  const [selectedDetailStudent, setSelectedDetailStudent] = useState(null);
+  const [showDetailStudentModal, setShowDetailStudentModal] = useState(false);
+  const [detailModalTab, setDetailModalTab] = useState('Personal');
+  
+  // Update Student Details Tab Filters
+  const [updateClassFilter, setUpdateClassFilter] = useState('All');
+  const [updateSectionFilter, setUpdateSectionFilter] = useState('All');
+  const [updateSearchFilter, setUpdateSearchFilter] = useState('');
+  const [updateFieldFilter, setUpdateFieldFilter] = useState('Aadhar Card No.');
+  const [updateOrderBy, setUpdateOrderBy] = useState('Default(First Name)');
+
+  const handleOpenStudentDetail = (stu) => {
+    if (!stu) return;
+    // Find the full student object from updateStudentList if only mapped row was passed
+    let fullStudent = stu;
+    if (stu._id && updateStudentList && updateStudentList.length > 0) {
+      const found = updateStudentList.find(s => s._id === stu._id);
+      if (found) fullStudent = found;
+    }
+    setSelectedDetailStudent(fullStudent);
+    setShowDetailStudentModal(true);
+    setDetailModalTab('Personal');
+  };
 
   const [enquiryFormData, setEnquiryFormData] = useState({
     enquiryNo: '', session: '', enquiryDate: '', guardianName: '',
@@ -1069,9 +1094,12 @@ function AdmissionLayout() {
   const fetchStudents = async () => {
     setIsLoadingStudents(true);
     try {
-      const res = await fetch(`${API_BASE}/api/students`);
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/api/students`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       const json = await res.json();
-      const rawList = json.data || json;
+      const rawList = Array.isArray(json.data) ? json.data : Array.isArray(json) ? json : [];
       setUpdateStudentList(rawList);
 
       // Map students for reports
@@ -9252,78 +9280,150 @@ function AdmissionLayout() {
                              )}
                           </div>
                         </div>
-                      </div>
-                    ) : activeTab === 'Update Student Details' ? (
+                                       ) : activeTab === 'Update Student Details' ? (
                       <div className="flex flex-col h-full bg-white">
-                        <div className="p-4 border-b border-gray-200">
-                           <div className="flex gap-4 items-end">
-                             <div className="flex flex-col gap-1 w-64">
-                               <label className="text-sm font-bold text-gray-700">Class</label>
-                               <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                 <option>UKG</option>
+                        <div className="p-4 border-b border-gray-200 bg-gray-50/50">
+                           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                             <div className="flex flex-col gap-1">
+                               <label className="text-xs font-bold text-gray-700">Class</label>
+                               <select 
+                                 value={updateClassFilter} 
+                                 onChange={e => setUpdateClassFilter(e.target.value)} 
+                                 className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-xs bg-white"
+                               >
+                                 <option value="All">All Classes</option>
+                                 {masterClasses.map(c => (
+                                   <option key={c} value={c}>{c}</option>
+                                 ))}
                                </select>
                              </div>
-                             <div className="flex flex-col gap-1 w-64">
-                               <label className="text-sm font-bold text-gray-700">Section</label>
-                               <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                 <option>A</option>
+                             <div className="flex flex-col gap-1">
+                               <label className="text-xs font-bold text-gray-700">Section</label>
+                               <select 
+                                 value={updateSectionFilter} 
+                                 onChange={e => setUpdateSectionFilter(e.target.value)} 
+                                 className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-xs bg-white"
+                               >
+                                 <option value="All">All Sections</option>
+                                 {masterSections.map(s => (
+                                   <option key={s} value={s}>{s}</option>
+                                 ))}
                                </select>
                              </div>
-                             <div className="flex flex-col gap-1 w-64">
-                               <label className="text-sm font-bold text-gray-700">Field</label>
-                               <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                 <option>Aadhar Card No.</option>
+                             <div className="flex flex-col gap-1">
+                               <label className="text-xs font-bold text-gray-700">Search Student</label>
+                               <input 
+                                 type="text" 
+                                 placeholder="Search by name, adm no, roll..."
+                                 value={updateSearchFilter} 
+                                 onChange={e => setUpdateSearchFilter(e.target.value)} 
+                                 className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-xs bg-white"
+                               />
+                             </div>
+                             <div className="flex flex-col gap-1">
+                               <label className="text-xs font-bold text-gray-700">Field</label>
+                               <select 
+                                 value={updateFieldFilter} 
+                                 onChange={e => setUpdateFieldFilter(e.target.value)} 
+                                 className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-xs bg-white"
+                               >
+                                 <option value="Aadhar Card No.">Aadhar Card No.</option>
+                                 <option value="Mobile Number">Mobile Number</option>
+                                 <option value="Date of Birth">Date of Birth</option>
+                                 <option value="Blood Group">Blood Group</option>
                                </select>
                              </div>
                            </div>
-                           <div className="flex gap-4 items-end mt-4 max-w-xl">
-                             <div className="flex flex-col gap-1 w-64">
-                               <label className="text-sm font-bold text-gray-700">Order By</label>
-                               <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                 <option>Default(First Name)</option>
-                               </select>
-                             </div>
-                           </div>
-                           <div className="flex justify-center mt-6">
-                             <button className="bg-[#32a3d7] text-white px-6 py-1.5 rounded text-sm font-bold flex items-center gap-2">
-                               <FaSync /> Update
+                           <div className="flex justify-between items-center mt-4">
+                             <span className="text-xs text-gray-500 font-medium">
+                               Showing {updateStudentList.filter(s => {
+                                 const sClass = (s.academicDetails?.class || s.class || '').toString().toLowerCase();
+                                 const sSec = (s.academicDetails?.section || s.section || '').toString().toLowerCase();
+                                 const name = `${s.personalDetails?.firstName || s.firstName || ''} ${s.personalDetails?.lastName || s.lastName || ''}`.toLowerCase();
+                                 const adm = (s.academicDetails?.admissionNumber || s.admissionNumber || s.admNo || '').toString().toLowerCase();
+                                 const matchClass = updateClassFilter === 'All' || sClass === updateClassFilter.toLowerCase();
+                                 const matchSec = updateSectionFilter === 'All' || sSec === updateSectionFilter.toLowerCase();
+                                 const matchSearch = !updateSearchFilter || name.includes(updateSearchFilter.toLowerCase()) || adm.includes(updateSearchFilter.toLowerCase());
+                                 return matchClass && matchSec && matchSearch;
+                               }).length} students
+                             </span>
+                             <button onClick={fetchStudents} className="bg-[#32a3d7] hover:bg-[#288ec0] text-white px-5 py-1.5 rounded text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer">
+                               <FaSync /> Refresh List
                              </button>
                            </div>
                         </div>
                         <div className="p-4 overflow-auto flex-1">
-                          <h4 className="font-bold text-sm text-gray-700 mb-2">STUDENT LIST</h4>
-                          <table className="w-full text-sm text-left text-gray-500 border border-gray-200">
-                            <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+                          <table className="w-full text-xs text-left text-gray-700 border border-gray-200">
+                            <thead className="text-[11px] text-gray-700 uppercase bg-gray-100 border-b">
                               <tr>
-                                <th className="px-4 py-2">Adm. No.</th>
-                                <th className="px-4 py-2">Student Name</th>
-                                <th className="px-4 py-2">Father's Name</th>
-                                <th className="px-4 py-2">Mother's Name</th>
-                                <th className="px-4 py-2">Aadhar Card No.</th>
+                                <th className="px-3 py-2 border-r">Adm. No.</th>
+                                <th className="px-3 py-2 border-r">Student Name</th>
+                                <th className="px-3 py-2 border-r text-center">Class-Sec</th>
+                                <th className="px-3 py-2 border-r">Father's Name</th>
+                                <th className="px-3 py-2 border-r">Mother's Name</th>
+                                <th className="px-3 py-2 border-r">Contact</th>
+                                <th className="px-3 py-2 text-center">Action / View Details</th>
                               </tr>
                             </thead>
                             <tbody>
                               {isLoadingStudents ? (
-                                <tr><td colSpan="5" className="px-4 py-4 text-center">Loading...</td></tr>
+                                <tr><td colSpan="7" className="px-4 py-8 text-center text-gray-500 font-medium">Loading student records...</td></tr>
                               ) : updateStudentList.length === 0 ? (
-                                <tr><td colSpan="5" className="px-4 py-4 text-center">No students found</td></tr>
+                                <tr><td colSpan="7" className="px-4 py-8 text-center text-gray-400">No students found</td></tr>
                               ) : (
-                                updateStudentList.map((row, i) => (
-                                   <tr key={row._id || i} className="border-b">
-                                     <td className="px-4 py-2">{row.academicDetails?.admissionNumber || '-'}</td>
-                                     <td className="px-4 py-2">{row.personalDetails?.firstName} {row.personalDetails?.lastName}</td>
-                                     <td className="px-4 py-2">{row.familyDetails?.father?.firstName || '-'} {row.familyDetails?.father?.lastName || ''}</td>
-                                     <td className="px-4 py-2">{row.familyDetails?.mother?.firstName || '-'} {row.familyDetails?.mother?.lastName || ''}</td>
-                                     <td className="px-4 py-2">
-                                       <input type="text" defaultValue={row.familyDetails?.father?.aadharNumber || ''} className="border border-gray-300 rounded px-2 py-1 w-full text-sm outline-none focus:border-[#32a3d7]"/>
-                                     </td>
-                                   </tr>
-                                ))
+                                updateStudentList
+                                  .filter(s => {
+                                    const sClass = (s.academicDetails?.class || s.class || '').toString().toLowerCase();
+                                    const sSec = (s.academicDetails?.section || s.section || '').toString().toLowerCase();
+                                    const name = `${s.personalDetails?.firstName || s.firstName || ''} ${s.personalDetails?.lastName || s.lastName || ''}`.toLowerCase();
+                                    const adm = (s.academicDetails?.admissionNumber || s.admissionNumber || s.admNo || '').toString().toLowerCase();
+                                    const matchClass = updateClassFilter === 'All' || sClass === updateClassFilter.toLowerCase();
+                                    const matchSec = updateSectionFilter === 'All' || sSec === updateSectionFilter.toLowerCase();
+                                    const matchSearch = !updateSearchFilter || name.includes(updateSearchFilter.toLowerCase()) || adm.includes(updateSearchFilter.toLowerCase());
+                                    return matchClass && matchSec && matchSearch;
+                                  })
+                                  .map((row, i) => {
+                                    const fullName = `${row.personalDetails?.firstName || row.firstName || ''} ${row.personalDetails?.middleName || ''} ${row.personalDetails?.lastName || row.lastName || ''}`.trim();
+                                    const admNo = row.academicDetails?.admissionNumber || row.admissionNumber || '-';
+                                    const className = `${row.academicDetails?.class || row.class || '-'}-${row.academicDetails?.section || row.section || 'A'}`;
+                                    const father = `${row.familyDetails?.father?.firstName || row.fatherName || '-'} ${row.familyDetails?.father?.lastName || ''}`.trim();
+                                    const mother = `${row.familyDetails?.mother?.firstName || row.motherName || '-'} ${row.familyDetails?.mother?.lastName || ''}`.trim();
+                                    const contactNo = row.contactAddress?.contactNumber || row.familyDetails?.father?.mobile || row.contactNumber || '-';
+
+                                    return (
+                                      <tr key={row._id || i} className="border-b hover:bg-sky-50/50 transition-colors">
+                                        <td className="px-3 py-2 border-r font-mono font-bold text-[#0284c7]">{admNo}</td>
+                                        <td className="px-3 py-2 border-r font-bold text-gray-900">
+                                          <button 
+                                            onClick={() => handleOpenStudentDetail(row)}
+                                            className="text-left font-bold text-[#0284c7] hover:underline cursor-pointer flex items-center gap-1.5"
+                                          >
+                                            <FaUser className="text-[10px] text-gray-400" />
+                                            <span>{fullName || 'Student'}</span>
+                                          </button>
+                                        </td>
+                                        <td className="px-3 py-2 border-r text-center font-medium">
+                                          <span className="bg-sky-100 text-sky-800 px-2 py-0.5 rounded text-[10px] font-semibold">{className}</span>
+                                        </td>
+                                        <td className="px-3 py-2 border-r text-gray-700">{father}</td>
+                                        <td className="px-3 py-2 border-r text-gray-700">{mother}</td>
+                                        <td className="px-3 py-2 border-r font-mono text-gray-600">{contactNo}</td>
+                                        <td className="px-3 py-2 text-center">
+                                          <button 
+                                            onClick={() => handleOpenStudentDetail(row)}
+                                            className="bg-[#28aae1] hover:bg-[#1f9cd0] text-white px-3 py-1 rounded text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                                          >
+                                            <FaEye className="text-[10px]" /> View Detail
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })
                               )}
                             </tbody>
                           </table>
                         </div>
-                      </div>
+                      </div>     </div>
                     ) : activeTab === 'Set Student Status' ? (
                       <div className="flex flex-col h-full bg-white">
                         <div className="p-4 border-b border-gray-200">
@@ -16456,13 +16556,21 @@ function AdmissionLayout() {
                                 </thead>
                                 <tbody>
                                   {repStudentList.map((st, idx) => (
-                                    <tr key={idx} className="border-b border-gray-200 hover:bg-sky-50/40 text-[11px]">
+                                    <tr 
+                                      key={idx} 
+                                      onClick={() => handleOpenStudentDetail(st)}
+                                      className="border-b border-gray-200 hover:bg-sky-50/70 text-[11px] cursor-pointer transition-colors"
+                                      title="Click to view full student details"
+                                    >
                                       <td className="px-2.5 py-1.5 border-r border-gray-200 font-medium">{st.className}</td>
                                       <td className="px-2.5 py-1.5 border-r border-gray-200 font-medium">{st.class}</td>
                                       <td className="px-2.5 py-1.5 border-r border-gray-200">{st.billNo}</td>
                                       <td className="px-2.5 py-1.5 border-r border-gray-200 font-mono text-center">{st.rollNo}</td>
-                                      <td className="px-2.5 py-1.5 border-r border-gray-200 font-semibold text-gray-800">{st.admNo}</td>
-                                      <td className="px-2.5 py-1.5 border-r border-gray-200 font-bold uppercase text-gray-900 whitespace-nowrap">{st.name}</td>
+                                      <td className="px-2.5 py-1.5 border-r border-gray-200 font-semibold text-[#0284c7] underline">{st.admNo}</td>
+                                      <td className="px-2.5 py-1.5 border-r border-gray-200 font-bold uppercase text-gray-900 whitespace-nowrap flex items-center gap-1">
+                                        <FaUser className="text-[9px] text-gray-400" />
+                                        <span>{st.name}</span>
+                                      </td>
                                       <td className="px-2.5 py-1.5 border-r border-gray-200 whitespace-nowrap">{st.boarding}</td>
                                       <td className="px-2.5 py-1.5 border-r border-gray-200 font-medium uppercase text-gray-800 whitespace-nowrap">{st.name1}</td>
                                       <td className="px-2.5 py-1.5 border-r border-gray-200 text-center">{st.optSub}</td>
@@ -27475,6 +27583,273 @@ function AdmissionLayout() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Comprehensive Student Detail 360 Modal */}
+      {showDetailStudentModal && selectedDetailStudent && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-[999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-[#0284c7] to-[#0ea5e9] text-white p-5 flex justify-between items-start">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center text-2xl font-bold text-white uppercase overflow-hidden shadow-inner">
+                  {selectedDetailStudent.personalDetails?.studentPhoto ? (
+                    <img 
+                      src={selectedDetailStudent.personalDetails.studentPhoto.startsWith('http') ? selectedDetailStudent.personalDetails.studentPhoto : `${API_BASE}/${selectedDetailStudent.personalDetails.studentPhoto}`} 
+                      alt="Student" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>
+                      {(selectedDetailStudent.personalDetails?.firstName || selectedDetailStudent.firstName || selectedDetailStudent.name || 'S')[0]}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-extrabold uppercase tracking-wide">
+                      {`${selectedDetailStudent.personalDetails?.firstName || selectedDetailStudent.firstName || selectedDetailStudent.name || ''} ${selectedDetailStudent.personalDetails?.middleName || ''} ${selectedDetailStudent.personalDetails?.lastName || selectedDetailStudent.lastName || ''}`.trim() || 'Student Details'}
+                    </h2>
+                    <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase shadow-xs">
+                      {selectedDetailStudent.academicDetails?.studentStatus || selectedDetailStudent.studentStatus || 'STUDYING'}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-sky-100 mt-1">
+                    <span>Adm No: <strong className="text-white">{selectedDetailStudent.academicDetails?.admissionNumber || selectedDetailStudent.admissionNumber || selectedDetailStudent.admNo || '-'}</strong></span>
+                    <span>Class: <strong className="text-white">{selectedDetailStudent.academicDetails?.class || selectedDetailStudent.className || selectedDetailStudent.class || '-'}-{selectedDetailStudent.academicDetails?.section || selectedDetailStudent.section || 'A'}</strong></span>
+                    <span>Roll No: <strong className="text-white">{selectedDetailStudent.academicDetails?.rollNumber || selectedDetailStudent.rollNo || '-'}</strong></span>
+                    <span>Gender: <strong className="text-white">{selectedDetailStudent.personalDetails?.gender || selectedDetailStudent.gender || 'Male'}</strong></span>
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowDetailStudentModal(false)}
+                className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 w-8 h-8 rounded-full flex items-center justify-center transition cursor-pointer text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Tabs Navigation */}
+            <div className="flex border-b border-gray-200 bg-gray-50 px-6 gap-2 pt-2 text-xs font-bold text-gray-600 overflow-x-auto">
+              {['Personal', 'Academic', 'Family & Parents', 'Address & Contact', 'Transport & Fee'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setDetailModalTab(tab)}
+                  className={`px-4 py-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                    detailModalTab === tab
+                      ? 'border-[#0284c7] text-[#0284c7] bg-white rounded-t font-extrabold shadow-2xs'
+                      : 'border-transparent text-gray-500 hover:text-gray-800'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Modal Tab Content */}
+            <div className="p-6 overflow-y-auto flex-1 text-xs text-gray-800 space-y-4">
+              {detailModalTab === 'Personal' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">First Name</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.personalDetails?.firstName || selectedDetailStudent.firstName || '-'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Middle Name</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.personalDetails?.middleName || selectedDetailStudent.middleName || '-'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Last Name</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.personalDetails?.lastName || selectedDetailStudent.lastName || '-'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Date of Birth</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.personalDetails?.dateOfBirth ? new Date(selectedDetailStudent.personalDetails.dateOfBirth).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : (selectedDetailStudent.dob || '-')}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Blood Group</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.personalDetails?.bloodGroup || selectedDetailStudent.bloodGroup || 'O+'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Gender</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.personalDetails?.gender || selectedDetailStudent.gender || 'Male'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Religion</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.personalDetails?.religion || selectedDetailStudent.religion || 'HINDU'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Caste / Category</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.personalDetails?.caste || selectedDetailStudent.caste || '-'} / {selectedDetailStudent.personalDetails?.schoolCategory || selectedDetailStudent.category || 'GEN'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Nationality</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.personalDetails?.nationality || 'Indian'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Aadhar Card No</span>
+                    <span className="font-mono font-semibold text-gray-900">{selectedDetailStudent.familyDetails?.father?.aadharNumber || selectedDetailStudent.personalDetails?.aadharNo || selectedDetailStudent.aadharCardNo || '-'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Mother Tongue</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.personalDetails?.motherTongue || 'Hindi'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Boarding / Day Scholar</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.personalDetails?.boardingHostel === 'Yes' ? 'Boarding / Hosteller' : 'Day Scholar'}</span>
+                  </div>
+                </div>
+              )}
+
+              {detailModalTab === 'Academic' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Admission Number</span>
+                    <span className="font-mono font-bold text-[#0284c7]">{selectedDetailStudent.academicDetails?.admissionNumber || selectedDetailStudent.admissionNumber || selectedDetailStudent.admNo || '-'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Roll Number</span>
+                    <span className="font-mono font-bold text-gray-900">{selectedDetailStudent.academicDetails?.rollNumber || selectedDetailStudent.rollNo || '-'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Class & Section</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.academicDetails?.class || selectedDetailStudent.className || '-'}-{selectedDetailStudent.academicDetails?.section || selectedDetailStudent.section || 'A'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Board</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.academicDetails?.board || 'CBSE'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">House</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.academicDetails?.house || 'Red'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Date of Admission</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.academicDetails?.dateOfAdmission ? new Date(selectedDetailStudent.academicDetails.dateOfAdmission).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : (selectedDetailStudent.doAd || '-')}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Date of Joining</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.academicDetails?.dateOfJoining ? new Date(selectedDetailStudent.academicDetails.dateOfJoining).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : (selectedDetailStudent.doJ || '-')}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Optional Subject</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.academicDetails?.optionalSubject || selectedDetailStudent.optSub || 'N/A'}</span>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block">Previous School</span>
+                    <span className="font-semibold text-gray-900">{selectedDetailStudent.academicDetails?.previousSchoolName || '-'}</span>
+                  </div>
+                </div>
+              )}
+
+              {detailModalTab === 'Family & Parents' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-sky-50/50 rounded-lg border border-sky-100 space-y-2.5">
+                    <h4 className="font-bold text-sky-900 text-xs border-b border-sky-200 pb-1 uppercase">Father's Information</h4>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div><span className="text-gray-500 text-[10px] block">Name:</span> <strong className="text-gray-900">{selectedDetailStudent.familyDetails?.father?.title || 'Mr.'} {selectedDetailStudent.familyDetails?.father?.firstName || selectedDetailStudent.father || '-'} {selectedDetailStudent.familyDetails?.father?.lastName || ''}</strong></div>
+                      <div><span className="text-gray-500 text-[10px] block">Mobile:</span> <strong className="font-mono text-gray-900">{selectedDetailStudent.familyDetails?.father?.mobile || selectedDetailStudent.contact || '-'}</strong></div>
+                      <div><span className="text-gray-500 text-[10px] block">Email:</span> <strong className="text-gray-900">{selectedDetailStudent.familyDetails?.father?.email || '-'}</strong></div>
+                      <div><span className="text-gray-500 text-[10px] block">Profession:</span> <strong className="text-gray-900">{selectedDetailStudent.familyDetails?.father?.profession || 'Business'}</strong></div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-pink-50/50 rounded-lg border border-pink-100 space-y-2.5">
+                    <h4 className="font-bold text-pink-900 text-xs border-b border-pink-200 pb-1 uppercase">Mother's Information</h4>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div><span className="text-gray-500 text-[10px] block">Name:</span> <strong className="text-gray-900">{selectedDetailStudent.familyDetails?.mother?.title || 'Mrs.'} {selectedDetailStudent.familyDetails?.mother?.firstName || selectedDetailStudent.mother || '-'} {selectedDetailStudent.familyDetails?.mother?.lastName || ''}</strong></div>
+                      <div><span className="text-gray-500 text-[10px] block">Mobile:</span> <strong className="font-mono text-gray-900">{selectedDetailStudent.familyDetails?.mother?.mobile || '-'}</strong></div>
+                      <div><span className="text-gray-500 text-[10px] block">Email:</span> <strong className="text-gray-900">{selectedDetailStudent.familyDetails?.mother?.email || '-'}</strong></div>
+                      <div><span className="text-gray-500 text-[10px] block">Profession:</span> <strong className="text-gray-900">{selectedDetailStudent.familyDetails?.mother?.profession || 'Housewife'}</strong></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {detailModalTab === 'Address & Contact' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
+                    <h4 className="font-bold text-gray-800 text-xs border-b border-gray-200 pb-1">Correspondence Address</h4>
+                    <p className="text-gray-700">{selectedDetailStudent.contactAddress?.currentAddress || selectedDetailStudent.contactDetails?.presentAddress?.addressLine1 || selectedDetailStudent.address || 'Gorakhpur, Uttar Pradesh'}</p>
+                    <div className="pt-2 text-[11px] text-gray-600">
+                      <span>City: <strong>{selectedDetailStudent.contactAddress?.city || 'Gorakhpur'}</strong></span> | <span>State: <strong>{selectedDetailStudent.contactAddress?.state || 'Uttar Pradesh'}</strong></span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
+                    <h4 className="font-bold text-gray-800 text-xs border-b border-gray-200 pb-1">Permanent Address</h4>
+                    <p className="text-gray-700">{selectedDetailStudent.contactAddress?.permanentAddress || selectedDetailStudent.contactDetails?.permanentAddress?.addressLine1 || selectedDetailStudent.address || 'Same as Correspondence'}</p>
+                    <div className="pt-2 text-[11px] text-gray-600">
+                      <span>Contact No: <strong className="font-mono">{selectedDetailStudent.contactAddress?.contactNumber || selectedDetailStudent.contact || '-'}</strong></span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {detailModalTab === 'Transport & Fee' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-amber-50/60 rounded-lg border border-amber-200 space-y-2">
+                    <h4 className="font-bold text-amber-900 text-xs border-b border-amber-200 pb-1 uppercase">Transport Details</h4>
+                    <div className="space-y-1.5 text-xs text-gray-800">
+                      <div>Transport Opted: <strong>{selectedDetailStudent.transportDetails?.isTransportStudent || selectedDetailStudent.transportDetails?.route ? 'YES (School Bus)' : 'NO (Self Transport)'}</strong></div>
+                      <div>Route: <strong>{selectedDetailStudent.transportDetails?.route || 'Route 1 - City'}</strong></div>
+                      <div>Stop Name: <strong>{selectedDetailStudent.transportDetails?.stopName || '-'}</strong></div>
+                      <div>Monthly Transport Fee: <strong className="text-amber-800">₹{selectedDetailStudent.transportDetails?.transportFee || 0}.00</strong></div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-emerald-50/60 rounded-lg border border-emerald-200 space-y-2">
+                    <h4 className="font-bold text-emerald-900 text-xs border-b border-emerald-200 pb-1 uppercase">Fee & Ledger Status</h4>
+                    <div className="space-y-1.5 text-xs text-gray-800">
+                      <div>Fee Category: <strong>Regular</strong></div>
+                      <div>Monthly Tuition: <strong>Class {selectedDetailStudent.academicDetails?.class || selectedDetailStudent.className || '-'} Rate</strong></div>
+                      <div className="pt-2">
+                        <Link 
+                          to="/fee" 
+                          target="_blank"
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded text-xs font-bold inline-flex items-center gap-1 shadow-xs cursor-pointer"
+                        >
+                          💳 Go To Fee Entry
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+              <div className="flex gap-2">
+                {selectedDetailStudent._id && (
+                  <Link
+                    to={`/dashboard/students/profile/${selectedDetailStudent._id}`}
+                    target="_blank"
+                    className="bg-[#0284c7] hover:bg-[#0369a1] text-white px-4 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    <FaEye /> Open Full 360 Profile
+                  </Link>
+                )}
+                {selectedDetailStudent._id && (
+                  <Link
+                    to={`/dashboard/students/edit/${selectedDetailStudent._id}`}
+                    target="_blank"
+                    className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    <FaEdit /> Edit Profile
+                  </Link>
+                )}
+              </div>
+              <button
+                onClick={() => setShowDetailStudentModal(false)}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-1.5 rounded font-bold text-xs cursor-pointer"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

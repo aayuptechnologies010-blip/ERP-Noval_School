@@ -14,24 +14,32 @@ export default function TransportReportClassWise() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/classes`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json()).then(d => setClasses(d)).catch(console.error);
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    fetch(`${API_URL}/api/school-classes`, { headers })
+      .then(r => r.json())
+      .then(d => setClasses(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(console.error);
   }, []);
 
   const handleShow = async () => {
     setLoading(true); setError(null);
     try {
-      const res = await fetch(`${API_URL}/api/students`, { headers: { Authorization: `Bearer ${token}` } });
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await fetch(`${API_URL}/api/students`, { headers });
       const data = await res.json();
       if (res.ok) {
         let students = Array.isArray(data) ? data : (data.students || []);
         if (selectedClass) {
-          const cls = classes.find(c => c._id === selectedClass)?.name;
-          students = students.filter(s => (s.class?.name || s.class) === cls);
+          const selectedObj = classes.find(c => c._id === selectedClass);
+          const clsTarget = (selectedObj?.className || selectedObj?.name || '').toLowerCase();
+          students = students.filter(s => {
+            const sCls = (s.class?.className || s.class?.name || s.class || '').toString().toLowerCase();
+            return sCls === clsTarget || s.class?._id === selectedClass;
+          });
         }
         // Group by class
         const grouped = students.reduce((acc, s) => {
-          const cls = s.class?.name || s.class || 'Unknown';
+          const cls = s.class?.className || s.class?.name || s.class || 'Unknown';
           if (!acc[cls]) acc[cls] = { total: 0, withTransport: 0, selfTransport: 0, noTransport: 0 };
           acc[cls].total += 1;
           if (s.transportAssigned) acc[cls].withTransport += 1;
@@ -50,7 +58,7 @@ export default function TransportReportClassWise() {
         <div><label style={labelStyle}>Class</label>
           <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={inputStyle}>
             <option value="">All Classes</option>
-            {classes.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+            {classes.map(c => <option key={c._id} value={c._id}>{c.className || c.name}</option>)}
           </select></div>
         <button onClick={handleShow} disabled={loading} style={{ background: '#29a9d8', color: '#fff', border: 'none', padding: '8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontWeight: 'bold', marginTop: '10px' }}>
           <Eye size={14} /> {loading ? 'Loading...' : 'Show'}</button>
