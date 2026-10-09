@@ -1,3 +1,4 @@
+import FeeReceiptModal from "../components/fee/FeeReceiptModal";
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import schoolLogo from '../assets/school_logo.png';
@@ -358,6 +359,10 @@ function AdmissionLayout() {
   const [masterReligions, setMasterReligions] = useState(['HINDU', 'MUSLIM', 'CHRISTIAN', 'SIKH', 'JAIN', 'OTHER']);
   const [masterCategories, setMasterCategories] = useState(['GEN', 'OBC', 'SC', 'ST', 'EWS']);
   const [masterHouses, setMasterHouses] = useState(['Red', 'Blue', 'Green', 'Yellow']);
+  const [masterParishes, setMasterParishes] = useState(['Default Parish', 'St. Mary', 'Sacred Heart']);
+  const [masterCastes, setMasterCastes] = useState(['General', 'Yadav', 'Gupta', 'Maurya', 'Singh', 'Other']);
+  const [masterSubCastes, setMasterSubCastes] = useState(['General', 'Other']);
+  const [masterClubs, setMasterClubs] = useState(['Eco Club', 'Science Club', 'Sports Club', 'Arts Club', 'Music Club']);
 
   useEffect(() => {
     // Fetch classes and sections if available from backend
@@ -381,7 +386,15 @@ function AdmissionLayout() {
         if (secRes && secRes.ok) {
           const sData = await secRes.json();
           const list = Array.isArray(sData) ? sData : (sData.data || []);
-          if (list.length > 0) setMasterSections(list.map(s => s.name || s.sectionName || s));
+          if (list.length > 0) {
+            const mapped = list
+              .map(s => s.sectionName || s.name || s)
+              .filter(s => s && typeof s === 'string' && s.length <= 4 && !s.toLowerCase().includes('section'));
+            const combined = Array.from(new Set(['A', 'B', ...mapped])).sort();
+            setMasterSections(combined);
+          } else {
+            setMasterSections(['A', 'B', 'C', 'D']);
+          }
         }
         if (catRes && catRes.ok) {
           const catData = await catRes.json();
@@ -503,7 +516,26 @@ function AdmissionLayout() {
     fatherOffPhone: '', fatherOffMobile: '', fatherOffExt: '', fatherOffEmail: '', fatherOffWeb: '', fatherIncome: '', fatherStatus: '',
     fatherAadhar: '', fatherPan: '', fatherIsAlumni: false, fatherBatchYear: '', fatherIsAlive: true,
     motherTitle: 'Mrs.', motherName: '', motherMiddleName: '', motherLastName: '', motherProfession: '', motherProfDetails: '',
-    motherDesignation: '', motherDesigDetails: '', motherResAddress: '', motherOffAddress: ''
+    motherDesignation: '', motherDesigDetails: '', motherResAddress: '', motherOffAddress: '', motherEmail: '', motherAltEmail: '',
+    motherDob: '', motherMobile: '', motherPhone: '', motherCompany: '', motherBizDetails: '', motherQual: '', motherServiceIn: '',
+    motherOffPhone: '', motherOffMobile: '', motherOffExt: '', motherOffEmail: '', motherOffWeb: '', motherIncome: '', motherAnniversary: '',
+    motherAadhar: '', motherPan: '', motherIsAlumni: false, motherBatchYear: '', motherIsAlive: true,
+    emergName1: '', emergMobile1: '', emergPhone1: '', emergAddress1: '', emergRelation1: '',
+    emergName2: '', emergMobile2: '', emergPhone2: '', emergAddress2: '', emergRelation2: '',
+    staffWard: 'All Staff', staffName: '', staffDesc: '',
+    motherTongue: '', domicileState: '', feesNo: '', stream: '', optionalSubject: '', boardingHostel: 'No',
+    medicalHistory: '', allergies: '', otherMedicalInfo: '', familyDocName: '', familyDocMobile: '', familyDocAddress: '',
+    lastClass: '', admissionRemark: '', foodStatus: '', prevSchoolTcNo: '', disKm: '', statesNatComp: '', isNach: 'No',
+    prevSchoolName1: '', prevSchoolClass1: '', prevSchoolBoard1: '', prevSchoolYear1: '', prevSchoolMarks1: '',
+    prevSchoolName2: '', prevSchoolClass2: '', prevSchoolBoard2: '', prevSchoolYear2: '', prevSchoolMarks2: '',
+    prevSchoolName3: '', prevSchoolClass3: '', prevSchoolBoard3: '', prevSchoolYear3: '', prevSchoolMarks3: '',
+    otherSiblingName1: '', otherSiblingAge1: '', otherSiblingSchool1: '', otherSiblingClass1: '',
+    otherSiblingName2: '', otherSiblingAge2: '', otherSiblingSchool2: '', otherSiblingClass2: '',
+    otherSiblingName3: '', otherSiblingAge3: '', otherSiblingSchool3: '', otherSiblingClass3: '',
+    birthWeight: '', birthHeight: '', bloodPressure: '', eyeVisionLeft: '', eyeVisionRight: '', identificationMark1: '', identificationMark2: '',
+    guardianTitle: 'Mr.', guardianName: '', guardianRelation: '', guardianOccupation: '', guardianIncome: '', guardianMobile: '', guardianEmail: '', guardianAddress: '',
+    secGuardianName: '', secGuardianRelation: '', secGuardianMobile: '',
+    singleParentType: '', singleParentReason: '', custodyOrder: '', legalGuardianName: ''
   });
   const [showStudentRegModal, setShowStudentRegModal] = useState(false);
   const [studentRegList, setStudentRegList] = useState([]);
@@ -745,19 +777,27 @@ function AdmissionLayout() {
     
     try {
       const token = localStorage.getItem('token');
-      // 1. Search in students collection
-      const res = await fetch(`${API_BASE}/api/students`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      // 1. Search in students collection (try with search query parameter or fetch all)
+      const res = await fetch(`${API_BASE}/api/students?search=${encodeURIComponent(query)}`, { headers });
       if (res.ok) {
         const raw = await res.json();
-        const list = Array.isArray(raw) ? raw : (raw.data || []);
+        let list = Array.isArray(raw) ? raw : (raw.data || []);
+        
+        // If query param returned empty, fallback to local list or fetch all students
+        if (list.length === 0 && updateStudentList && updateStudentList.length > 0) {
+          list = updateStudentList;
+        }
+        
         const found = list.find(s => {
           const adm = (s.academicDetails?.admissionNumber || s.admissionNumber || s.admNo || '').toString().toLowerCase();
           const fname = (s.personalDetails?.firstName || s.firstName || '').toLowerCase();
+          const mname = (s.personalDetails?.middleName || s.middleName || '').toLowerCase();
           const lname = (s.personalDetails?.lastName || s.lastName || '').toLowerCase();
-          const fullname = `${fname} ${lname}`.trim();
-          return adm === query || fname === query || lname === query || fullname.includes(query);
+          const fullname = `${fname} ${mname} ${lname}`.replace(/\s+/g, ' ').trim();
+          const roll = (s.academicDetails?.rollNumber || s.rollNumber || '').toString().toLowerCase();
+          const aadharName = (s.personalDetails?.nameAsPerAadhar || '').toLowerCase();
+          return adm === query || adm.includes(query) || fname.includes(query) || lname.includes(query) || fullname.includes(query) || roll === query || aadharName.includes(query);
         });
 
         if (found) {
@@ -767,6 +807,9 @@ function AdmissionLayout() {
           const f = (found.familyDetails && found.familyDetails.father) || {};
           const m = (found.familyDetails && found.familyDetails.mother) || {};
 
+          const u = found.uniqueIds || {};
+          const g = found.guardianDetails || {};
+          const em = found.emergencyContacts || [];
           setStudentRegData(prev => ({
             ...prev,
             admNo: a.admissionNumber || found.admissionNumber || found.admNo || prev.admNo,
@@ -781,21 +824,145 @@ function AdmissionLayout() {
             board: a.board || 'CBSE',
             rollNo: a.rollNumber || found.rollNumber || '',
             studentStatus: a.currentStatus || 'STUDYING',
+            reason: a.reason || '',
+            house: p.houseNames || '',
+            classificationName: p.boardingHostel || 'Regular',
+            isOnlyChild: !!p.isOnlyChild,
+            isNew: a.admissionStatus === 'New' || !a.admissionStatus ? 'Yes' : 'No',
             mobile: c.contactNumber || f.mobile || found.mobile || '',
             email: c.studentEmail || '',
             dob: p.dateOfBirth ? p.dateOfBirth.substring(0, 10) : '',
             doa: a.dateOfAdmission ? a.dateOfAdmission.substring(0, 10) : '',
             doj: a.dateOfJoining ? a.dateOfJoining.substring(0, 10) : '',
+            admittedClass: a.previousClass || a.class || '',
+            placeOfBirth: p.placeOfBirth || '',
+            reasonOfCorrectionDob: '',
+            contactPersonName: g.name || (f.firstName ? `${f.firstName} ${f.lastName || ''}`.trim() : ''),
+            contactPersonEmail: g.email || f.email || '',
+            contactPersonMobile: g.mobile || f.mobile || '',
+            secondaryContactNo: c.secondaryContactNo || '',
+            familyId: f.familyId || found.familyDetails?.familyId || '',
+            udiseNo: u.udiseNumber || '',
+            apaarId: u.apaarId || '',
+            penNo: u.pen || '',
+            srnNo: u.srnNumber || '',
+            sibling: 'No',
             corrHNoAndStreets: c.currentAddress || '',
             corrCity: c.city || '',
             corrState: c.state || '',
             corrPinCode: c.pinCode || '',
-            fatherName: f.firstName ? `${f.firstName} ${f.lastName || ''}`.trim() : (found.fatherName || ''),
-            fatherMobile: f.mobile || '',
+            permHNoAndStreets: c.permanentAddress || c.currentAddress || '',
+            permCity: c.permanentCity || c.city || '',
+            permState: c.permanentState || c.state || '',
+            permPinCode: c.permanentPinCode || c.pinCode || '',
+            nationality: p.nationality || 'Indian',
+            religion: p.religion || '',
+            parish: p.parish || '',
+            caste: p.caste || '',
+            subCaste: p.subCaste || '',
+            category: p.schoolCategory || '',
+            isDisability: !!p.isDisabilityCwsn,
+            transport: found.transportAssigned ? (found.transportRoute || 'Route 10') : 'N A',
+            aadharCardNo: p.aadharNumber || '',
+            isEws: p.isEwsCwsn === 'YES' ? 'Yes' : 'No',
+            isMinority: !!p.isMinority,
+            selectClub: p.clubs || '',
+            rfidCardNo: u.rfidCardNumber || '',
+            cadetType: p.cadetType || '',
+            ePunjabNo: u.ePunjabNumber || '',
+            abhaNo: u.abhaNumber || '',
+            isRte: p.isRte === 'Yes',
+            // Father
+            fatherTitle: f.title || 'Mr.',
+            fatherName: f.firstName || '',
+            fatherMiddleName: f.middleName || '',
+            fatherLastName: f.lastName || '',
+            fatherProfession: f.profession || '',
+            fatherProfDetails: f.professionDetails || '',
+            fatherDesignation: f.designation || '',
+            fatherDesigDetails: f.designationDetails || '',
+            fatherResAddress: f.residenceAddress || '',
+            fatherOffAddress: f.officeAddress || '',
             fatherEmail: f.email || '',
-            motherName: m.firstName ? `${m.firstName} ${m.lastName || ''}`.trim() : (found.motherName || ''),
+            fatherAltEmail: '',
+            fatherDob: f.dob ? f.dob.substring(0, 10) : '',
+            fatherMobile: f.mobile || '',
+            fatherPhone: f.phone || '',
+            fatherCompany: f.companyName || '',
+            fatherBizDetails: f.businessDetails || '',
+            fatherQual: f.qualification || '',
+            fatherServiceIn: f.serviceIn || '',
+            fatherOffPhone: f.officePhone || '',
+            fatherOffMobile: f.officeMobile || '',
+            fatherOffExt: f.officeExtension || '',
+            fatherOffEmail: f.officeEmail || '',
+            fatherOffWeb: f.officeWebsite || '',
+            fatherIncome: f.annualIncome || '',
+            fatherStatus: found.familyDetails?.parentStatus || 'Normal',
+            fatherAadhar: f.aadharNumber || '',
+            fatherPan: f.panNumber || '',
+            fatherIsAlumni: f.isAlumni === 'Yes',
+            fatherBatchYear: f.batchYear || '',
+            fatherIsAlive: true,
+            // Mother
+            motherTitle: m.title || 'Mrs.',
+            motherName: m.firstName || '',
+            motherMiddleName: m.middleName || '',
+            motherLastName: m.lastName || '',
+            motherProfession: m.profession || '',
+            motherProfDetails: m.professionDetails || '',
+            motherDesignation: m.designation || '',
+            motherDesigDetails: m.designationDetails || '',
+            motherResAddress: m.residenceAddress || '',
+            motherOffAddress: m.officeAddress || '',
+            motherEmail: m.email || '',
+            motherAltEmail: '',
+            motherDob: m.dob ? m.dob.substring(0, 10) : '',
             motherMobile: m.mobile || '',
-            motherEmail: m.email || ''
+            motherPhone: m.phone || '',
+            motherCompany: m.companyName || '',
+            motherBizDetails: m.businessDetails || '',
+            motherQual: m.qualification || '',
+            motherServiceIn: m.serviceIn || '',
+            motherOffPhone: m.officePhone || '',
+            motherOffMobile: m.officeMobile || '',
+            motherOffExt: m.officeExtension || '',
+            motherOffEmail: m.officeEmail || '',
+            motherOffWeb: m.officeWebsite || '',
+            motherIncome: m.annualIncome || '',
+            motherAnniversary: m.anniversaryDate ? m.anniversaryDate.substring(0, 10) : '',
+            motherAadhar: m.aadharNumber || '',
+            motherPan: m.panNumber || '',
+            motherIsAlumni: m.isAlumni === 'Yes',
+            motherBatchYear: m.batchYear || '',
+            motherIsAlive: true,
+            // Emergency Contact
+            emergName1: em[0]?.name || (g.name || ''),
+            emergMobile1: em[0]?.mobile || (g.mobile || ''),
+            emergPhone1: em[0]?.phone || '',
+            emergAddress1: em[0]?.address || (g.residenceAddress || ''),
+            emergRelation1: em[0]?.relation || (g.relationship || ''),
+            // Other details
+            motherTongue: p.motherTongue || 'Hindi',
+            domicileState: c.domicileState || 'UP',
+            feesNo: u.feesNumber || '',
+            stream: a.stream || '',
+            optionalSubject: a.optionalSubject || '',
+            boardingHostel: p.boardingHostel || 'No',
+            foodStatus: p.foodStatus || '',
+            isNach: p.isNachEcs ? 'Yes' : 'No',
+            // Guardian
+            guardianTitle: g.title || 'Mr.',
+            guardianName: g.name || '',
+            guardianRelation: g.relationship || 'Guardian',
+            guardianOccupation: g.profession || '',
+            guardianIncome: g.income || '',
+            guardianMobile: g.mobile || '',
+            guardianEmail: g.email || '',
+            guardianAddress: g.residenceAddress || '',
+            secGuardianName: g.secondaryGuardianName || '',
+            secGuardianRelation: g.secondaryGuardianRelationship || '',
+            secGuardianMobile: g.secondaryGuardianMobile || ''
           }));
           alert("Student Details Loaded Successfully!");
           return;
@@ -2568,12 +2735,22 @@ function AdmissionLayout() {
 
   const handleSearchDetailStudent = (query) => {
     const q = (query !== undefined ? query : detailSearchQuery).toLowerCase().trim();
+    if (!q) {
+      if (updateStudentList && updateStudentList.length > 0) {
+        setActiveDetailStudent(updateStudentList[0]);
+      }
+      return;
+    }
     if (!updateStudentList || updateStudentList.length === 0) return;
     const found = updateStudentList.find(s => {
-      const name = `${s.personalDetails?.firstName || ''} ${s.personalDetails?.lastName || ''}`.toLowerCase();
-      const adm = (s.academicDetails?.admissionNumber || s.admissionNo || '').toLowerCase();
-      return name.includes(q) || adm.includes(q);
-    }) || updateStudentList[0];
+      const fname = (s.personalDetails?.firstName || s.firstName || '').toLowerCase();
+      const mname = (s.personalDetails?.middleName || s.middleName || '').toLowerCase();
+      const lname = (s.personalDetails?.lastName || s.lastName || '').toLowerCase();
+      const fullname = `${fname} ${mname} ${lname}`.replace(/\s+/g, ' ').trim();
+      const adm = (s.academicDetails?.admissionNumber || s.admissionNumber || s.admNo || '').toString().toLowerCase();
+      const roll = (s.academicDetails?.rollNumber || s.rollNumber || '').toString().toLowerCase();
+      return fullname.includes(q) || fname.includes(q) || lname.includes(q) || adm.includes(q) || roll === q;
+    });
     if (found) {
       setActiveDetailStudent(found);
       if (found.bankDetails) {
@@ -3027,6 +3204,7 @@ function AdmissionLayout() {
   const [admFeeSession, setAdmFeeSession] = useState('Select Session');
   const [admFeeClass, setAdmFeeClass] = useState('Select Class');
   const [admFeeStudentSearch, setAdmFeeStudentSearch] = useState('');
+  const [admissionFeePrintReceipt, setAdmissionFeePrintReceipt] = useState(null);
   const [admFeeApplicant, setAdmFeeApplicant] = useState({
     regno: 'REG-2026-0842',
     name: 'ARNAV GUPTA',
@@ -3368,15 +3546,59 @@ function AdmissionLayout() {
 
   // 14. Student Details & Student Details New States (Screenshots 4 & 5)
   const [repSchool, setRepSchool] = useState('NAVALS NATIONAL ACADEMY');
-  const [repClass, setRepClass] = useState('All (51)');
-  const [repGender, setRepGender] = useState('All (2)');
-  const [repReligion, setRepReligion] = useState('All (10)');
-  const [repCategory, setRepCategory] = useState('All (5)');
+  const [repClass, setRepClass] = useState('All');
+  const [repSection, setRepSection] = useState('All');
+  const [repGender, setRepGender] = useState('All');
+  const [repReligion, setRepReligion] = useState('All');
+  const [repCategory, setRepCategory] = useState('All');
   const [repFilterOpen, setRepFilterOpen] = useState(true);
   const [repNotification, setRepNotification] = useState('');
   const [repShowStudentDetails, setRepShowStudentDetails] = useState(false);
   const [repShowStudentDetailsNew, setRepShowStudentDetailsNew] = useState(false);
   const [repStudentList, setRepStudentList] = useState([]);
+
+  // Filtered student list for Student Details & Student Details New tabs
+  const filteredRepStudentList = repStudentList.filter(st => {
+    // 1. Class filter
+    if (repClass && repClass !== 'All' && !repClass.startsWith('All')) {
+      const targetClass = repClass.trim().toLowerCase();
+      const stClass = (st.className || '').trim().toLowerCase();
+      const fullClass = (st.class || '').trim().toLowerCase();
+      // Match either "1", "NUR", or "NUR-A" / "NUR A"
+      const matchExact = stClass === targetClass || fullClass === targetClass || fullClass.startsWith(targetClass + '-') || fullClass.startsWith(targetClass + ' ');
+      // Also handle Roman numerals vs standard (I vs 1, II vs 2, etc.)
+      const romanMap = { 'i': '1', 'ii': '2', 'iii': '3', 'iv': '4', 'v': '5', 'vi': '6', 'vii': '7', 'viii': '8', 'ix': '9', 'x': '10', 'xi': '11', 'xii': '12' };
+      const targetMapped = romanMap[targetClass] || targetClass;
+      const stMapped = romanMap[stClass] || stClass;
+      if (!matchExact && stMapped !== targetMapped) return false;
+    }
+    // 2. Section filter
+    if (repSection && repSection !== 'All' && !repSection.startsWith('All')) {
+      const targetSec = repSection.trim().toUpperCase();
+      const stSec = (st.section || '').trim().toUpperCase();
+      if (stSec !== targetSec) return false;
+    }
+    // 3. Gender filter
+    if (repGender && repGender !== 'All' && !repGender.startsWith('All')) {
+      const targetGender = repGender.trim().toLowerCase();
+      const stGender = (st.gender || '').trim().toLowerCase();
+      if (stGender !== targetGender) return false;
+    }
+    // 4. Religion filter
+    if (repReligion && repReligion !== 'All' && !repReligion.startsWith('All')) {
+      const targetRel = repReligion.trim().toLowerCase();
+      const stRel = (st.religion || '').trim().toLowerCase();
+      if (stRel !== targetRel) return false;
+    }
+    // 5. Category filter
+    if (repCategory && repCategory !== 'All' && !repCategory.startsWith('All')) {
+      const targetCat = repCategory.trim().toLowerCase();
+      const stCat = (st.category || '').trim().toLowerCase();
+      if (stCat !== targetCat) return false;
+    }
+    return true;
+  });
+
 
   // 15. Student Data Capture Report (U-DISE format) States & Dataset
   const [sdcClass, setSdcClass] = useState('All Classes');
@@ -5204,10 +5426,37 @@ function AdmissionLayout() {
   const [relateClassSelection, setRelateClassSelection] = useState("NUR");
   const [relateClassSections, setRelateClassSections] = useState({
     "NUR": ["A", "B"],
+    "LKG": ["A", "B"],
+    "UKG": ["A", "B"],
+    "1": ["A", "B"],
+    "2": ["A", "B"],
+    "3": ["A", "B"],
+    "4": ["A", "B"],
+    "5": ["A", "B"],
+    "6": ["A", "B"],
+    "7": ["A", "B"],
+    "8": ["A", "B"],
+    "9": ["A", "B"],
+    "10": ["A", "B", "C"],
+    "11": ["A", "B"],
+    "12": ["A", "B", "C"],
+    "NURSERY": ["A", "B"],
+    "CLASS - I": ["A", "B"],
+    "CLASS - II": ["A", "B"],
+    "CLASS - III": ["A", "B"],
+    "CLASS - IV": ["A", "B"],
+    "CLASS - V": ["A", "B"],
+    "CLASS - VI": ["A", "B"],
+    "CLASS - VII": ["A", "B"],
+    "CLASS - VIII": ["A", "B"],
+    "CLASS - IX": ["A", "B"],
+    "CLASS - X": ["A", "B"],
+    "CLASS - XI": ["A", "B"],
+    "CLASS - XII": ["A", "B"]
   });
 
   const handleToggleRelateClassSection = (sectionName) => {
-    const currentSections = relateClassSections[relateClassSelection] || [];
+    const currentSections = relateClassSections[relateClassSelection] || ['A', 'B'];
     if (currentSections.includes(sectionName)) {
       setRelateClassSections({
         ...relateClassSections,
@@ -8111,88 +8360,93 @@ function AdmissionLayout() {
                         <div className="px-6 grid grid-cols-7 gap-4 mb-6">
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">DOB <span className="text-red-500">*</span></label>
-                             <input type="text" defaultValue="31-Aug-20" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="date" name="dob" value={studentRegData.dob} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">DOA <span className="text-red-500">*</span></label>
-                             <input type="text" defaultValue="31-Aug-20" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="date" name="doa" value={studentRegData.doa} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">DOJ</label>
-                             <input type="text" defaultValue="31-Aug-20" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="date" name="doj" value={studentRegData.doj} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Admitted Class</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                               <option>Select Class</option>
+                             <select name="admittedClass" value={studentRegData.admittedClass} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                               <option value="">Select Class</option>
+                               {masterClasses.map((cls, i) => (
+                                 <option key={i} value={cls}>{cls}</option>
+                               ))}
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Mobile</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="mobile" value={studentRegData.mobile} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Gender</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                               <option>Male</option>
+                             <select name="gender" value={studentRegData.gender} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                               <option value="Male">Male</option>
+                               <option value="Female">Female</option>
+                               <option value="Other">Other</option>
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Place Of Birth</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="placeOfBirth" value={studentRegData.placeOfBirth} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Reason of correction DOB</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="reasonOfCorrectionDob" value={studentRegData.reasonOfCorrectionDob} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Email</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="email" name="email" value={studentRegData.email} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Contact Person Name</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="contactPersonName" value={studentRegData.contactPersonName} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Contact Person Email</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="email" name="contactPersonEmail" value={studentRegData.contactPersonEmail} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Contact Person Mobile</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="contactPersonMobile" value={studentRegData.contactPersonMobile} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Secondary Contact No</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="secondaryContactNo" value={studentRegData.secondaryContactNo} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full"></div>
 
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Family ID</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="familyId" value={studentRegData.familyId} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">UDISE No.</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="udiseNo" value={studentRegData.udiseNo} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">APAAR ID</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="apaarId" value={studentRegData.apaarId} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">PEN-Permanent Education No.</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="penNo" value={studentRegData.penNo} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">S.R.N./UMRN/SATS No.</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="srnNo" value={studentRegData.srnNo} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full items-center">
                              <label className="text-sm font-bold text-gray-700 text-center">Sibling</label>
                              <div className="flex items-center gap-2 mt-1">
-                               <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="stud_sibling" className="accent-[#32a3d7] w-4 h-4"/> Yes</label>
-                               <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="stud_sibling" defaultChecked className="accent-[#32a3d7] w-4 h-4"/> No</label>
+                               <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="sibling" value="Yes" checked={studentRegData.sibling === 'Yes'} onChange={handleStudentRegChange} className="accent-[#32a3d7] w-4 h-4"/> Yes</label>
+                               <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="sibling" value="No" checked={studentRegData.sibling === 'No'} onChange={handleStudentRegChange} className="accent-[#32a3d7] w-4 h-4"/> No</label>
                              </div>
                            </div>
                         </div>
@@ -8206,19 +8460,19 @@ function AdmissionLayout() {
                            </div>
                            <div className="flex flex-col gap-1 w-full col-span-2">
                              <label className="text-sm font-bold text-gray-700">H.No and Streets <span className="text-red-500">*</span></label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="corrHNoAndStreets" value={studentRegData.corrHNoAndStreets} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full col-span-2">
                              <label className="text-sm font-bold text-gray-700">City</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="corrCity" value={studentRegData.corrCity} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">State</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="corrState" value={studentRegData.corrState} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Pin Code</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="corrPinCode" value={studentRegData.corrPinCode} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
 
                            <div className="col-span-1 flex items-center">
@@ -8227,21 +8481,38 @@ function AdmissionLayout() {
                            <div className="flex flex-col gap-1 w-full col-span-2">
                              <div className="flex justify-between items-center">
                                <label className="text-sm font-bold text-gray-700">H.No and Streets</label>
-                               <label className="flex items-center gap-1 text-xs text-gray-500"><input type="checkbox" className="accent-[#32a3d7]"/> Same as Correspondence</label>
+                               <label className="flex items-center gap-1 text-xs text-gray-500">
+                                 <input 
+                                   type="checkbox" 
+                                   checked={studentRegData.sameAsCorrespondence} 
+                                   onChange={(e) => {
+                                     const checked = e.target.checked;
+                                     setStudentRegData(prev => ({
+                                       ...prev,
+                                       sameAsCorrespondence: checked,
+                                       permHNoAndStreets: checked ? prev.corrHNoAndStreets : prev.permHNoAndStreets,
+                                       permCity: checked ? prev.corrCity : prev.permCity,
+                                       permState: checked ? prev.corrState : prev.permState,
+                                       permPinCode: checked ? prev.corrPinCode : prev.permPinCode
+                                     }));
+                                   }} 
+                                   className="accent-[#32a3d7]"
+                                 /> Same as Correspondence
+                               </label>
                              </div>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="permHNoAndStreets" value={studentRegData.permHNoAndStreets} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full col-span-2">
                              <label className="text-sm font-bold text-gray-700">City</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="permCity" value={studentRegData.permCity} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">State</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="permState" value={studentRegData.permState} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Pin Code</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="permPinCode" value={studentRegData.permPinCode} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                         </div>
 
@@ -8251,38 +8522,44 @@ function AdmissionLayout() {
                         <div className="px-6 grid grid-cols-7 gap-4 mb-6">
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Nationality</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                               <option>Indian</option>
+                             <select name="nationality" value={studentRegData.nationality} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                               <option value="Indian">Indian</option>
+                               <option value="Other">Other</option>
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Religion</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                               <option>Select Religion</option>
+                             <select name="religion" value={studentRegData.religion} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                               <option value="">Select Religion</option>
+                               {masterReligions.map((r, i) => <option key={i} value={r}>{r}</option>)}
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Parish</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                               <option>Select Parish</option>
+                             <select name="parish" value={studentRegData.parish} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                               <option value="">Select Parish</option>
+                               {masterParishes.map((p, i) => <option key={i} value={p}>{p}</option>)}
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Caste</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                               <option>Select Caste</option>
+                             <select name="caste" value={studentRegData.caste} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                               <option value="">Select Caste</option>
+                               {masterCastes.map((c, i) => <option key={i} value={c}>{c}</option>)}
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Sub Caste</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                               <option>Select Sub Caste</option>
+                             <select name="subCaste" value={studentRegData.subCaste} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                               <option value="">Select Sub Caste</option>
+                               {masterSubCastes.map((sc, i) => <option key={i} value={sc}>{sc}</option>)}
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Category</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                               <option>Select Category</option>
+                             <select name="category" value={studentRegData.category} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                               <option value="">Select Category</option>
+                               {masterCategories.map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full"></div>
@@ -8290,60 +8567,67 @@ function AdmissionLayout() {
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Dis. Desc.</label>
                              <div className="flex items-center gap-2">
-                               <input type="checkbox" className="accent-[#32a3d7] w-4 h-4"/>
+                               <input type="checkbox" name="isDisability" checked={studentRegData.isDisability} onChange={handleStudentRegChange} className="accent-[#32a3d7] w-4 h-4"/>
                                <span className="text-xs text-gray-500">Is Disability/CWSN</span>
                              </div>
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Transport</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                               <option>N A</option>
+                             <select name="transport" value={studentRegData.transport} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                               <option value="N A">N A</option>
+                               <option value="Route 10">Route 10</option>
+                               <option value="School Bus">School Bus</option>
+                               <option value="Van">Van</option>
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Aadhar Card No</label>
-                             <input type="text" placeholder="1234-5678-9012" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="aadharCardNo" placeholder="1234-5678-9012" value={studentRegData.aadharCardNo} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full items-center">
                              <label className="text-sm font-bold text-gray-700 text-center">Is EWS/CWSN</label>
                              <div className="flex items-center gap-2 mt-1">
-                               <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="stud_ews" className="accent-[#32a3d7] w-4 h-4"/> Yes</label>
-                               <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="stud_ews" defaultChecked className="accent-[#32a3d7] w-4 h-4"/> No</label>
+                               <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="isEws" value="Yes" checked={studentRegData.isEws === 'Yes'} onChange={handleStudentRegChange} className="accent-[#32a3d7] w-4 h-4"/> Yes</label>
+                               <label className="flex items-center gap-1 text-sm text-gray-700"><input type="radio" name="isEws" value="No" checked={studentRegData.isEws === 'No'} onChange={handleStudentRegChange} className="accent-[#32a3d7] w-4 h-4"/> No</label>
                              </div>
                            </div>
                            <div className="flex flex-col gap-1 w-full justify-end pb-1">
-                             <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" className="accent-[#32a3d7] w-4 h-4"/> Is Minority</label>
+                             <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" name="isMinority" checked={studentRegData.isMinority} onChange={handleStudentRegChange} className="accent-[#32a3d7] w-4 h-4"/> Is Minority</label>
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Select Club</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                               <option>Select Club</option>
+                             <select name="selectClub" value={studentRegData.selectClub} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                               <option value="">Select Club</option>
+                               {masterClubs.map((club, i) => <option key={i} value={club}>{club}</option>)}
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full justify-end pb-1">
-                             <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" className="accent-[#32a3d7] w-4 h-4"/> Is Keralite</label>
+                             <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" name="isKeralite" checked={studentRegData.isKeralite} onChange={handleStudentRegChange} className="accent-[#32a3d7] w-4 h-4"/> Is Keralite</label>
                            </div>
 
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">RFID Card No.</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="rfidCardNo" value={studentRegData.rfidCardNo} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full">
                              <label className="text-sm font-bold text-gray-700">Select Cadet Type</label>
-                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                               <option>Select</option>
+                             <select name="cadetType" value={studentRegData.cadetType} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                               <option value="">Select</option>
+                               <option value="0">None</option>
+                               <option value="NCC">NCC</option>
+                               <option value="Scouts">Scouts</option>
                              </select>
                            </div>
                            <div className="flex flex-col gap-1 w-full col-span-2">
                              <label className="text-sm font-bold text-gray-700">E-Punjab No./Samagra ID</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="ePunjabNo" value={studentRegData.ePunjabNo} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full col-span-2">
                              <label className="text-sm font-bold text-gray-700">ABHA No.</label>
-                             <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                             <input type="text" name="abhaNo" value={studentRegData.abhaNo} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                            </div>
                            <div className="flex flex-col gap-1 w-full justify-end pb-1">
-                             <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" className="accent-[#32a3d7] w-4 h-4"/> Is RTE</label>
+                             <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" name="isRte" checked={studentRegData.isRte} onChange={handleStudentRegChange} className="accent-[#32a3d7] w-4 h-4"/> Is RTE</label>
                            </div>
                         </div>
 
@@ -8365,140 +8649,140 @@ function AdmissionLayout() {
                            <div className="flex-1 grid grid-cols-4 gap-4">
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Father's Title</label>
-                                <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                  <option>Mr.</option>
+                                <select name="fatherTitle" value={studentRegData.fatherTitle} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                  <option value="Mr.">Mr.</option>
+                                  <option value="Dr.">Dr.</option>
+                                  <option value="Prof.">Prof.</option>
                                 </select>
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Father's Name</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherName" value={studentRegData.fatherName} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Middle Name</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherMiddleName" value={studentRegData.fatherMiddleName} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Last Name</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherLastName" value={studentRegData.fatherLastName} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
 
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Profession</label>
-                                <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                  <option>Select Profession</option>
-                                </select>
+                                <input type="text" name="fatherProfession" value={studentRegData.fatherProfession} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Profession Details</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherProfDetails" value={studentRegData.fatherProfDetails} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Designation</label>
-                                <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                  <option>Select Designation</option>
-                                </select>
+                                <input type="text" name="fatherDesignation" value={studentRegData.fatherDesignation} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Designation Details</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherDesigDetails" value={studentRegData.fatherDesigDetails} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
 
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Residence Address</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherResAddress" value={studentRegData.fatherResAddress} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Office Address</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherOffAddress" value={studentRegData.fatherOffAddress} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Email</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="email" name="fatherEmail" value={studentRegData.fatherEmail} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Alternate Email</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="email" name="fatherAltEmail" value={studentRegData.fatherAltEmail} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
 
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">DOB</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="date" name="fatherDob" value={studentRegData.fatherDob} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Mobile</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherMobile" value={studentRegData.fatherMobile} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Phone</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherPhone" value={studentRegData.fatherPhone} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Company Name</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherCompany" value={studentRegData.fatherCompany} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
 
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Business Details</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherBizDetails" value={studentRegData.fatherBizDetails} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Qualification</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherQual" value={studentRegData.fatherQual} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Service In</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherServiceIn" value={studentRegData.fatherServiceIn} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Office Phone</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherOffPhone" value={studentRegData.fatherOffPhone} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
 
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Office Mobile</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherOffMobile" value={studentRegData.fatherOffMobile} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Office Extension</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherOffExt" value={studentRegData.fatherOffExt} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Office Email</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="email" name="fatherOffEmail" value={studentRegData.fatherOffEmail} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Office Website</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherOffWeb" value={studentRegData.fatherOffWeb} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Annual Income</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherIncome" value={studentRegData.fatherIncome} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Parent Status</label>
-                                <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                  <option>Select Parent Sta</option>
+                                <select name="fatherStatus" value={studentRegData.fatherStatus} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                  <option value="Normal">Normal</option>
+                                  <option value="Single Parent">Single Parent</option>
+                                  <option value="Guardian">Guardian</option>
                                 </select>
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Aadhar No.</label>
-                                <input type="text" placeholder="1234-5678-9012" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherAadhar" placeholder="1234-5678-9012" value={studentRegData.fatherAadhar} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Pan No.</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherPan" value={studentRegData.fatherPan} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               
                               <div className="flex flex-col gap-1 w-full justify-end pb-1">
-                                <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" className="accent-[#32a3d7] w-4 h-4"/> Is Alumni</label>
+                                <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" name="fatherIsAlumni" checked={studentRegData.fatherIsAlumni} onChange={handleStudentRegChange} className="accent-[#32a3d7] w-4 h-4"/> Is Alumni</label>
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Batch Year</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="fatherBatchYear" value={studentRegData.fatherBatchYear} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full justify-end pb-1">
-                                <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" defaultChecked className="accent-[#32a3d7] w-4 h-4"/> Is alive</label>
+                                <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" name="fatherIsAlive" checked={studentRegData.fatherIsAlive} onChange={handleStudentRegChange} className="accent-[#32a3d7] w-4 h-4"/> Is alive</label>
                               </div>
                            </div>
                         </div>
@@ -8516,138 +8800,136 @@ function AdmissionLayout() {
                            <div className="flex-1 grid grid-cols-4 gap-4">
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Mother's Title</label>
-                                <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                  <option>Mrs.</option>
+                                <select name="motherTitle" value={studentRegData.motherTitle} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
+                                  <option value="Mrs.">Mrs.</option>
+                                  <option value="Dr.">Dr.</option>
+                                  <option value="Ms.">Ms.</option>
                                 </select>
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Mother's Name</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherName" value={studentRegData.motherName} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Middle Name</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherMiddleName" value={studentRegData.motherMiddleName} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Last Name</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherLastName" value={studentRegData.motherLastName} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
 
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Profession</label>
-                                <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                  <option>Select Profession</option>
-                                </select>
+                                <input type="text" name="motherProfession" value={studentRegData.motherProfession} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Profession Details</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherProfDetails" value={studentRegData.motherProfDetails} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Designation</label>
-                                <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm">
-                                  <option>Select Designation</option>
-                                </select>
+                                <input type="text" name="motherDesignation" value={studentRegData.motherDesignation} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Designation Details</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherDesigDetails" value={studentRegData.motherDesigDetails} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
 
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Residence Address</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherResAddress" value={studentRegData.motherResAddress} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Office Address</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherOffAddress" value={studentRegData.motherOffAddress} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Email</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="email" name="motherEmail" value={studentRegData.motherEmail} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Alternate Email</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="email" name="motherAltEmail" value={studentRegData.motherAltEmail} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
 
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">DOB</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="date" name="motherDob" value={studentRegData.motherDob} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Mobile</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherMobile" value={studentRegData.motherMobile} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Phone</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherPhone" value={studentRegData.motherPhone} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Company Name</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherCompany" value={studentRegData.motherCompany} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
 
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Business Details</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherBizDetails" value={studentRegData.motherBizDetails} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Qualification</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherQual" value={studentRegData.motherQual} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Service In</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherServiceIn" value={studentRegData.motherServiceIn} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Office Phone</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherOffPhone" value={studentRegData.motherOffPhone} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
 
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Office Mobile</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherOffMobile" value={studentRegData.motherOffMobile} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Office Extension</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherOffExt" value={studentRegData.motherOffExt} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Office Email</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="email" name="motherOffEmail" value={studentRegData.motherOffEmail} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Office Website</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherOffWeb" value={studentRegData.motherOffWeb} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Annual Income</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherIncome" value={studentRegData.motherIncome} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Anniversary Date</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="date" name="motherAnniversary" value={studentRegData.motherAnniversary} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Aadhar No.</label>
-                                <input type="text" placeholder="1234-5678-9012" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherAadhar" placeholder="1234-5678-9012" value={studentRegData.motherAadhar} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Pan No.</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherPan" value={studentRegData.motherPan} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               
                               <div className="flex flex-col gap-1 w-full justify-end pb-1">
-                                <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" className="accent-[#32a3d7] w-4 h-4"/> Is Alumni</label>
+                                <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" name="motherIsAlumni" checked={studentRegData.motherIsAlumni} onChange={handleStudentRegChange} className="accent-[#32a3d7] w-4 h-4"/> Is Alumni</label>
                               </div>
                               <div className="flex flex-col gap-1 w-full">
                                 <label className="text-sm font-bold text-gray-700">Batch Year</label>
-                                <input type="text" className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
+                                <input type="text" name="motherBatchYear" value={studentRegData.motherBatchYear} onChange={handleStudentRegChange} className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] w-full text-sm" />
                               </div>
                               <div className="flex flex-col gap-1 w-full justify-end pb-1">
-                                <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" defaultChecked className="accent-[#32a3d7] w-4 h-4"/> Is alive</label>
+                                <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" name="motherIsAlive" checked={studentRegData.motherIsAlive} onChange={handleStudentRegChange} className="accent-[#32a3d7] w-4 h-4"/> Is alive</label>
                               </div>
                            </div>
                         </div>
@@ -9697,8 +9979,15 @@ function AdmissionLayout() {
                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] text-sm bg-white">
                               <option>All Section</option>
                             </select>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 flex-1 text-sm outline-none focus:border-[#32a3d7]" />
-                            <button onClick={() => handleSearchDetailStudent()} className="bg-[#32a3d7] text-white px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2">
+                            <input 
+                              type="text" 
+                              placeholder="Search by student name or adm no..."
+                              value={detailSearchQuery}
+                              onChange={(e) => setDetailSearchQuery(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleSearchDetailStudent()}
+                              className="border border-gray-300 rounded px-3 py-1.5 flex-1 text-sm outline-none focus:border-[#32a3d7] bg-white" 
+                            />
+                            <button onClick={() => handleSearchDetailStudent()} className="bg-[#32a3d7] text-white px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#288ec0] cursor-pointer">
                               <FaSearch /> Search
                             </button>
                           </div>
@@ -9756,8 +10045,15 @@ function AdmissionLayout() {
                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] text-sm bg-white w-48">
                               <option>Select Section</option>
                             </select>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 flex-1 text-sm outline-none focus:border-[#32a3d7]" />
-                            <button onClick={() => handleSearchDetailStudent()} className="bg-white border border-[#32a3d7] text-[#32a3d7] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#32a3d7] hover:text-white transition-colors">
+                            <input 
+                              type="text" 
+                              placeholder="Search by student name or adm no..."
+                              value={detailSearchQuery}
+                              onChange={(e) => setDetailSearchQuery(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleSearchDetailStudent()}
+                              className="border border-gray-300 rounded px-3 py-1.5 flex-1 text-sm outline-none focus:border-[#32a3d7] bg-white" 
+                            />
+                            <button onClick={() => handleSearchDetailStudent()} className="bg-white border border-[#32a3d7] text-[#32a3d7] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#32a3d7] hover:text-white transition-colors cursor-pointer">
                               <FaSearch /> Search
                             </button>
                           </div>
@@ -9847,8 +10143,15 @@ function AdmissionLayout() {
                             <select className="border border-gray-300 rounded px-3 py-1.5 outline-none focus:border-[#32a3d7] text-sm bg-white w-48">
                               <option>Select Section</option>
                             </select>
-                            <input type="text" className="border border-gray-300 rounded px-3 py-1.5 flex-1 text-sm outline-none focus:border-[#32a3d7]" />
-                            <button onClick={() => handleSearchDetailStudent()} className="bg-white border border-[#32a3d7] text-[#32a3d7] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#32a3d7] hover:text-white transition-colors">
+                            <input 
+                              type="text" 
+                              placeholder="Search by student name or adm no..."
+                              value={detailSearchQuery}
+                              onChange={(e) => setDetailSearchQuery(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleSearchDetailStudent()}
+                              className="border border-gray-300 rounded px-3 py-1.5 flex-1 text-sm outline-none focus:border-[#32a3d7] bg-white" 
+                            />
+                            <button onClick={() => handleSearchDetailStudent()} className="bg-white border border-[#32a3d7] text-[#32a3d7] px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 hover:bg-[#32a3d7] hover:text-white transition-colors cursor-pointer">
                               <FaSearch /> Search
                             </button>
                           </div>
@@ -11659,21 +11962,43 @@ function AdmissionLayout() {
                           <div>
                             <button
                               onClick={() => {
-                                if (admFeeClass !== 'Select Class') {
-                                  const std = getStudentsForClass(`${admFeeClass}-A`)[0];
-                                  if (std) {
-                                    setAdmFeeApplicant({
-                                      regno: std.adm,
-                                      name: std.name,
-                                      father: std.father,
-                                      contact: '9876543210',
-                                      dob: '15-Aug-2019',
-                                      meritList: 'FIRST MERIT LIST (RANK #4)',
-                                      admNo: std.adm,
-                                      concessionType: 'Select Concession Type',
-                                      remark: ''
-                                    });
+                                const term = admFeeStudentSearch.trim().toLowerCase();
+                                let std = null;
+                                if (term && updateStudentList && updateStudentList.length > 0) {
+                                  const raw = updateStudentList.find(s => {
+                                    const fname = (s.personalDetails?.firstName || s.firstName || '').toLowerCase();
+                                    const lname = (s.personalDetails?.lastName || s.lastName || '').toLowerCase();
+                                    const fullname = `${fname} ${lname}`.trim();
+                                    const adm = (s.academicDetails?.admissionNumber || s.admissionNumber || s.admNo || '').toString().toLowerCase();
+                                    return fullname.includes(term) || fname.includes(term) || lname.includes(term) || adm.includes(term);
+                                  });
+                                  if (raw) {
+                                    std = {
+                                      adm: raw.academicDetails?.admissionNumber || raw.admissionNumber || raw.admNo,
+                                      name: `${raw.personalDetails?.firstName || raw.firstName || ''} ${raw.personalDetails?.lastName || raw.lastName || ''}`.trim(),
+                                      father: `${raw.familyDetails?.father?.firstName || raw.fatherName || ''} ${raw.familyDetails?.father?.lastName || ''}`.trim(),
+                                      contact: raw.contactAddress?.contactNumber || raw.familyDetails?.father?.mobile || '9876543210',
+                                      dob: raw.personalDetails?.dateOfBirth ? new Date(raw.personalDetails.dateOfBirth).toLocaleDateString('en-GB') : '15-Aug-2019'
+                                    };
                                   }
+                                }
+                                if (!std && admFeeClass !== 'Select Class') {
+                                  std = getStudentsForClass(`${admFeeClass}-A`)[0];
+                                }
+                                if (std) {
+                                  setAdmFeeApplicant({
+                                    regno: std.adm,
+                                    name: std.name,
+                                    father: std.father,
+                                    contact: std.contact || '9876543210',
+                                    dob: std.dob || '15-Aug-2019',
+                                    meritList: 'FIRST MERIT LIST (RANK #4)',
+                                    admNo: std.adm,
+                                    concessionType: 'Select Concession Type',
+                                    remark: ''
+                                  });
+                                } else {
+                                  alert("Student not found!");
                                 }
                               }}
                               className="bg-[#28aae1] hover:bg-[#1f9cd0] text-white px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition cursor-pointer"
@@ -11874,6 +12199,7 @@ function AdmissionLayout() {
 
                         {/* Save Action */}
                         <div className="p-4 border-t border-gray-100 flex justify-center">
+                          <div className="flex items-center gap-3">
                           <button
                             onClick={() => {
                               const totalPaid = admFeeHeads.filter(h => h.select).reduce((acc, curr) => acc + curr.paid, 0);
@@ -11884,6 +12210,33 @@ function AdmissionLayout() {
                           >
                             <FaSave className="text-xs" /> Save
                           </button>
+                          <button
+                            onClick={() => {
+                              const totalPaid = admFeeHeads.filter(h => h.select).reduce((acc, curr) => acc + curr.paid, 0);
+                              setAdmissionFeePrintReceipt({
+                                receiptNo: 'ADM-REC-' + Date.now().toString().slice(-6),
+                                receiptDate: new Date().toISOString(),
+                                amountPaid: totalPaid || 12000,
+                                paymentMode: admFeePayMode || 'Cash',
+                                status: 'Successful',
+                                remarks: 'Admission Fee Collection',
+                                student: {
+                                  firstName: admFeeApplicant.name || 'Student',
+                                  lastName: '',
+                                  fatherName: admFeeApplicant.father || '',
+                                  academicDetails: {
+                                    admissionNumber: admFeeApplicant.admNo || admFeeApplicant.regno || '',
+                                    class: admFeeClass !== 'Select Class' ? admFeeClass : 'NUR',
+                                    section: 'A'
+                                  }
+                                }
+                              });
+                            }}
+                            className="bg-[#0f3d64] hover:bg-[#1a5282] text-white px-6 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+                          >
+                            <FaPrint className="text-xs" /> Print Receipt
+                          </button>
+                        </div>
                         </div>
                       </div>
                     ) : activeTab === 'Adm Entry AmtStructure' ? (
@@ -12071,22 +12424,52 @@ function AdmissionLayout() {
                           <div>
                             <button
                               onClick={() => {
-                                setChallanApplicant({
-                                  regno: challanSearch || 'REG-2026-1102',
-                                  name: 'ANANYA PANDEY',
-                                  father: 'MANOJ PANDEY',
-                                  contact: '9839012345',
-                                  dob: '12-Feb-2018',
-                                  class: '5 A',
-                                  amount: '24000',
-                                  refNo: 'CHL-2026-9042',
-                                  receiveDate: '03-Sep-2026',
-                                  admAccount: 'School Main Account',
-                                  postAccount: 'Challan Collection Ledger',
-                                  payMode: 'Bank Challan'
-                                });
-                                setChallanNotification("Student challan details retrieved successfully.");
-                                setTimeout(() => setChallanNotification(''), 3000);
+                                const term = challanSearch.trim().toLowerCase();
+                                let found = null;
+                                if (term && updateStudentList && updateStudentList.length > 0) {
+                                  found = updateStudentList.find(s => {
+                                    const fname = (s.personalDetails?.firstName || s.firstName || '').toLowerCase();
+                                    const lname = (s.personalDetails?.lastName || s.lastName || '').toLowerCase();
+                                    const fullname = `${fname} ${lname}`.trim();
+                                    const adm = (s.academicDetails?.admissionNumber || s.admissionNumber || s.admNo || '').toString().toLowerCase();
+                                    return fullname.includes(term) || fname.includes(term) || lname.includes(term) || adm.includes(term);
+                                  });
+                                }
+                                if (found) {
+                                  setChallanApplicant({
+                                    regno: found.academicDetails?.admissionNumber || found.admissionNumber || found.admNo,
+                                    name: `${found.personalDetails?.firstName || found.firstName || ''} ${found.personalDetails?.lastName || found.lastName || ''}`.trim(),
+                                    father: `${found.familyDetails?.father?.firstName || found.fatherName || ''} ${found.familyDetails?.father?.lastName || ''}`.trim(),
+                                    contact: found.contactAddress?.contactNumber || found.familyDetails?.father?.mobile || '9839012345',
+                                    dob: found.personalDetails?.dateOfBirth ? new Date(found.personalDetails.dateOfBirth).toLocaleDateString('en-GB') : '12-Feb-2018',
+                                    class: `${found.academicDetails?.class || 'NUR'} ${found.academicDetails?.section || 'A'}`,
+                                    amount: '24000',
+                                    refNo: `CHL-2026-${found.academicDetails?.admissionNumber || '9042'}`,
+                                    receiveDate: '03-Sep-2026',
+                                    admAccount: 'School Main Account',
+                                    postAccount: 'Challan Collection Ledger',
+                                    payMode: 'Bank Challan'
+                                  });
+                                  setChallanNotification("Student challan details retrieved successfully.");
+                                  setTimeout(() => setChallanNotification(''), 3000);
+                                } else {
+                                  setChallanApplicant({
+                                    regno: challanSearch || 'REG-2026-1102',
+                                    name: challanSearch || 'ANANYA PANDEY',
+                                    father: 'MANOJ PANDEY',
+                                    contact: '9839012345',
+                                    dob: '12-Feb-2018',
+                                    class: '5 A',
+                                    amount: '24000',
+                                    refNo: 'CHL-2026-9042',
+                                    receiveDate: '03-Sep-2026',
+                                    admAccount: 'School Main Account',
+                                    postAccount: 'Challan Collection Ledger',
+                                    payMode: 'Bank Challan'
+                                  });
+                                  setChallanNotification("Student challan details retrieved successfully.");
+                                  setTimeout(() => setChallanNotification(''), 3000);
+                                }
                               }}
                               className="bg-[#28aae1] hover:bg-[#1f9cd0] text-white px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition cursor-pointer"
                             >
@@ -12239,24 +12622,52 @@ function AdmissionLayout() {
                           <div className="self-start pt-1">
                             <button
                               onClick={() => {
-                                const matched = getStudentsForClass('NUR-A').find(s => s.name.toLowerCase().includes(idCardSearch.toLowerCase()) || s.adm.includes(idCardSearch)) || getStudentsForClass('NUR-A')[0];
+                                const term = idCardSearch.trim().toLowerCase();
+                                let matched = null;
+                                if (term && updateStudentList && updateStudentList.length > 0) {
+                                  const raw = updateStudentList.find(s => {
+                                    const fname = (s.personalDetails?.firstName || s.firstName || '').toLowerCase();
+                                    const lname = (s.personalDetails?.lastName || s.lastName || '').toLowerCase();
+                                    const fullname = `${fname} ${lname}`.trim();
+                                    const adm = (s.academicDetails?.admissionNumber || s.admissionNumber || s.admNo || '').toString().toLowerCase();
+                                    return fullname.includes(term) || fname.includes(term) || lname.includes(term) || adm.includes(term);
+                                  });
+                                  if (raw) {
+                                    matched = {
+                                      name: `${raw.personalDetails?.firstName || raw.firstName || ''} ${raw.personalDetails?.lastName || raw.lastName || ''}`.trim(),
+                                      adm: raw.academicDetails?.admissionNumber || raw.admissionNumber || raw.admNo,
+                                      father: `${raw.familyDetails?.father?.firstName || raw.fatherName || ''} ${raw.familyDetails?.father?.lastName || ''}`.trim(),
+                                      mother: `${raw.familyDetails?.mother?.firstName || raw.motherName || ''} ${raw.familyDetails?.mother?.lastName || ''}`.trim(),
+                                      dob: raw.personalDetails?.dateOfBirth ? new Date(raw.personalDetails.dateOfBirth).toLocaleDateString('en-GB') : '15-Aug-2019',
+                                      class: `${raw.academicDetails?.class || 'NUR'}-${raw.academicDetails?.section || 'A'}`,
+                                      contactMobile: raw.contactAddress?.contactNumber || raw.familyDetails?.father?.mobile || '9876543210',
+                                      address: raw.contactAddress?.currentAddress || 'Gorakhpur',
+                                      bloodGroup: raw.personalDetails?.bloodGroup || 'B+'
+                                    };
+                                  }
+                                }
+                                if (!matched) {
+                                  matched = getStudentsForClass('All').find(s => s.name.toLowerCase().includes(term) || s.adm.includes(term)) || getStudentsForClass('All')[0];
+                                }
                                 if (matched) {
                                   setIdCardStudent({
                                     name: matched.name,
                                     adm: matched.adm,
                                     father: matched.father,
-                                    dob: '15-Aug-2019',
-                                    class: 'NUR-A',
-                                    mother: 'SUNITA GUPTA',
+                                    dob: matched.dob || '15-Aug-2019',
+                                    class: matched.class || 'NUR-A',
+                                    mother: matched.mother || 'SUNITA GUPTA',
                                     contactName: matched.father,
-                                    contactMobile: '9876543210',
-                                    address: 'Betiahata, Gorakhpur',
-                                    bloodGroup: 'B+',
+                                    contactMobile: matched.contactMobile || matched.contact || '9876543210',
+                                    address: matched.address || 'Gorakhpur',
+                                    bloodGroup: matched.bloodGroup || 'B+',
                                     capturedImage: null,
                                     oldImage: null
                                   });
                                   setIdCardNotification(`Student ${matched.name} (${matched.adm}) record loaded.`);
                                   setTimeout(() => setIdCardNotification(''), 3000);
+                                } else {
+                                  alert("Student not found!");
                                 }
                               }}
                               className="bg-[#28aae1] hover:bg-[#1f9cd0] text-white px-4 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition cursor-pointer"
@@ -16438,9 +16849,23 @@ function AdmissionLayout() {
                                   onChange={(e) => setRepClass(e.target.value)}
                                   className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"
                                 >
-                                  <option value="All (51)">All (51)</option>
-                                  {['NUR', 'LKG', 'UKG', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'].map(c => (
+                                  <option value="All">All Classes ({repStudentList.length})</option>
+                                  {masterClasses.map(c => (
                                     <option key={c} value={c}>{c}</option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div className="flex flex-col gap-1">
+                                <label className="font-bold text-gray-800">Section</label>
+                                <select
+                                  value={repSection}
+                                  onChange={(e) => setRepSection(e.target.value)}
+                                  className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"
+                                >
+                                  <option value="All">All Sections</option>
+                                  {masterSections.map(s => (
+                                    <option key={s} value={s}>{s}</option>
                                   ))}
                                 </select>
                               </div>
@@ -16452,7 +16877,7 @@ function AdmissionLayout() {
                                   onChange={(e) => setRepGender(e.target.value)}
                                   className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"
                                 >
-                                  <option value="All (2)">All (2)</option>
+                                  <option value="All">All Genders</option>
                                   <option value="Male">Male</option>
                                   <option value="Female">Female</option>
                                 </select>
@@ -16465,7 +16890,7 @@ function AdmissionLayout() {
                                   onChange={(e) => setRepReligion(e.target.value)}
                                   className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"
                                 >
-                                  <option value="All (10)">All (10)</option>
+                                  <option value="All">All Religions</option>
                                   <option value="Hindu">Hindu</option>
                                   <option value="Muslim">Muslim</option>
                                   <option value="Sikh">Sikh</option>
@@ -16480,7 +16905,7 @@ function AdmissionLayout() {
                                   onChange={(e) => setRepCategory(e.target.value)}
                                   className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"
                                 >
-                                  <option value="All (5)">All (5)</option>
+                                  <option value="All">All Categories</option>
                                   <option value="GEN">GEN</option>
                                   <option value="OBC">OBC</option>
                                   <option value="SC">SC</option>
@@ -16555,7 +16980,14 @@ function AdmissionLayout() {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {repStudentList.map((st, idx) => (
+                                  {filteredRepStudentList.length === 0 ? (
+                                    <tr>
+                                      <td colSpan="23" className="px-4 py-8 text-center text-gray-500 font-medium bg-gray-50/50">
+                                        No students found matching the selected class/filters.
+                                      </td>
+                                    </tr>
+                                  ) : (
+                                    filteredRepStudentList.map((st, idx) => (
                                     <tr 
                                       key={idx} 
                                       onClick={() => handleOpenStudentDetail(st)}
@@ -16589,7 +17021,8 @@ function AdmissionLayout() {
                                       <td className="px-2.5 py-1.5 border-r border-gray-200 text-center">{st.religion}</td>
                                       <td className="px-2.5 py-1.5 text-center font-medium">{st.category}</td>
                                     </tr>
-                                  ))}
+                                   ))
+                                 )}
                                 </tbody>
                               </table>
                             </div>
@@ -16638,9 +17071,23 @@ function AdmissionLayout() {
                                   onChange={(e) => setRepClass(e.target.value)}
                                   className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"
                                 >
-                                  <option value="All (51)">All (51)</option>
-                                  {['NUR', 'LKG', 'UKG', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'].map(c => (
+                                  <option value="All">All Classes ({repStudentList.length})</option>
+                                  {masterClasses.map(c => (
                                     <option key={c} value={c}>{c}</option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div className="flex flex-col gap-1">
+                                <label className="font-bold text-gray-800">Section</label>
+                                <select
+                                  value={repSection}
+                                  onChange={(e) => setRepSection(e.target.value)}
+                                  className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"
+                                >
+                                  <option value="All">All Sections</option>
+                                  {masterSections.map(s => (
+                                    <option key={s} value={s}>{s}</option>
                                   ))}
                                 </select>
                               </div>
@@ -16652,7 +17099,7 @@ function AdmissionLayout() {
                                   onChange={(e) => setRepGender(e.target.value)}
                                   className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"
                                 >
-                                  <option value="All (2)">All (2)</option>
+                                  <option value="All">All Genders</option>
                                   <option value="Male">Male</option>
                                   <option value="Female">Female</option>
                                 </select>
@@ -16665,7 +17112,7 @@ function AdmissionLayout() {
                                   onChange={(e) => setRepReligion(e.target.value)}
                                   className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"
                                 >
-                                  <option value="All (10)">All (10)</option>
+                                  <option value="All">All Religions</option>
                                   <option value="Hindu">Hindu</option>
                                   <option value="Muslim">Muslim</option>
                                   <option value="Sikh">Sikh</option>
@@ -16680,7 +17127,7 @@ function AdmissionLayout() {
                                   onChange={(e) => setRepCategory(e.target.value)}
                                   className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"
                                 >
-                                  <option value="All (5)">All (5)</option>
+                                  <option value="All">All Categories</option>
                                   <option value="GEN">GEN</option>
                                   <option value="OBC">OBC</option>
                                   <option value="SC">SC</option>
@@ -16759,7 +17206,14 @@ function AdmissionLayout() {
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {repStudentList.map((st, idx) => (
+                                     {filteredRepStudentList.length === 0 ? (
+                                       <tr>
+                                         <td colSpan="23" className="px-4 py-8 text-center text-gray-500 font-medium bg-gray-50/50">
+                                           No students found matching the selected class/filters.
+                                         </td>
+                                       </tr>
+                                     ) : (
+                                       filteredRepStudentList.map((st, idx) => (
                                       <tr key={idx} className="border-b border-gray-200 hover:bg-sky-50/40 text-[11px]">
                                         <td className="px-2.5 py-2 border-r border-gray-200 font-medium text-gray-800">{st.className}</td>
                                         <td className="px-2.5 py-2 border-r border-gray-200 font-medium text-gray-800">{st.class}</td>
@@ -16785,7 +17239,8 @@ function AdmissionLayout() {
                                         <td className="px-2.5 py-2 border-r border-gray-200 text-center">{st.religion}</td>
                                         <td className="px-2.5 py-2 text-center font-medium">{st.category}</td>
                                       </tr>
-                                    ))}
+                                       ))
+                                     )}
                                   </tbody>
                                 </table>
                               </div>
@@ -21652,7 +22107,7 @@ function AdmissionLayout() {
                           {cwsdFilterOpen && (
                             <div className="flex flex-col gap-3.5 text-xs w-full">
                               <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">School</label><select value={cwsdSchool} onChange={(e) => setCwsdSchool(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All Schools</option><option>NAVALS NATIONAL ACADEMY</option></select></div>
-                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={cwsdClass} onChange={(e) => setCwsdClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option>All (51)</option><option>NUR A</option><option>NUR B</option><option>LKG A</option><option>LKG B</option><option>UKG A</option></select></div>
+                              <div className="flex flex-col gap-1"><label className="font-bold text-gray-800">Class</label><select value={cwsdClass} onChange={(e) => setCwsdClass(e.target.value)} className="border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-700 outline-none focus:border-[#28aae1] bg-white cursor-pointer w-full"><option value="All Class">All Classes ({cwsdList.length})</option>{masterClasses.map(c => (<React.Fragment key={c}><option value={c}>{c}</option><option value={`${c} A`}>{c} A</option><option value={`${c} B`}>{c} B</option></React.Fragment>))}</select></div>
                               <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="checkbox" className="rounded text-[#28aae1]" /> Is Day Scholar/Boarding Show On Report</label>
                               <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="checkbox" className="rounded text-[#28aae1]" /> Show Roll No. On Report</label>
                               <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"><input type="checkbox" className="rounded text-[#28aae1]" /> Format 1</label>
