@@ -147,25 +147,34 @@ export default function TransportDetail() {
 
         // Filter by Route
         if (selectedRoute) {
+          const selRouteObj = routes.find(r => r._id === selectedRoute);
+          const rName = (selRouteObj?.routeName || selRouteObj?.name || selectedRoute).toString().toLowerCase();
           list = list.filter(s => {
             const rId = s.transportDetails?.route?._id || s.transportDetails?.route || s.transportRoute?._id || s.transportRoute;
-            return rId && rId.toString() === selectedRoute.toString();
+            const rStr = (typeof s.transportDetails?.route === 'string' ? s.transportDetails.route : s.transportRoute || '').toString().toLowerCase();
+            return (rId && rId.toString() === selectedRoute.toString()) || rStr.includes(rName);
           });
         }
 
         // Filter by Stop
         if (selectedStop) {
+          const selStopObj = stops.find(st => st._id === selectedStop);
+          const stName = (selStopObj?.stopName || selStopObj?.name || selectedStop).toString().toLowerCase();
           list = list.filter(s => {
             const stId = s.transportDetails?.stop?._id || s.transportDetails?.stop || s.transportStop?._id || s.transportStop;
-            return stId && stId.toString() === selectedStop.toString();
+            const stStr = (typeof s.transportDetails?.stop === 'string' ? s.transportDetails.stop : s.transportStop || '').toString().toLowerCase();
+            return (stId && stId.toString() === selectedStop.toString()) || stStr.includes(stName);
           });
         }
 
         // Filter by Vehicle
         if (selectedVehicle) {
+          const selVehObj = vehicles.find(v => v._id === selectedVehicle);
+          const vNum = (selVehObj?.vehicleNo || selVehObj?.registrationNumber || selectedVehicle).toString().toLowerCase();
           list = list.filter(s => {
             const vId = s.transportDetails?.vehicle?._id || s.transportDetails?.vehicle || s.vehicleNo;
-            return vId && (vId.toString() === selectedVehicle.toString() || vId === selectedVehicle);
+            const vStr = (typeof s.transportDetails?.vehicle === 'string' ? s.transportDetails.vehicle : s.vehicleNo || '').toString().toLowerCase();
+            return (vId && vId.toString() === selectedVehicle.toString()) || vStr.includes(vNum);
           });
         }
 
@@ -194,8 +203,67 @@ export default function TransportDetail() {
     }
   };
 
+  const reportRef = React.useRef(null);
+
   const handlePrint = () => {
-    window.print();
+    if (!reportRef.current) {
+      window.print();
+      return;
+    }
+
+    const printWindow = window.open('', '_blank', 'width=1100,height=800');
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Transport Detail Report - ${selectedSchool || 'Navals National Academy'}</title>
+          <style>
+            @page {
+              size: A4 landscape;
+              margin: 10mm;
+            }
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 10px;
+              color: #000;
+              background: #fff;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              font-size: 11px;
+            }
+            th, td {
+              border: 1px solid #d97706;
+              padding: 4px 6px;
+            }
+            th {
+              background-color: #fef3c7 !important;
+              color: #000;
+              font-weight: bold;
+            }
+          </style>
+        </head>
+        <body>
+          ${reportRef.current.innerHTML}
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() { window.close(); }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   const currentDateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -218,7 +286,7 @@ export default function TransportDetail() {
   return (
     <div style={{ display: 'flex', height: '100%', background: '#f3f4f6', overflow: 'hidden' }}>
       {/* ── LEFT FILTER SIDEBAR ── */}
-      <div style={{ width: '260px', background: '#fff', borderRight: '1px solid #e5e7eb', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', flexShrink: 0, overflowY: 'auto' }}>
+      <div className="no-print" style={{ width: '260px', background: '#fff', borderRight: '1px solid #e5e7eb', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', flexShrink: 0, overflowY: 'auto' }}>
         
         {/* 1. Select School */}
         <div>
@@ -336,7 +404,7 @@ export default function TransportDetail() {
         <div style={{ background: '#fff', minHeight: '100%', borderRadius: '4px', border: '1px solid #d1d5db', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
           
           {/* Action Bar */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #e5e7eb', paddingBottom: '10px' }}>
+          <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #e5e7eb', paddingBottom: '10px' }}>
             <span style={{ fontSize: '13px', color: '#6b7280' }}>
               Format: <strong>Crystal Report Viewer</strong>
             </span>
@@ -349,13 +417,13 @@ export default function TransportDetail() {
           </div>
 
           {error && (
-            <div style={{ padding: '12px', background: '#fee2e2', color: '#991b1b', borderRadius: '4px', marginBottom: '16px', fontSize: '13px' }}>
+            <div className="no-print" style={{ padding: '12px', background: '#fee2e2', color: '#991b1b', borderRadius: '4px', marginBottom: '16px', fontSize: '13px' }}>
               {error}
             </div>
           )}
 
           {/* Golden / Amber Border Paper Container */}
-          <div style={{ border: '2px solid #b45309', padding: '16px', minHeight: '400px' }}>
+          <div ref={reportRef} className="printable-area" style={{ border: '2px solid #b45309', padding: '16px', minHeight: '400px', background: '#fff' }}>
             
             {/* Header: Logo, Title & Address */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '16px' }}>
